@@ -1,0 +1,287 @@
+{
+  "meta": {
+    "schemaVersion": "1.0",
+    "generated": "2026-06-22",
+    "currency": "AUD",
+    "period": "FY27 annualised (illustrative)",
+    "disclaimer": "Meridian Financial Group is a FICTIONAL company created for demonstration. All names, figures, vendors and outcomes are illustrative and do not represent any real organisation.",
+    "decisionLegend": { "scale": "Evidence supports larger rollout; economics defensible", "fix": "Promising but readiness, data, control or workflow design is weak", "stop": "Vendor story is better than the operating case" },
+    "ragLegend": { "green": "Low / managed", "amber": "Caution / gaps", "red": "Unmanaged exposure" },
+    "confidenceLegend": ["low", "medium", "medium-high", "high"]
+  },
+
+  "company": {
+    "name": "Meridian Financial Group",
+    "shortName": "Meridian",
+    "fictional": true,
+    "sector": "Financial services (banking & wealth)",
+    "headquarters": "Sydney, Australia",
+    "profile": "ASX-listed mid-tier banking and wealth group. ~6,800 staff across retail banking, business banking, wealth, and group functions. Heavy regulatory load (APRA, AUSTRAC, ASIC). AI activity spread across 7 business units with no central economic view.",
+    "sponsor": "Group CFO and CIO (joint)",
+    "fiscalYear": "FY27 (Jul 2026 - Jun 2027)",
+    "headlineQuestion": "Across all our AI activity, what does it cost, where is it earning back, and what should we scale, fix or stop?"
+  },
+
+  "portfolioRollup": {
+    "totalAnnualSpendAud": 3713000,
+    "useCaseCount": 10,
+    "businessUnits": 7,
+    "vendorsInUse": 6,
+    "spendByDecision": { "scale": 2066000, "fix": 1121000, "stop": 526000 },
+    "countByDecision": { "scale": 4, "fix": 4, "stop": 2 },
+    "spendByRisk": { "green": 1446000, "amber": 1541000, "red": 726000 },
+    "countByRisk": { "green": 3, "amber": 5, "red": 2 },
+    "spendByCostType": { "licences": 1108000, "tokens": 915000, "cloud": 425000, "integration": 465000, "people": 800000 },
+    "reclaimableAnnualSpendAud": 526000,
+    "atRiskUnmanagedSpendAud": 726000,
+    "headlines": [
+      "A$3.71M of annual AI spend is live across 10 use cases and 7 business units, with no single owner of the economics.",
+      "A$526K/yr sits in 2 'stop' use cases where the vendor story beats the operating case.",
+      "A$726K/yr of spend carries unmanaged (red) risk, concentrated in financial-crime and collections workflows.",
+      "Only 4 of 10 use cases have high-confidence outcome evidence; the rest rely on vendor or anecdotal claims."
+    ]
+  },
+
+  "useCases": [
+    {
+      "id": "UC-01",
+      "name": "Contact Centre Copilot",
+      "businessUnit": "Retail Banking - Customer Service",
+      "owner": "Head of Contact Centre Operations",
+      "vendor": "Microsoft",
+      "model": "Copilot / GPT-4o",
+      "userGroup": "800 contact-centre agents",
+      "workflow": "Live call assist, response drafting, post-call wrap-up notes",
+      "currentState": "In production across 3 contact centres",
+      "aiRole": "Assistive (human in the loop)",
+      "cost": { "licences": 432000, "tokens": 180000, "cloud": 90000, "integration": 60000, "people": 140000, "totalAnnual": 902000 },
+      "outcome": {
+        "primaryMetric": "Average handle time (AHT)",
+        "baseline": "7.2 min / call",
+        "target": "5.8 min / call",
+        "evidence": "12% measured AHT reduction over 6 months; cost per resolved case A$4.10 -> A$3.20",
+        "confidence": "high",
+        "reviewDate": "2026-09-30"
+      },
+      "risk": { "rag": "green", "notes": "PII handled in-tenant; no model training on customer data; QA sampling in place" },
+      "decision": "scale",
+      "nextAction": "Expand to outbound retention team; renegotiate licence on proven usage"
+    },
+    {
+      "id": "UC-02",
+      "name": "Fraud Alert Triage Agent",
+      "businessUnit": "Group - Financial Crime",
+      "owner": "Head of Financial Crime Technology",
+      "vendor": "Anthropic + in-house",
+      "model": "Claude (agentic) on bank cloud",
+      "userGroup": "Fraud operations (45 analysts)",
+      "workflow": "Auto-triage of fraud alerts, evidence gathering, recommended disposition",
+      "currentState": "Production pilot on card-fraud queue",
+      "aiRole": "Agentic (recommends, human approves)",
+      "cost": { "licences": 60000, "tokens": 240000, "cloud": 120000, "integration": 90000, "people": 110000, "totalAnnual": 620000 },
+      "outcome": {
+        "primaryMetric": "Analyst throughput / false-positive rate",
+        "baseline": "100 alerts / analyst / day; 22% false positive",
+        "target": "+40% throughput; 18% false positive",
+        "evidence": "Throughput +28% on pilot queue; false positives -18%; confidence improving",
+        "confidence": "medium-high",
+        "reviewDate": "2026-08-31"
+      },
+      "risk": { "rag": "amber", "notes": "Agent action scope expanding; audit trail adequate but model-decision explainability needs work before full automation" },
+      "decision": "scale",
+      "nextAction": "Extend to scam and account-takeover queues with explainability controls"
+    },
+    {
+      "id": "UC-03",
+      "name": "Credit Memo Drafting Assistant",
+      "businessUnit": "Business Banking",
+      "owner": "Head of Commercial Credit",
+      "vendor": "OpenAI",
+      "model": "GPT-4o via Azure",
+      "userGroup": "Commercial credit analysts (120)",
+      "workflow": "Draft credit memos from financials, risk notes and policy",
+      "currentState": "Limited rollout to 2 lending teams",
+      "aiRole": "Assistive (draft only)",
+      "cost": { "licences": 48000, "tokens": 70000, "cloud": 25000, "integration": 40000, "people": 60000, "totalAnnual": 243000 },
+      "outcome": {
+        "primaryMetric": "Memo drafting time",
+        "baseline": "4.5 hrs / memo",
+        "target": "-35% drafting time",
+        "evidence": "Self-reported time savings only; no controlled baseline; output quality variable",
+        "confidence": "low",
+        "reviewDate": "2026-07-31"
+      },
+      "risk": { "rag": "amber", "notes": "Policy-grounding incomplete; risk of un-cited figures entering credit decisions" },
+      "decision": "fix",
+      "nextAction": "Add retrieval grounding to policy + financials; set a measured baseline before scaling"
+    },
+    {
+      "id": "UC-04",
+      "name": "AML / KYC Document Review",
+      "businessUnit": "Group - Financial Crime",
+      "owner": "Head of AML Operations",
+      "vendor": "Google",
+      "model": "Gemini + document AI",
+      "userGroup": "KYC analysts (60)",
+      "workflow": "Extract and verify entity data from onboarding documents; flag discrepancies",
+      "currentState": "Pilot on new-to-bank business onboarding",
+      "aiRole": "Assistive with auto-extraction",
+      "cost": { "licences": 36000, "tokens": 120000, "cloud": 55000, "integration": 70000, "people": 130000, "totalAnnual": 411000 },
+      "outcome": {
+        "primaryMetric": "KYC review cycle time / extraction accuracy",
+        "baseline": "3.1 days / case",
+        "target": "1.5 days / case",
+        "evidence": "Cycle-time gain offset by manual re-checking; extraction accuracy below threshold on complex structures",
+        "confidence": "low",
+        "reviewDate": "2026-07-15"
+      },
+      "risk": { "rag": "red", "notes": "AUSTRAC-relevant workflow; current evidence and audit trail insufficient for regulated reliance" },
+      "decision": "fix",
+      "nextAction": "Tighten human-verification gate; build audit evidence before any reliance claim"
+    },
+    {
+      "id": "UC-05",
+      "name": "Developer Code Assistant",
+      "businessUnit": "Group - Technology",
+      "owner": "Head of Engineering Productivity",
+      "vendor": "GitHub / Microsoft",
+      "model": "GitHub Copilot",
+      "userGroup": "Software engineers (600)",
+      "workflow": "In-IDE code completion, test generation, code review assist",
+      "currentState": "Production across engineering",
+      "aiRole": "Assistive (developer in control)",
+      "cost": { "licences": 228000, "tokens": 0, "cloud": 20000, "integration": 15000, "people": 40000, "totalAnnual": 303000 },
+      "outcome": {
+        "primaryMetric": "PR throughput / suggestion acceptance",
+        "baseline": "Pre-tool PR throughput baseline",
+        "target": "+20% PR throughput",
+        "evidence": "PR throughput +22%; suggestion acceptance 31%; developer satisfaction high",
+        "confidence": "high",
+        "reviewDate": "2026-10-31"
+      },
+      "risk": { "rag": "green", "notes": "No proprietary code used for training; IP and secrets scanning in pipeline" },
+      "decision": "scale",
+      "nextAction": "Standardise across all squads; track sustained throughput vs licence cost"
+    },
+    {
+      "id": "UC-06",
+      "name": "Marketing Content Studio",
+      "businessUnit": "Group - Marketing",
+      "owner": "Head of Brand & Content",
+      "vendor": "Adobe + OpenAI",
+      "model": "Firefly + GPT-4o",
+      "userGroup": "Marketing & comms (180 seats)",
+      "workflow": "Campaign copy, social, image generation",
+      "currentState": "Broad licence rollout",
+      "aiRole": "Assistive (generation)",
+      "cost": { "licences": 96000, "tokens": 45000, "cloud": 15000, "integration": 20000, "people": 35000, "totalAnnual": 211000 },
+      "outcome": {
+        "primaryMetric": "Active usage / content throughput",
+        "baseline": "180 seats provisioned",
+        "target": "Faster campaign turnaround",
+        "evidence": "Only 28% of seats active monthly; no measurable throughput or cost-per-asset gain; licence waste high",
+        "confidence": "low",
+        "reviewDate": "2026-07-31"
+      },
+      "risk": { "rag": "amber", "notes": "Brand and disclosure risk on generated imagery; light review process" },
+      "decision": "stop",
+      "nextAction": "Reduce to a small power-user pool; reclaim ~A$140K of idle licences"
+    },
+    {
+      "id": "UC-07",
+      "name": "Wealth Advisor Meeting Summariser",
+      "businessUnit": "Wealth",
+      "owner": "Head of Advice Operations",
+      "vendor": "Anthropic",
+      "model": "Claude",
+      "userGroup": "Financial advisers (250)",
+      "workflow": "Transcribe and summarise advice meetings; draft file notes and next steps",
+      "currentState": "Production across advice network",
+      "aiRole": "Assistive (adviser reviews note)",
+      "cost": { "licences": 84000, "tokens": 60000, "cloud": 22000, "integration": 30000, "people": 45000, "totalAnnual": 241000 },
+      "outcome": {
+        "primaryMetric": "Adviser admin time / file-note quality",
+        "baseline": "Adviser admin baseline",
+        "target": "-25% admin time",
+        "evidence": "Admin time -25% measured; file-note completeness up; advisers spend more time with clients",
+        "confidence": "high",
+        "reviewDate": "2026-09-30"
+      },
+      "risk": { "rag": "green", "notes": "Client consent captured; recordings retained per policy; adviser sign-off on every note" },
+      "decision": "scale",
+      "nextAction": "Integrate into advice CRM; extend to review-meeting workflow"
+    },
+    {
+      "id": "UC-08",
+      "name": "Complaints Handling Assistant",
+      "businessUnit": "Retail Banking - Customer Resolution",
+      "owner": "Head of Customer Resolution",
+      "vendor": "OpenAI",
+      "model": "GPT-4o",
+      "userGroup": "Complaints specialists (90)",
+      "workflow": "Summarise complaint history, draft responses, suggest remediation",
+      "currentState": "Pilot on retail complaints queue",
+      "aiRole": "Assistive (draft + suggest)",
+      "cost": { "licences": 54000, "tokens": 50000, "cloud": 20000, "integration": 35000, "people": 70000, "totalAnnual": 229000 },
+      "outcome": {
+        "primaryMetric": "Resolution cycle time / escalation accuracy",
+        "baseline": "Resolution baseline by complaint type",
+        "target": "Faster resolution, correct escalation",
+        "evidence": "Cycle time improving but mis-classification of escalation cases observed; needs tuning",
+        "confidence": "medium",
+        "reviewDate": "2026-08-15"
+      },
+      "risk": { "rag": "amber", "notes": "Regulated complaints (ASIC) require accurate escalation; current error rate too high for reliance" },
+      "decision": "fix",
+      "nextAction": "Improve escalation classifier; add mandatory specialist review on high-risk cases"
+    },
+    {
+      "id": "UC-09",
+      "name": "Collections Outreach Agent",
+      "businessUnit": "Retail Banking - Collections",
+      "owner": "Head of Collections",
+      "vendor": "In-house + OpenAI",
+      "model": "GPT-4o (agentic outreach)",
+      "userGroup": "Collections team (70)",
+      "workflow": "Automated, personalised customer outreach and repayment-plan suggestions",
+      "currentState": "Pilot on early-arrears segment",
+      "aiRole": "Agentic (drafts and sends with approval)",
+      "cost": { "licences": 40000, "tokens": 95000, "cloud": 40000, "integration": 60000, "people": 80000, "totalAnnual": 315000 },
+      "outcome": {
+        "primaryMetric": "Contact rate / repayment uplift",
+        "baseline": "Manual outreach contact rate",
+        "target": "Higher contact and cure rate",
+        "evidence": "Vendor-promised uplift not yet evidenced on bank data; sample too small",
+        "confidence": "low",
+        "reviewDate": "2026-07-15"
+      },
+      "risk": { "rag": "red", "notes": "Hardship and financial-difficulty obligations; automated outreach carries significant conduct risk; controls immature" },
+      "decision": "stop",
+      "nextAction": "Pause automated outreach; revisit only with conduct-risk controls and human approval gate"
+    },
+    {
+      "id": "UC-10",
+      "name": "Regulatory Reporting Drafter",
+      "businessUnit": "Group - Risk & Compliance",
+      "owner": "Head of Regulatory Reporting",
+      "vendor": "Microsoft",
+      "model": "Copilot / GPT-4o",
+      "userGroup": "Regulatory reporting team (35)",
+      "workflow": "Draft narrative sections of APRA / ASIC returns from source data",
+      "currentState": "Controlled pilot",
+      "aiRole": "Assistive (draft only)",
+      "cost": { "licences": 30000, "tokens": 55000, "cloud": 18000, "integration": 45000, "people": 90000, "totalAnnual": 238000 },
+      "outcome": {
+        "primaryMetric": "Drafting effort / accuracy",
+        "baseline": "Manual drafting effort per return",
+        "target": "-30% drafting effort",
+        "evidence": "Drafting effort down, but every output requires full human verification; net gain modest",
+        "confidence": "medium",
+        "reviewDate": "2026-08-31"
+      },
+      "risk": { "rag": "amber", "notes": "Regulator-facing output; accuracy and provenance controls must precede any reliance" },
+      "decision": "fix",
+      "nextAction": "Ground on source-of-truth data; formalise verification and provenance before scaling"
+    }
+  ]
+}
