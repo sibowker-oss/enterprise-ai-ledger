@@ -1,5 +1,5 @@
 import { useCases } from "@/lib/seed";
-import { portfolio, value } from "@/lib/portfolio";
+import { portfolio, value, futureMultiple } from "@/lib/portfolio";
 import { audCompact } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { OutcomeLedger } from "@/components/OutcomeLedger";
@@ -23,7 +23,7 @@ export default function OutcomePage() {
         }
       />
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <OutcomeLedger useCases={useCases} total={total} value={value} />
+        <OutcomeLedger useCases={useCases} total={total} value={value} futureMultiple={futureMultiple} />
       </div>
     </>
   );

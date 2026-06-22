@@ -8,12 +8,15 @@ import {
   businessUnitsCount,
   vendorsCount,
   evidenceBackedUseCases,
+  computeFutureRollup,
+  futureMultiple,
 } from "@/lib/portfolio";
 import { aud, audCompact, pct } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { KpiCard } from "@/components/KpiCard";
 import { ReturnPanel } from "@/components/ReturnPanel";
+import { FuturePricingPanel } from "@/components/FuturePricingPanel";
 import { DecisionBand } from "@/components/DecisionBand";
 import { CostDonut } from "@/components/CostDonut";
 import { BuBarChart } from "@/components/BuBarChart";
@@ -105,6 +108,12 @@ export default function ControlRoom() {
 
         {/* 2 — Return on AI spend: the CFO answer (dollarised, not operational) */}
         <ReturnPanel value={value} />
+
+        {/* 2b — Future pricing stress test: which use cases survive cost-recovery */}
+        <FuturePricingPanel
+          future={computeFutureRollup(useCases, futureMultiple)}
+          evidenceBackedTodayRoi={value.evidenceBackedRoiPct}
+        />
 
         {/* 3 — Decision summary: the punchline, now with net value per column */}
         <section aria-label="Scale, fix or stop">

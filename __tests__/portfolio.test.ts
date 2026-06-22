@@ -24,6 +24,10 @@ import {
   costByVendor,
   tokenUpliftByUseCase,
   seatsVsConsumption,
+  futureCost,
+  futureNetValue,
+  futureRoiPct,
+  computeFutureRollup,
 } from "@/lib/portfolio";
 import {
   computePortfolioRollup,
@@ -303,6 +307,37 @@ describe("vendor economics & seats→consumption (AI Ledger forward view)", () =
     expect(rows.find((r) => r.id === "UC-05")).toBeUndefined(); // 0 tokens excluded
     const totalUplifted = rows.reduce((s, r) => s + r.tokensUplifted, 0);
     expect(totalUplifted).toBe(Math.round(915_000 * mult));
+  });
+});
+
+describe("future pricing (use cases that survive today may not survive future pricing)", () => {
+  const M = benchmarks.subsidyEconomics.priceToCostRecoveryMultiple; // 2.78
+  const fr = computeFutureRollup(useCases, M);
+
+  it("future cost adds the token uplift; UC-02 fraud cost A$620K → A$1,047K", () => {
+    const uc02 = findUseCase(useCases, "UC-02")!;
+    // tokens 240k × (2.78-1)=1.78 → +427,200 → 620,000+427,200 = 1,047,200
+    expect(futureCost(uc02, M)).toBe(620_000 + Math.round(240_000 * (M - 1)));
+  });
+
+  it("portfolio ROI compresses sharply under future pricing (138% → ~65%)", () => {
+    expect(fr.todayRoiPct).toBe(138);
+    expect(fr.futureRoiPct).toBeLessThan(fr.todayRoiPct);
+    expect(fr.futureCost).toBeGreaterThan(fr.todayCost);
+  });
+
+  it("fewer use cases survive: UC-03 Credit Memo flips from net-positive to underwater", () => {
+    expect(fr.survivingFuture).toBeLessThan(fr.survivingToday);
+    expect(fr.flippers.map((f) => f.id)).toContain("UC-03");
+    const uc03 = findUseCase(useCases, "UC-03")!;
+    expect(netValue(uc03)).toBeGreaterThan(0); // survives today
+    expect(futureNetValue(uc03, M)).toBeLessThan(0); // not under future pricing
+    expect(futureRoiPct(uc03, M)).toBeLessThan(0);
+  });
+
+  it("the evidence-backed core still survives, but compressed", () => {
+    expect(fr.evidenceBackedFutureRoiPct).toBeGreaterThan(0);
+    expect(fr.evidenceBackedFutureRoiPct).toBeLessThan(287);
   });
 });
 

@@ -5,7 +5,14 @@ import Link from "next/link";
 import type { Confidence, UseCase } from "@/lib/types";
 import type { DerivedValueRollup } from "@/lib/portfolio";
 import { aud, audCompact, reviewDate, pct } from "@/lib/format";
-import { CONFIDENCE_ORDER, netValue, roiPct, bankedConversionPct } from "@/lib/portfolio";
+import {
+  CONFIDENCE_ORDER,
+  netValue,
+  roiPct,
+  bankedConversionPct,
+  futureCost,
+  futureNetValue,
+} from "@/lib/portfolio";
 import { DecisionChip } from "./StatusChip";
 import { ConfidenceDots } from "./ConfidenceDots";
 
@@ -23,12 +30,16 @@ export function OutcomeLedger({
   useCases,
   total,
   value,
+  futureMultiple,
 }: {
   useCases: UseCase[];
   total: number;
   value: DerivedValueRollup;
+  futureMultiple: number;
 }) {
   const [onlyBacked, setOnlyBacked] = useState(false);
+  const [showFuture, setShowFuture] = useState(false);
+  const flips = (uc: UseCase) => netValue(uc) > 0 && futureNetValue(uc, futureMultiple) <= 0;
   const backedCount = useCases.filter((uc) => isBacked(uc.outcome.confidence)).length;
 
   const sorted = useMemo(
@@ -55,18 +66,24 @@ export function OutcomeLedger({
           <p className="text-sm text-ink-muted">
             {onlyBacked ? "Evidence-backed use cases only" : `All ${useCases.length} use cases`} · on {audCompact(cost)} cost
           </p>
-          <label className="inline-flex shrink-0 cursor-pointer select-none items-center gap-3 print:hidden">
-            <span className="text-sm text-ink-muted">Evidence-backed only</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={onlyBacked}
-              onClick={() => setOnlyBacked((v) => !v)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${onlyBacked ? "bg-accent" : "bg-border-strong"}`}
-            >
-              <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${onlyBacked ? "translate-x-5" : "translate-x-0.5"}`} />
-            </button>
-          </label>
+          <div className="flex shrink-0 flex-col items-end gap-2 print:hidden">
+            <label className="inline-flex cursor-pointer select-none items-center gap-3">
+              <span className="text-sm text-ink-muted">Evidence-backed only</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={onlyBacked}
+                onClick={() => setOnlyBacked((v) => !v)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${onlyBacked ? "bg-accent" : "bg-border-strong"}`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${onlyBacked ? "translate-x-5" : "translate-x-0.5"}`} />
+              </button>
+            </label>
+            <label className="inline-flex cursor-pointer select-none items-center gap-2 text-sm text-ink-muted">
+              <input type="checkbox" checked={showFuture} onChange={(e) => setShowFuture(e.target.checked)} className="h-4 w-4 accent-accent" />
+              Future pricing ({futureMultiple.toFixed(2)}×)
+            </label>
+          </div>
         </div>
 
         <div className="mt-3 grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
@@ -132,7 +149,20 @@ export function OutcomeLedger({
                     <ConfidenceDots confidence={uc.outcome.confidence} />
                     <span className="mt-1 block text-xs text-ink-faint">Review {reviewDate(uc.outcome.reviewDate)}</span>
                   </td>
-                  <td className="tabular px-3 py-3 text-right font-medium text-ink">{aud(uc.cost.totalAnnual)}</td>
+                  <td className="tabular px-3 py-3 text-right font-medium">
+                    {showFuture ? (
+                      <span className="text-status-red-fg">
+                        {aud(futureCost(uc, futureMultiple))}
+                        {futureCost(uc, futureMultiple) > uc.cost.totalAnnual && (
+                          <span className="block text-[11px] font-normal text-ink-faint">
+                            was {aud(uc.cost.totalAnnual)}
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-ink">{aud(uc.cost.totalAnnual)}</span>
+                    )}
+                  </td>
                   <td className="px-3 py-3 text-right" title={uc.value.basis}>
                     <span className="tabular font-medium text-ink underline decoration-dotted decoration-ink-faint/50 underline-offset-2">
                       {aud(uc.value.annualBenefitAud)}
@@ -154,7 +184,14 @@ export function OutcomeLedger({
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-3"><DecisionChip decision={uc.decision} size="sm" /></td>
+                  <td className="px-3 py-3">
+                    <DecisionChip decision={uc.decision} size="sm" />
+                    {showFuture && flips(uc) && (
+                      <span className="mt-1 block text-[11px] font-semibold text-status-red-fg" title="Net-positive today, underwater under future pricing">
+                        ▼ flips underwater
+                      </span>
+                    )}
+                  </td>
                 </tr>
               );
             })}

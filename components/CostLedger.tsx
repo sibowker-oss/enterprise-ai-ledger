@@ -48,19 +48,24 @@ export function CostLedger({
   byBusinessUnit,
   spendByCostType,
   total,
+  futureMultiple,
 }: {
   byUseCase: CostMatrixRow[];
   byBusinessUnit: CostMatrixRow[];
   spendByCostType: Record<CostComponent, number>;
   total: number;
+  futureMultiple: number;
 }) {
   const [lens, setLens] = useState<Lens>("useCase");
   const [period, setPeriod] = useState<Period>("annual");
   const [sort, setSort] = useState<SortKey>("total");
   const [dir, setDir] = useState<"asc" | "desc">("desc");
+  const [showFuture, setShowFuture] = useState(false);
 
   const rows = lens === "useCase" ? byUseCase : byBusinessUnit;
   const scale = (n: number) => (period === "monthly" ? monthly(n) : n);
+  /** Future total = today's total + token line uplifted to cost-recovery. */
+  const futureTotal = (r: CostMatrixRow) => r.total + Math.round(r.tokens * (futureMultiple - 1));
 
   const onSort = (col: SortKey) => {
     if (col === sort) setDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -136,7 +141,15 @@ export function CostLedger({
             By business unit
           </button>
         </div>
-        <p className="text-xs text-ink-faint">Figures shown {period}{periodLabel}</p>
+        <label className="inline-flex cursor-pointer select-none items-center gap-2 text-sm text-ink-muted print:hidden">
+          <input
+            type="checkbox"
+            checked={showFuture}
+            onChange={(e) => setShowFuture(e.target.checked)}
+            className="h-4 w-4 accent-accent"
+          />
+          Show future pricing ({futureMultiple.toFixed(2)}×, Ledger cost-recovery)
+        </label>
       </div>
 
       {/* Breakdown table */}
@@ -154,6 +167,12 @@ export function CostLedger({
                 <ColHeader key={c} label={costComponentLabel[c]} col={c} sort={sort} dir={dir} onSort={onSort} />
               ))}
               <ColHeader label="Total" col="total" sort={sort} dir={dir} onSort={onSort} />
+              {showFuture && (
+                <th className="px-3 py-2 text-right font-medium text-status-red-fg">
+                  Future
+                  <span className="block text-[10px] font-normal normal-case tracking-normal text-ink-faint">cost-recovery</span>
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -175,6 +194,14 @@ export function CostLedger({
                   </td>
                 ))}
                 <td className="tabular px-3 py-2.5 text-right font-semibold text-ink">{aud(scale(r.total))}</td>
+                {showFuture && (
+                  <td className="tabular px-3 py-2.5 text-right font-semibold text-status-red-fg">
+                    {aud(scale(futureTotal(r)))}
+                    {futureTotal(r) > r.total && (
+                      <span className="block text-[11px] font-normal text-ink-faint">+{aud(scale(futureTotal(r) - r.total))}</span>
+                    )}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -188,6 +215,11 @@ export function CostLedger({
                 </td>
               ))}
               <td className="tabular px-3 py-2.5 text-right text-ink">{aud(scale(totals.total))}</td>
+              {showFuture && (
+                <td className="tabular px-3 py-2.5 text-right text-status-red-fg">
+                  {aud(scale(totals.total + Math.round(totals.tokens * (futureMultiple - 1))))}
+                </td>
+              )}
             </tr>
           </tfoot>
         </table>

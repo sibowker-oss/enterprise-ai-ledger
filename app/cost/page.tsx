@@ -10,6 +10,7 @@ import {
   tokenUpliftByUseCase,
   costByVendor,
   seatsVsConsumption,
+  futureMultiple,
 } from "@/lib/portfolio";
 import { aud, pct } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
@@ -47,6 +48,7 @@ export default function CostPage() {
           byBusinessUnit={costMatrixByBusinessUnit(useCases)}
           spendByCostType={portfolio.spendByCostType}
           total={total}
+          futureMultiple={futureMultiple}
         />
 
         <LedgerBenchmark

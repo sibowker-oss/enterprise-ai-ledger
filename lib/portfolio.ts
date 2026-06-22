@@ -538,6 +538,78 @@ export function tokenUpliftByUseCase(useCases: UseCase[], multiple: number): Tok
     .sort((a, b) => b.delta - a.delta);
 }
 
+// ── Future pricing (BUILD addendum — Simon: overlay a "future pricing" view;
+//    use cases that survive today's pricing may not survive future pricing) ───
+
+/** The AI Ledger's price-to-cost-recovery multiple, bound for convenience. */
+export const futureMultiple = seedBenchmarks.subsidyEconomics.priceToCostRecoveryMultiple;
+
+/** Extra token cost when the subsidy unwinds (token line × (multiple − 1)). */
+export function tokenUpliftDelta(uc: UseCase, multiple: number): number {
+  return Math.round(uc.cost.tokens * (multiple - 1));
+}
+
+/** Use-case cost under future (subsidy-normalised) token pricing. */
+export function futureCost(uc: UseCase, multiple: number): number {
+  return uc.cost.totalAnnual + tokenUpliftDelta(uc, multiple);
+}
+
+/** Net value (theoretical) under future pricing. */
+export function futureNetValue(uc: UseCase, multiple: number): number {
+  return uc.value.annualBenefitAud - futureCost(uc, multiple);
+}
+
+export function futureRoiPct(uc: UseCase, multiple: number): number {
+  const fc = futureCost(uc, multiple);
+  return fc === 0 ? 0 : Math.round((futureNetValue(uc, multiple) / fc) * 100);
+}
+
+/** Net-positive on theoretical value today / under future pricing. */
+export const survivesToday = (uc: UseCase) => netValue(uc) > 0;
+export const survivesFuture = (uc: UseCase, multiple: number) => futureNetValue(uc, multiple) > 0;
+
+export interface FutureRollup {
+  multiple: number;
+  todayCost: number;
+  futureCost: number;
+  todayNetValue: number;
+  futureNetValue: number;
+  todayRoiPct: number;
+  futureRoiPct: number;
+  survivingToday: number;
+  survivingFuture: number;
+  /** Use cases net-positive today but underwater under future pricing. */
+  flippers: { id: string; name: string; todayNet: number; futureNet: number }[];
+  evidenceBackedFutureRoiPct: number;
+}
+
+export function computeFutureRollup(useCases: UseCase[], multiple: number): FutureRollup {
+  const todayCost = totalAnnualSpend(useCases);
+  const futCost = useCases.reduce((s, uc) => s + futureCost(uc, multiple), 0);
+  const totalBenefit = useCases.reduce((s, uc) => s + uc.value.annualBenefitAud, 0);
+  const todayNet = totalBenefit - todayCost;
+  const futureNet = totalBenefit - futCost;
+  const eb = useCases.filter(isEvidenceBacked);
+  const ebBenefit = eb.reduce((s, uc) => s + uc.value.annualBenefitAud, 0);
+  const ebFutureCost = eb.reduce((s, uc) => s + futureCost(uc, multiple), 0);
+  const pct = (net: number, base: number) => (base === 0 ? 0 : Math.round((net / base) * 100));
+  return {
+    multiple,
+    todayCost,
+    futureCost: futCost,
+    todayNetValue: todayNet,
+    futureNetValue: futureNet,
+    todayRoiPct: pct(todayNet, todayCost),
+    futureRoiPct: pct(futureNet, futCost),
+    survivingToday: useCases.filter(survivesToday).length,
+    survivingFuture: useCases.filter((uc) => survivesFuture(uc, multiple)).length,
+    flippers: useCases
+      .filter((uc) => survivesToday(uc) && !survivesFuture(uc, multiple))
+      .map((uc) => ({ id: uc.id, name: uc.name, todayNet: netValue(uc), futureNet: futureNetValue(uc, multiple) })),
+    evidenceBackedFutureRoiPct: pct(ebBenefit - ebFutureCost, ebFutureCost),
+  };
+}
+
 /** Portfolio seats vs consumption split today (licences vs tokens). */
 export function seatsVsConsumption(useCases: UseCase[]): {
   seats: number;
