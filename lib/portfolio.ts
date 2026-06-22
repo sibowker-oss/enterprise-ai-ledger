@@ -468,6 +468,88 @@ export function subsidyAdjustedVendorCost(useCases: UseCase[], multiple: number)
   return Math.round(vendorPricedCost(useCases) * multiple);
 }
 
+// ── Vendor economics & the seats→consumption shift (AI Ledger forward view) ──
+
+/** Primary external vendor for a use case (first non-in-house token). */
+export function primaryVendor(uc: UseCase): string {
+  for (const part of uc.vendor.split(/[+/]/)) {
+    const name = part.trim();
+    if (name && !/^in-house$/i.test(name)) return name;
+  }
+  return uc.vendor.trim();
+}
+
+export interface VendorCost {
+  vendor: string;
+  /** Per-seat licence spend (fixed today). */
+  seats: number;
+  /** Metered consumption (token) spend. */
+  consumption: number;
+  other: number; // cloud + integration + people
+  total: number;
+  useCaseCount: number;
+}
+
+/** Cost grouped by primary vendor, split into seats (licences) vs consumption (tokens). */
+export function costByVendor(useCases: UseCase[]): VendorCost[] {
+  const map = new Map<string, VendorCost>();
+  for (const uc of useCases) {
+    const v = primaryVendor(uc);
+    const row =
+      map.get(v) ?? { vendor: v, seats: 0, consumption: 0, other: 0, total: 0, useCaseCount: 0 };
+    row.seats += uc.cost.licences;
+    row.consumption += uc.cost.tokens;
+    row.other += uc.cost.cloud + uc.cost.integration + uc.cost.people;
+    row.total += uc.cost.totalAnnual;
+    row.useCaseCount += 1;
+    map.set(v, row);
+  }
+  return [...map.values()].sort((a, b) => b.total - a.total);
+}
+
+export interface TokenUpliftRow {
+  id: string;
+  name: string;
+  vendor: string;
+  tokensToday: number;
+  tokensUplifted: number;
+  delta: number;
+}
+
+/**
+ * Per-use-case token-price uplift (BUILD addendum — Simon's idea 1). Applies the
+ * AI Ledger's price-to-cost-recovery multiple to each use case's token line and
+ * ranks by exposure. Token-heavy / agentic use cases jump most.
+ */
+export function tokenUpliftByUseCase(useCases: UseCase[], multiple: number): TokenUpliftRow[] {
+  return useCases
+    .filter((uc) => uc.cost.tokens > 0)
+    .map((uc) => {
+      const tokensUplifted = Math.round(uc.cost.tokens * multiple);
+      return {
+        id: uc.id,
+        name: uc.name,
+        vendor: primaryVendor(uc),
+        tokensToday: uc.cost.tokens,
+        tokensUplifted,
+        delta: tokensUplifted - uc.cost.tokens,
+      };
+    })
+    .sort((a, b) => b.delta - a.delta);
+}
+
+/** Portfolio seats vs consumption split today (licences vs tokens). */
+export function seatsVsConsumption(useCases: UseCase[]): {
+  seats: number;
+  consumption: number;
+  seatsPct: number;
+} {
+  const seats = useCases.reduce((s, uc) => s + uc.cost.licences, 0);
+  const consumption = useCases.reduce((s, uc) => s + uc.cost.tokens, 0);
+  const base = seats + consumption;
+  return { seats, consumption, seatsPct: base === 0 ? 0 : Math.round((seats / base) * 100) };
+}
+
 // ── Convenience values bound to the seed data (for UI consumption) ───────────
 export const portfolio: DerivedRollup = computePortfolioRollup(seedUseCases);
 export const value: DerivedValueRollup = computeValueRollup(seedUseCases);

@@ -20,6 +20,10 @@ import {
   subsidyAdjustedVendorCost,
   audPerMillionTokens,
   findUseCase,
+  primaryVendor,
+  costByVendor,
+  tokenUpliftByUseCase,
+  seatsVsConsumption,
 } from "@/lib/portfolio";
 import {
   computePortfolioRollup,
@@ -265,6 +269,40 @@ describe("theoretical value vs banked P&L (the CFO honesty layer)", () => {
     const uc05 = findUseCase(useCases, "UC-05")!;
     expect(bankedValue(uc05)).toBe(120_000);
     expect(bankedConversionPct(uc05)).toBe(5);
+  });
+});
+
+describe("vendor economics & seats→consumption (AI Ledger forward view)", () => {
+  it("attributes each use case to its primary external vendor", () => {
+    expect(primaryVendor(findUseCase(useCases, "UC-05")!)).toBe("GitHub");
+    expect(primaryVendor(findUseCase(useCases, "UC-09")!)).toBe("OpenAI"); // skips "In-house"
+    expect(primaryVendor(findUseCase(useCases, "UC-02")!)).toBe("Anthropic");
+  });
+
+  it("groups cost by vendor into seats vs consumption, reconciling to the cost mix", () => {
+    const rows = costByVendor(useCases);
+    expect(rows.reduce((s, r) => s + r.seats, 0)).toBe(1_108_000); // == licences
+    expect(rows.reduce((s, r) => s + r.consumption, 0)).toBe(915_000); // == tokens
+    expect(rows.reduce((s, r) => s + r.total, 0)).toBe(3_713_000);
+    const github = rows.find((r) => r.vendor === "GitHub");
+    expect(github?.seats).toBe(228_000); // all seats, no tokens
+    expect(github?.consumption).toBe(0);
+  });
+
+  it("portfolio is 55% fixed seats today", () => {
+    const s = seatsVsConsumption(useCases);
+    expect(s.seats).toBe(1_108_000);
+    expect(s.consumption).toBe(915_000);
+    expect(s.seatsPct).toBe(55);
+  });
+
+  it("token-price uplift ranks the token-heavy use cases first; tokens A$915K→A$2.54M at cost-recovery", () => {
+    const mult = benchmarks.subsidyEconomics.priceToCostRecoveryMultiple; // 2.78
+    const rows = tokenUpliftByUseCase(useCases, mult);
+    expect(rows[0].id).toBe("UC-02"); // biggest token line (A$240K)
+    expect(rows.find((r) => r.id === "UC-05")).toBeUndefined(); // 0 tokens excluded
+    const totalUplifted = rows.reduce((s, r) => s + r.tokensUplifted, 0);
+    expect(totalUplifted).toBe(Math.round(915_000 * mult));
   });
 });
 

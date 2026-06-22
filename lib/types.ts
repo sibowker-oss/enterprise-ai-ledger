@@ -185,4 +185,20 @@ export interface Benchmarks {
     customerRevenueGrossUsdB: number;
     basis: string;
   };
+  tokenTrajectory: {
+    perDayTrillions: Record<string, number>;
+    yoyInferenceGrowthPct2025: number;
+    notionalRateUsdPerMOutputTokens: number;
+    basis: string;
+    implication: string;
+  };
+  providers: Record<
+    string,
+    {
+      arrUsdB: number | null;
+      growth: string | null;
+      enterprisePct: number | null;
+      note: string;
+    }
+  >;
 }

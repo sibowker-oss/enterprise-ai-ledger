@@ -7,12 +7,16 @@ import {
   blindSpots,
   vendorPricedCost,
   audPerMillionTokens,
+  tokenUpliftByUseCase,
+  costByVendor,
+  seatsVsConsumption,
 } from "@/lib/portfolio";
 import { aud, pct } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { CostLedger } from "@/components/CostLedger";
 import { LedgerBenchmark } from "@/components/LedgerBenchmark";
+import { LedgerForward } from "@/components/LedgerForward";
 
 export default function CostPage() {
   const total = portfolio.totalAnnualSpendAud;
@@ -49,6 +53,14 @@ export default function CostPage() {
           vendorPricedCost={vendorPricedCost(useCases)}
           audPerMTokens={audPerMillionTokens(benchmarks)}
           benchmarks={benchmarks}
+        />
+
+        <LedgerForward
+          tokenUplift={tokenUpliftByUseCase(useCases, benchmarks.subsidyEconomics.priceToCostRecoveryMultiple)}
+          vendors={costByVendor(useCases)}
+          seats={seatsVsConsumption(useCases)}
+          benchmarks={benchmarks}
+          multiple={benchmarks.subsidyEconomics.priceToCostRecoveryMultiple}
         />
 
         {/* Blind spots (deck slide 41) */}

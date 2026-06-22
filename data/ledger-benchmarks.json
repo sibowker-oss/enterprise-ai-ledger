@@ -26,5 +26,20 @@
     "cumulativeTokensTrillions": 406.5,
     "customerRevenueGrossUsdB": 23.5,
     "basis": "Cumulative hyperscaler + AI-lab AI capex US$766B against 406.5 trillion tokens of measured inference and US$23.5B gross customer revenue — the scale the unit economics above are drawn from."
+  },
+  "tokenTrajectory": {
+    "perDayTrillions": { "2025": 310, "2026": 620, "2027": 1240, "2028": 2418, "2029": 4594, "2030": 8499 },
+    "yoyInferenceGrowthPct2025": 221,
+    "notionalRateUsdPerMOutputTokens": 1.25,
+    "basis": "The AI Ledger's forward token model: global inference roughly doubles every year — 310 to 8,499 trillion tokens/day, 2025-2030. 2025 inference volume grew 221% YoY. Notional cost US$1.25 per million output tokens.",
+    "implication": "AI spend is migrating from fixed per-seat licences to metered consumption. As that shift lands, a company's bill rides BOTH rising token volume and the unwinding price subsidy — the opposite of the flat, predictable seat costs finance budgets for today."
+  },
+  "providers": {
+    "OpenAI": { "arrUsdB": 25, "growth": "+150% YoY", "enterprisePct": 42, "note": "frontier, closed" },
+    "Anthropic": { "arrUsdB": 30, "growth": "14x in 14 months", "enterprisePct": 65, "note": "most enterprise-weighted frontier lab" },
+    "Google": { "arrUsdB": 4.2, "growth": "14x in 2024", "enterprisePct": 60, "note": "frontier, closed" },
+    "Microsoft": { "arrUsdB": null, "growth": "+123% YoY AI run-rate", "enterprisePct": null, "note": "seat-led (Copilot) migrating to agent/message metering" },
+    "GitHub": { "arrUsdB": null, "growth": null, "enterprisePct": null, "note": "seat-led (Copilot) now adding premium-request consumption billing" },
+    "Adobe": { "arrUsdB": null, "growth": null, "enterprisePct": null, "note": "seat-led (Firefly) with generative-credit consumption" }
   }
 }
