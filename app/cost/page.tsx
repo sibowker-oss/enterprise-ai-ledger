@@ -1,15 +1,18 @@
 import Link from "next/link";
-import { useCases } from "@/lib/seed";
+import { useCases, benchmarks } from "@/lib/seed";
 import {
   portfolio,
   costMatrixByUseCase,
   costMatrixByBusinessUnit,
   blindSpots,
+  vendorPricedCost,
+  audPerMillionTokens,
 } from "@/lib/portfolio";
 import { aud, pct } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { CostLedger } from "@/components/CostLedger";
+import { LedgerBenchmark } from "@/components/LedgerBenchmark";
 
 export default function CostPage() {
   const total = portfolio.totalAnnualSpendAud;
@@ -40,6 +43,12 @@ export default function CostPage() {
           byBusinessUnit={costMatrixByBusinessUnit(useCases)}
           spendByCostType={portfolio.spendByCostType}
           total={total}
+        />
+
+        <LedgerBenchmark
+          vendorPricedCost={vendorPricedCost(useCases)}
+          audPerMTokens={audPerMillionTokens(benchmarks)}
+          benchmarks={benchmarks}
         />
 
         {/* Blind spots (deck slide 41) */}

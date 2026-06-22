@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "source": "The AI Ledger (TAIL)",
+    "sourceUrl": "https://ai-index.hepburnadvisory.com.au",
+    "asOf": "2026-06-21",
+    "note": "Real market-economics reference points snapshotted from The AI Ledger's published model and gateway tracking. These are the proprietary, market-level numbers Hepburn maintains in TAIL; the Enterprise AI Ledger uses them to benchmark a company's AI economics — an economic view a generic adviser cannot reproduce without this data.",
+    "fx": { "audPerUsd": 1.52, "note": "Illustrative AUD/USD for converting TAIL's USD market figures to Meridian's AUD." }
+  },
+  "tokenEconomics": {
+    "blendedGatewayUsdPerMillionTokens": 0.70,
+    "basis": "Blended realised price across inference gateways the AI Ledger tracks (Portkey US$0.68/M over 1.9T tokens; OpenRouter US$0.80/M over 0.28T tokens). Includes cheap open-weight traffic, so frontier-model rates sit well above this.",
+    "frontierNote": "The AI Ledger's per-model price tracking shows frontier models (GPT-4o, Claude, Gemini) at materially higher rates — Meridian's premium-model mix runs above the blended gateway rate."
+  },
+  "subsidyEconomics": {
+    "customerRevenueUsdB": 21.1,
+    "vcSubsidyUsdB": 35.3,
+    "systemCostUsdB": 58.8,
+    "subsidyPerRevenueDollar": 1.67,
+    "customerCostRecoveryPct": 35.9,
+    "priceToCostRecoveryMultiple": 2.78,
+    "basis": "The AI Ledger reconciles industry customer revenue (US$21.1B) against true system cost (US$58.8B): customers fund only ~36% of the real cost of the AI they use; the gap (US$35.3B) is VC subsidy — US$1.67 for every US$1 of revenue. Today's token, inference and seat prices are therefore subsidised.",
+    "implication": "A prudent CFO should stress-test AI unit costs against price normalisation. If vendor pricing moves toward cost-recovery, the same usage costs up to 2.78x today's price. Only the AI Ledger quantifies this gap."
+  },
+  "marketScale": {
+    "cumulativeCapexUsdB": 766,
+    "cumulativeTokensTrillions": 406.5,
+    "customerRevenueGrossUsdB": 23.5,
+    "basis": "Cumulative hyperscaler + AI-lab AI capex US$766B against 406.5 trillion tokens of measured inference and US$23.5B gross customer revenue — the scale the unit economics above are drawn from."
+  }
+}

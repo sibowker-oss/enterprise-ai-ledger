@@ -5,11 +5,23 @@
     "currency": "AUD",
     "period": "FY27 annualised (illustrative)",
     "disclaimer": "Meridian Financial Group is a FICTIONAL company created for demonstration. All names, figures, vendors and outcomes are illustrative and do not represent any real organisation.",
-    "decisionLegend": { "scale": "Evidence supports larger rollout; economics defensible", "fix": "Promising but readiness, data, control or workflow design is weak", "stop": "Vendor story is better than the operating case" },
-    "ragLegend": { "green": "Low / managed", "amber": "Caution / gaps", "red": "Unmanaged exposure" },
-    "confidenceLegend": ["low", "medium", "medium-high", "high"]
+    "decisionLegend": {
+      "scale": "Evidence supports larger rollout; economics defensible",
+      "fix": "Promising but readiness, data, control or workflow design is weak",
+      "stop": "Vendor story is better than the operating case"
+    },
+    "ragLegend": {
+      "green": "Low / managed",
+      "amber": "Caution / gaps",
+      "red": "Unmanaged exposure"
+    },
+    "confidenceLegend": [
+      "low",
+      "medium",
+      "medium-high",
+      "high"
+    ]
   },
-
   "company": {
     "name": "Meridian Financial Group",
     "shortName": "Meridian",
@@ -21,17 +33,38 @@
     "fiscalYear": "FY27 (Jul 2026 - Jun 2027)",
     "headlineQuestion": "Across all our AI activity, what does it cost, where is it earning back, and what should we scale, fix or stop?"
   },
-
   "portfolioRollup": {
     "totalAnnualSpendAud": 3713000,
     "useCaseCount": 10,
     "businessUnits": 7,
     "vendorsInUse": 6,
-    "spendByDecision": { "scale": 2066000, "fix": 1121000, "stop": 526000 },
-    "countByDecision": { "scale": 4, "fix": 4, "stop": 2 },
-    "spendByRisk": { "green": 1446000, "amber": 1541000, "red": 726000 },
-    "countByRisk": { "green": 3, "amber": 5, "red": 2 },
-    "spendByCostType": { "licences": 1108000, "tokens": 915000, "cloud": 425000, "integration": 465000, "people": 800000 },
+    "spendByDecision": {
+      "scale": 2066000,
+      "fix": 1121000,
+      "stop": 526000
+    },
+    "countByDecision": {
+      "scale": 4,
+      "fix": 4,
+      "stop": 2
+    },
+    "spendByRisk": {
+      "green": 1446000,
+      "amber": 1541000,
+      "red": 726000
+    },
+    "countByRisk": {
+      "green": 3,
+      "amber": 5,
+      "red": 2
+    },
+    "spendByCostType": {
+      "licences": 1108000,
+      "tokens": 915000,
+      "cloud": 425000,
+      "integration": 465000,
+      "people": 800000
+    },
     "reclaimableAnnualSpendAud": 526000,
     "atRiskUnmanagedSpendAud": 726000,
     "headlines": [
@@ -41,7 +74,6 @@
       "Only 4 of 10 use cases have high-confidence outcome evidence; the rest rely on vendor or anecdotal claims."
     ]
   },
-
   "useCases": [
     {
       "id": "UC-01",
@@ -54,7 +86,14 @@
       "workflow": "Live call assist, response drafting, post-call wrap-up notes",
       "currentState": "In production across 3 contact centres",
       "aiRole": "Assistive (human in the loop)",
-      "cost": { "licences": 432000, "tokens": 180000, "cloud": 90000, "integration": 60000, "people": 140000, "totalAnnual": 902000 },
+      "cost": {
+        "licences": 432000,
+        "tokens": 180000,
+        "cloud": 90000,
+        "integration": 60000,
+        "people": 140000,
+        "totalAnnual": 902000
+      },
       "outcome": {
         "primaryMetric": "Average handle time (AHT)",
         "baseline": "7.2 min / call",
@@ -63,9 +102,16 @@
         "confidence": "high",
         "reviewDate": "2026-09-30"
       },
-      "risk": { "rag": "green", "notes": "PII handled in-tenant; no model training on customer data; QA sampling in place" },
+      "risk": {
+        "rag": "green",
+        "notes": "PII handled in-tenant; no model training on customer data; QA sampling in place"
+      },
       "decision": "scale",
-      "nextAction": "Expand to outbound retention team; renegotiate licence on proven usage"
+      "nextAction": "Expand to outbound retention team; renegotiate licence on proven usage",
+      "value": {
+        "annualBenefitAud": 2600000,
+        "basis": "12% measured AHT reduction across 800 agents -> freed capacity and avoided seasonal hires; cost per resolved case A$4.10 -> A$3.20. Independently validated across 3 contact centres."
+      }
     },
     {
       "id": "UC-02",
@@ -78,7 +124,14 @@
       "workflow": "Auto-triage of fraud alerts, evidence gathering, recommended disposition",
       "currentState": "Production pilot on card-fraud queue",
       "aiRole": "Agentic (recommends, human approves)",
-      "cost": { "licences": 60000, "tokens": 240000, "cloud": 120000, "integration": 90000, "people": 110000, "totalAnnual": 620000 },
+      "cost": {
+        "licences": 60000,
+        "tokens": 240000,
+        "cloud": 120000,
+        "integration": 90000,
+        "people": 110000,
+        "totalAnnual": 620000
+      },
       "outcome": {
         "primaryMetric": "Analyst throughput / false-positive rate",
         "baseline": "100 alerts / analyst / day; 22% false positive",
@@ -87,9 +140,16 @@
         "confidence": "medium-high",
         "reviewDate": "2026-08-31"
       },
-      "risk": { "rag": "amber", "notes": "Agent action scope expanding; audit trail adequate but model-decision explainability needs work before full automation" },
+      "risk": {
+        "rag": "amber",
+        "notes": "Agent action scope expanding; audit trail adequate but model-decision explainability needs work before full automation"
+      },
       "decision": "scale",
-      "nextAction": "Extend to scam and account-takeover queues with explainability controls"
+      "nextAction": "Extend to scam and account-takeover queues with explainability controls",
+      "value": {
+        "annualBenefitAud": 1850000,
+        "basis": "+28% analyst throughput (45 analysts) plus faster triage cutting fraud losses; false positives -18%. Benefit = analyst capacity released + avoided fraud loss, measured on the card-fraud pilot queue."
+      }
     },
     {
       "id": "UC-03",
@@ -102,7 +162,14 @@
       "workflow": "Draft credit memos from financials, risk notes and policy",
       "currentState": "Limited rollout to 2 lending teams",
       "aiRole": "Assistive (draft only)",
-      "cost": { "licences": 48000, "tokens": 70000, "cloud": 25000, "integration": 40000, "people": 60000, "totalAnnual": 243000 },
+      "cost": {
+        "licences": 48000,
+        "tokens": 70000,
+        "cloud": 25000,
+        "integration": 40000,
+        "people": 60000,
+        "totalAnnual": 243000
+      },
       "outcome": {
         "primaryMetric": "Memo drafting time",
         "baseline": "4.5 hrs / memo",
@@ -111,9 +178,16 @@
         "confidence": "low",
         "reviewDate": "2026-07-31"
       },
-      "risk": { "rag": "amber", "notes": "Policy-grounding incomplete; risk of un-cited figures entering credit decisions" },
+      "risk": {
+        "rag": "amber",
+        "notes": "Policy-grounding incomplete; risk of un-cited figures entering credit decisions"
+      },
       "decision": "fix",
-      "nextAction": "Add retrieval grounding to policy + financials; set a measured baseline before scaling"
+      "nextAction": "Add retrieval grounding to policy + financials; set a measured baseline before scaling",
+      "value": {
+        "annualBenefitAud": 320000,
+        "basis": "Self-reported ~35% drafting-time saving across 120 analysts, NOT validated against a controlled baseline; output quality variable. Projected only - not yet bankable."
+      }
     },
     {
       "id": "UC-04",
@@ -126,7 +200,14 @@
       "workflow": "Extract and verify entity data from onboarding documents; flag discrepancies",
       "currentState": "Pilot on new-to-bank business onboarding",
       "aiRole": "Assistive with auto-extraction",
-      "cost": { "licences": 36000, "tokens": 120000, "cloud": 55000, "integration": 70000, "people": 130000, "totalAnnual": 411000 },
+      "cost": {
+        "licences": 36000,
+        "tokens": 120000,
+        "cloud": 55000,
+        "integration": 70000,
+        "people": 130000,
+        "totalAnnual": 411000
+      },
       "outcome": {
         "primaryMetric": "KYC review cycle time / extraction accuracy",
         "baseline": "3.1 days / case",
@@ -135,9 +216,16 @@
         "confidence": "low",
         "reviewDate": "2026-07-15"
       },
-      "risk": { "rag": "red", "notes": "AUSTRAC-relevant workflow; current evidence and audit trail insufficient for regulated reliance" },
+      "risk": {
+        "rag": "red",
+        "notes": "AUSTRAC-relevant workflow; current evidence and audit trail insufficient for regulated reliance"
+      },
       "decision": "fix",
-      "nextAction": "Tighten human-verification gate; build audit evidence before any reliance claim"
+      "nextAction": "Tighten human-verification gate; build audit evidence before any reliance claim",
+      "value": {
+        "annualBenefitAud": 90000,
+        "basis": "Cycle-time gains largely offset by manual re-checking; extraction accuracy below threshold on complex structures. Net realised benefit minimal, and AUSTRAC-relevant work cannot creditably rely on unverified output."
+      }
     },
     {
       "id": "UC-05",
@@ -150,7 +238,14 @@
       "workflow": "In-IDE code completion, test generation, code review assist",
       "currentState": "Production across engineering",
       "aiRole": "Assistive (developer in control)",
-      "cost": { "licences": 228000, "tokens": 0, "cloud": 20000, "integration": 15000, "people": 40000, "totalAnnual": 303000 },
+      "cost": {
+        "licences": 228000,
+        "tokens": 0,
+        "cloud": 20000,
+        "integration": 15000,
+        "people": 40000,
+        "totalAnnual": 303000
+      },
       "outcome": {
         "primaryMetric": "PR throughput / suggestion acceptance",
         "baseline": "Pre-tool PR throughput baseline",
@@ -159,9 +254,16 @@
         "confidence": "high",
         "reviewDate": "2026-10-31"
       },
-      "risk": { "rag": "green", "notes": "No proprietary code used for training; IP and secrets scanning in pipeline" },
+      "risk": {
+        "rag": "green",
+        "notes": "No proprietary code used for training; IP and secrets scanning in pipeline"
+      },
       "decision": "scale",
-      "nextAction": "Standardise across all squads; track sustained throughput vs licence cost"
+      "nextAction": "Standardise across all squads; track sustained throughput vs licence cost",
+      "value": {
+        "annualBenefitAud": 2400000,
+        "basis": "+22% PR throughput across 600 engineers at loaded engineering cost; 31% suggestion acceptance. Benefit = realised delivery capacity reinvested, measured pre/post."
+      }
     },
     {
       "id": "UC-06",
@@ -174,7 +276,14 @@
       "workflow": "Campaign copy, social, image generation",
       "currentState": "Broad licence rollout",
       "aiRole": "Assistive (generation)",
-      "cost": { "licences": 96000, "tokens": 45000, "cloud": 15000, "integration": 20000, "people": 35000, "totalAnnual": 211000 },
+      "cost": {
+        "licences": 96000,
+        "tokens": 45000,
+        "cloud": 15000,
+        "integration": 20000,
+        "people": 35000,
+        "totalAnnual": 211000
+      },
       "outcome": {
         "primaryMetric": "Active usage / content throughput",
         "baseline": "180 seats provisioned",
@@ -183,9 +292,16 @@
         "confidence": "low",
         "reviewDate": "2026-07-31"
       },
-      "risk": { "rag": "amber", "notes": "Brand and disclosure risk on generated imagery; light review process" },
+      "risk": {
+        "rag": "amber",
+        "notes": "Brand and disclosure risk on generated imagery; light review process"
+      },
       "decision": "stop",
-      "nextAction": "Reduce to a small power-user pool; reclaim ~A$140K of idle licences"
+      "nextAction": "Reduce to a small power-user pool; reclaim ~A$140K of idle licences",
+      "value": {
+        "annualBenefitAud": 60000,
+        "basis": "Only 28% of 180 seats active monthly; no measurable throughput or cost-per-asset gain. Realised value limited to a small power-user pool; ~A$140K of idle licences reclaimable."
+      }
     },
     {
       "id": "UC-07",
@@ -198,7 +314,14 @@
       "workflow": "Transcribe and summarise advice meetings; draft file notes and next steps",
       "currentState": "Production across advice network",
       "aiRole": "Assistive (adviser reviews note)",
-      "cost": { "licences": 84000, "tokens": 60000, "cloud": 22000, "integration": 30000, "people": 45000, "totalAnnual": 241000 },
+      "cost": {
+        "licences": 84000,
+        "tokens": 60000,
+        "cloud": 22000,
+        "integration": 30000,
+        "people": 45000,
+        "totalAnnual": 241000
+      },
       "outcome": {
         "primaryMetric": "Adviser admin time / file-note quality",
         "baseline": "Adviser admin baseline",
@@ -207,9 +330,16 @@
         "confidence": "high",
         "reviewDate": "2026-09-30"
       },
-      "risk": { "rag": "green", "notes": "Client consent captured; recordings retained per policy; adviser sign-off on every note" },
+      "risk": {
+        "rag": "green",
+        "notes": "Client consent captured; recordings retained per policy; adviser sign-off on every note"
+      },
       "decision": "scale",
-      "nextAction": "Integrate into advice CRM; extend to review-meeting workflow"
+      "nextAction": "Integrate into advice CRM; extend to review-meeting workflow",
+      "value": {
+        "annualBenefitAud": 1150000,
+        "basis": "-25% adviser admin time across 250 advisers redeployed to client-facing advice; file-note completeness up. Benefit = additional advice capacity at adviser margin, measured."
+      }
     },
     {
       "id": "UC-08",
@@ -222,7 +352,14 @@
       "workflow": "Summarise complaint history, draft responses, suggest remediation",
       "currentState": "Pilot on retail complaints queue",
       "aiRole": "Assistive (draft + suggest)",
-      "cost": { "licences": 54000, "tokens": 50000, "cloud": 20000, "integration": 35000, "people": 70000, "totalAnnual": 229000 },
+      "cost": {
+        "licences": 54000,
+        "tokens": 50000,
+        "cloud": 20000,
+        "integration": 35000,
+        "people": 70000,
+        "totalAnnual": 229000
+      },
       "outcome": {
         "primaryMetric": "Resolution cycle time / escalation accuracy",
         "baseline": "Resolution baseline by complaint type",
@@ -231,9 +368,16 @@
         "confidence": "medium",
         "reviewDate": "2026-08-15"
       },
-      "risk": { "rag": "amber", "notes": "Regulated complaints (ASIC) require accurate escalation; current error rate too high for reliance" },
+      "risk": {
+        "rag": "amber",
+        "notes": "Regulated complaints (ASIC) require accurate escalation; current error rate too high for reliance"
+      },
       "decision": "fix",
-      "nextAction": "Improve escalation classifier; add mandatory specialist review on high-risk cases"
+      "nextAction": "Improve escalation classifier; add mandatory specialist review on high-risk cases",
+      "value": {
+        "annualBenefitAud": 180000,
+        "basis": "Resolution cycle time improving, but escalation mis-classification observed; benefit partly realised and partly at risk until the classifier is fixed. ASIC-regulated, so reliance needs the error rate down first."
+      }
     },
     {
       "id": "UC-09",
@@ -246,7 +390,14 @@
       "workflow": "Automated, personalised customer outreach and repayment-plan suggestions",
       "currentState": "Pilot on early-arrears segment",
       "aiRole": "Agentic (drafts and sends with approval)",
-      "cost": { "licences": 40000, "tokens": 95000, "cloud": 40000, "integration": 60000, "people": 80000, "totalAnnual": 315000 },
+      "cost": {
+        "licences": 40000,
+        "tokens": 95000,
+        "cloud": 40000,
+        "integration": 60000,
+        "people": 80000,
+        "totalAnnual": 315000
+      },
       "outcome": {
         "primaryMetric": "Contact rate / repayment uplift",
         "baseline": "Manual outreach contact rate",
@@ -255,9 +406,16 @@
         "confidence": "low",
         "reviewDate": "2026-07-15"
       },
-      "risk": { "rag": "red", "notes": "Hardship and financial-difficulty obligations; automated outreach carries significant conduct risk; controls immature" },
+      "risk": {
+        "rag": "red",
+        "notes": "Hardship and financial-difficulty obligations; automated outreach carries significant conduct risk; controls immature"
+      },
       "decision": "stop",
-      "nextAction": "Pause automated outreach; revisit only with conduct-risk controls and human approval gate"
+      "nextAction": "Pause automated outreach; revisit only with conduct-risk controls and human approval gate",
+      "value": {
+        "annualBenefitAud": 0,
+        "basis": "Vendor projects ~A$520K contact/cure-rate uplift, but it is not evidenced on bank data and the sample is too small - on a defensible basis the realised benefit is unproven (A$0). Automated hardship outreach also carries significant conduct risk."
+      }
     },
     {
       "id": "UC-10",
@@ -270,7 +428,14 @@
       "workflow": "Draft narrative sections of APRA / ASIC returns from source data",
       "currentState": "Controlled pilot",
       "aiRole": "Assistive (draft only)",
-      "cost": { "licences": 30000, "tokens": 55000, "cloud": 18000, "integration": 45000, "people": 90000, "totalAnnual": 238000 },
+      "cost": {
+        "licences": 30000,
+        "tokens": 55000,
+        "cloud": 18000,
+        "integration": 45000,
+        "people": 90000,
+        "totalAnnual": 238000
+      },
       "outcome": {
         "primaryMetric": "Drafting effort / accuracy",
         "baseline": "Manual drafting effort per return",
@@ -279,9 +444,38 @@
         "confidence": "medium",
         "reviewDate": "2026-08-31"
       },
-      "risk": { "rag": "amber", "notes": "Regulator-facing output; accuracy and provenance controls must precede any reliance" },
+      "risk": {
+        "rag": "amber",
+        "notes": "Regulator-facing output; accuracy and provenance controls must precede any reliance"
+      },
       "decision": "fix",
-      "nextAction": "Ground on source-of-truth data; formalise verification and provenance before scaling"
+      "nextAction": "Ground on source-of-truth data; formalise verification and provenance before scaling",
+      "value": {
+        "annualBenefitAud": 170000,
+        "basis": "Drafting effort down, but every output needs full human verification, so net effort saving is modest. Regulator-facing; benefit is not creditable until provenance controls are in place."
+      }
     }
-  ]
+  ],
+  "valueRollup": {
+    "totalAnnualBenefitAud": 8820000,
+    "netValueAud": 5107000,
+    "portfolioRoiPct": 138,
+    "evidenceBackedBenefitAud": 8000000,
+    "evidenceBackedCostAud": 2066000,
+    "evidenceBackedNetValueAud": 5934000,
+    "evidenceBackedRoiPct": 287,
+    "unprovenBenefitAud": 820000,
+    "unprovenCostAud": 1647000,
+    "unprovenNetValueAud": -827000,
+    "benefitByDecision": {
+      "scale": 8000000,
+      "fix": 760000,
+      "stop": 60000
+    },
+    "netValueByDecision": {
+      "scale": 5934000,
+      "fix": -361000,
+      "stop": -466000
+    }
+  }
 }

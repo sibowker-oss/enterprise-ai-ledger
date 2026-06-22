@@ -39,6 +39,17 @@ export interface Risk {
   notes: string;
 }
 
+/**
+ * Quantified annual financial benefit (BUILD addendum: CFOs need dollarised ROI,
+ * not operational metrics). `annualBenefitAud` is the defensible/realised benefit;
+ * `basis` is the CFO-readable calculation + caveats. Trust in the benefit reuses
+ * the use case's `outcome.confidence` (high/medium-high == evidence-backed).
+ */
+export interface ValueBlock {
+  annualBenefitAud: number;
+  basis: string;
+}
+
 export interface UseCase {
   id: string;
   name: string;
@@ -53,6 +64,7 @@ export interface UseCase {
   cost: CostBreakdown;
   outcome: Outcome;
   risk: Risk;
+  value: ValueBlock;
   decision: Decision;
   nextAction: string;
 }
@@ -105,9 +117,59 @@ export interface PortfolioRollup {
   headlines: string[];
 }
 
+/** Declared value/ROI aggregates — the selectors in lib/portfolio.ts recompute
+ *  and assert against these (same discipline as PortfolioRollup). */
+export interface ValueRollup {
+  totalAnnualBenefitAud: number;
+  netValueAud: number;
+  portfolioRoiPct: number;
+  evidenceBackedBenefitAud: number;
+  evidenceBackedCostAud: number;
+  evidenceBackedNetValueAud: number;
+  evidenceBackedRoiPct: number;
+  unprovenBenefitAud: number;
+  unprovenCostAud: number;
+  unprovenNetValueAud: number;
+  benefitByDecision: Record<Decision, number>;
+  netValueByDecision: Record<Decision, number>;
+}
+
 export interface SeedData {
   meta: Meta;
   company: Company;
   portfolioRollup: PortfolioRollup;
+  valueRollup: ValueRollup;
   useCases: UseCase[];
+}
+
+// ── The AI Ledger benchmark snapshot (data/ledger-benchmarks.json) ───────────
+export interface Benchmarks {
+  meta: {
+    source: string;
+    sourceUrl: string;
+    asOf: string;
+    note: string;
+    fx: { audPerUsd: number; note: string };
+  };
+  tokenEconomics: {
+    blendedGatewayUsdPerMillionTokens: number;
+    basis: string;
+    frontierNote: string;
+  };
+  subsidyEconomics: {
+    customerRevenueUsdB: number;
+    vcSubsidyUsdB: number;
+    systemCostUsdB: number;
+    subsidyPerRevenueDollar: number;
+    customerCostRecoveryPct: number;
+    priceToCostRecoveryMultiple: number;
+    basis: string;
+    implication: string;
+  };
+  marketScale: {
+    cumulativeCapexUsdB: number;
+    cumulativeTokensTrillions: number;
+    customerRevenueGrossUsdB: number;
+    basis: string;
+  };
 }

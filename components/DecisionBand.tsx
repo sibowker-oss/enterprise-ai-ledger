@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Decision, UseCase } from "@/lib/types";
 import { decisionMeta, type Tone } from "@/lib/labels";
 import { aud, audCompact, pct } from "@/lib/format";
-import { DECISIONS } from "@/lib/portfolio";
+import { DECISIONS, netValue } from "@/lib/portfolio";
 
 const headerTone: Record<Tone, string> = {
   green: "border-t-status-green-solid",
@@ -32,6 +32,7 @@ export function DecisionBand({ useCases }: { useCases: UseCase[] }) {
           .filter((uc) => uc.decision === decision)
           .sort((a, b) => b.cost.totalAnnual - a.cost.totalAnnual);
         const spend = items.reduce((s, uc) => s + uc.cost.totalAnnual, 0);
+        const net = items.reduce((s, uc) => s + netValue(uc), 0);
         const m = decisionMeta[decision];
         return (
           <section
@@ -49,6 +50,12 @@ export function DecisionBand({ useCases }: { useCases: UseCase[] }) {
               </span>
             </div>
             <p className="tabular mt-1 text-2xl font-semibold text-ink">{audCompact(spend)}</p>
+            <p className="tabular mt-1 text-sm font-medium">
+              <span className={net >= 0 ? "text-status-green-fg" : "text-status-red-fg"}>
+                {net >= 0 ? "+" : "−"}
+                {audCompact(Math.abs(net))} net value
+              </span>
+            </p>
             <p className="mt-1 text-xs leading-snug text-ink-faint">{verb[decision]}</p>
             <ul className="mt-4 space-y-1.5 border-t border-border pt-3">
               {items.map((uc) => (

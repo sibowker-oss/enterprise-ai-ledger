@@ -9,8 +9,9 @@
  *
  * Convenience values bound to the seed data live at the bottom of this file.
  */
-import { useCases as seedUseCases } from "./seed";
+import { useCases as seedUseCases, benchmarks as seedBenchmarks } from "./seed";
 import type {
+  Benchmarks,
   Confidence,
   CostComponent,
   Decision,
@@ -342,8 +343,104 @@ export function blindSpots(useCases: UseCase[]): BlindSpot[] {
   return out;
 }
 
+// ── ROI / value (BUILD addendum — dollarised return, not operational metrics) ─
+
+/** Net annual value = benefit − cost. */
+export function netValue(uc: UseCase): number {
+  return uc.value.annualBenefitAud - uc.cost.totalAnnual;
+}
+
+/** ROI as a whole percent: (benefit − cost) / cost × 100. */
+export function roiPct(uc: UseCase): number {
+  if (uc.cost.totalAnnual === 0) return 0;
+  return Math.round((netValue(uc) / uc.cost.totalAnnual) * 100);
+}
+
+/** Payback in months (null when benefit ≤ 0 — never pays back). */
+export function paybackMonths(uc: UseCase): number | null {
+  if (uc.value.annualBenefitAud <= 0) return null;
+  return Math.round((uc.cost.totalAnnual / uc.value.annualBenefitAud) * 12 * 10) / 10;
+}
+
+export interface DerivedValueRollup {
+  totalAnnualBenefitAud: number;
+  netValueAud: number;
+  portfolioRoiPct: number;
+  evidenceBackedBenefitAud: number;
+  evidenceBackedCostAud: number;
+  evidenceBackedNetValueAud: number;
+  evidenceBackedRoiPct: number;
+  unprovenBenefitAud: number;
+  unprovenCostAud: number;
+  unprovenNetValueAud: number;
+  benefitByDecision: Record<Decision, number>;
+  netValueByDecision: Record<Decision, number>;
+}
+
+const isEvidenceBacked = (uc: UseCase) =>
+  EVIDENCE_BACKED_CONFIDENCE.includes(uc.outcome.confidence);
+
+export function computeValueRollup(useCases: UseCase[]): DerivedValueRollup {
+  const totalBenefit = useCases.reduce((s, uc) => s + uc.value.annualBenefitAud, 0);
+  const totalCost = totalAnnualSpend(useCases);
+  const ebCost = useCases.filter(isEvidenceBacked).reduce((s, uc) => s + uc.cost.totalAnnual, 0);
+  const ebBenefit = useCases.filter(isEvidenceBacked).reduce((s, uc) => s + uc.value.annualBenefitAud, 0);
+  const benefitByDecision = zeroRecord(DECISIONS);
+  const netByDecision = zeroRecord(DECISIONS);
+  for (const uc of useCases) {
+    benefitByDecision[uc.decision] += uc.value.annualBenefitAud;
+    netByDecision[uc.decision] += netValue(uc);
+  }
+  const pct = (net: number, cost: number) => (cost === 0 ? 0 : Math.round((net / cost) * 100));
+  return {
+    totalAnnualBenefitAud: totalBenefit,
+    netValueAud: totalBenefit - totalCost,
+    portfolioRoiPct: pct(totalBenefit - totalCost, totalCost),
+    evidenceBackedBenefitAud: ebBenefit,
+    evidenceBackedCostAud: ebCost,
+    evidenceBackedNetValueAud: ebBenefit - ebCost,
+    evidenceBackedRoiPct: pct(ebBenefit - ebCost, ebCost),
+    unprovenBenefitAud: totalBenefit - ebBenefit,
+    unprovenCostAud: totalCost - ebCost,
+    unprovenNetValueAud: totalBenefit - ebBenefit - (totalCost - ebCost),
+    benefitByDecision,
+    netValueByDecision: netByDecision,
+  };
+}
+
+// ── The AI Ledger benchmark layer (differentiation — uses real TAIL data) ────
+
+/** Blended market token price in A$/million tokens (TAIL USD rate × FX). */
+export function audPerMillionTokens(b: Benchmarks = seedBenchmarks): number {
+  return (
+    Math.round(
+      b.tokenEconomics.blendedGatewayUsdPerMillionTokens * b.meta.fx.audPerUsd * 100,
+    ) / 100
+  );
+}
+
+/**
+ * Vendor-priced AI cost — the portion exposed to vendor-price normalisation
+ * (licences + tokens + cloud). People + integration are internal delivery costs,
+ * not subsidised vendor pricing, so they are excluded.
+ */
+export function vendorPricedCost(useCases: UseCase[]): number {
+  return useCases.reduce((s, uc) => s + uc.cost.licences + uc.cost.tokens + uc.cost.cloud, 0);
+}
+
+/**
+ * Subsidy-normalisation stress test (BUILD addendum — the AI-Ledger-unique CFO
+ * insight). Today's vendor prices are VC-subsidised; the AI Ledger quantifies
+ * the gap. At `multiple` (1.0 = today … priceToCostRecoveryMultiple = full
+ * cost-recovery), the same vendor-priced usage costs:
+ */
+export function subsidyAdjustedVendorCost(useCases: UseCase[], multiple: number): number {
+  return Math.round(vendorPricedCost(useCases) * multiple);
+}
+
 // ── Convenience values bound to the seed data (for UI consumption) ───────────
 export const portfolio: DerivedRollup = computePortfolioRollup(seedUseCases);
+export const value: DerivedValueRollup = computeValueRollup(seedUseCases);
 export const buSpend: BusinessUnitSpend[] = spendByBusinessUnit(seedUseCases);
 export const top5: UseCase[] = topUseCasesBySpend(seedUseCases, 5);
 /** Headline counts (verified == JSON in the test): 7 BUs, 6 external vendors. */

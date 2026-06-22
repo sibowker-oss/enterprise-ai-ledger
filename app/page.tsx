@@ -2,6 +2,7 @@ import Link from "next/link";
 import { company, meta, useCases } from "@/lib/seed";
 import {
   portfolio,
+  value,
   buSpend,
   top5,
   businessUnitsCount,
@@ -12,6 +13,7 @@ import { aud, audCompact, pct } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { KpiCard } from "@/components/KpiCard";
+import { ReturnPanel } from "@/components/ReturnPanel";
 import { DecisionBand } from "@/components/DecisionBand";
 import { CostDonut } from "@/components/CostDonut";
 import { BuBarChart } from "@/components/BuBarChart";
@@ -36,13 +38,26 @@ export default function ControlRoom() {
             <strong className="font-semibold text-ink">The 30-second read:</strong>{" "}
             {company.shortName} runs {audCompact(total)} of AI spend across{" "}
             {portfolio.useCaseCount} use cases and {businessUnitsCount} business
-            units — and no one owns the economics. Half is defensible, a third needs fixing,
-            and {audCompact(portfolio.reclaimableAnnualSpendAud)} should probably stop.
+            units, and no one owns the economics. The {audCompact(value.evidenceBackedCostAud)} that is
+            evidence-backed returns {audCompact(value.evidenceBackedBenefitAud)} ({value.evidenceBackedRoiPct}% ROI);
+            the rest is unproven and {audCompact(portfolio.reclaimableAnnualSpendAud)} should probably stop.
           </>
         }
       />
 
       <div className="mx-auto max-w-6xl space-y-8 px-6 py-8">
+        {/* Template / differentiation framing */}
+        <div className="flex flex-col gap-2 rounded-card border border-accent/30 bg-accent-soft/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
+          <p className="text-sm text-ink-muted">
+            <strong className="font-semibold text-ink">A template for your estate.</strong>{" "}
+            The same view, on your real AI spend — benchmarked against{" "}
+            <strong className="font-medium text-ink">The AI Ledger</strong>, market intelligence only Hepburn holds.
+          </p>
+          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+            Powered by The AI Ledger
+          </span>
+        </div>
+
         {/* 1 — Headline KPI strip */}
         <section aria-label="Headline economics">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -71,7 +86,10 @@ export default function ControlRoom() {
           </div>
         </section>
 
-        {/* 2 — Decision summary: the punchline */}
+        {/* 2 — Return on AI spend: the CFO answer (dollarised, not operational) */}
+        <ReturnPanel value={value} />
+
+        {/* 3 — Decision summary: the punchline, now with net value per column */}
         <section aria-label="Scale, fix or stop">
           <div className="mb-3 flex items-baseline justify-between">
             <h2 className="text-lg font-semibold text-ink">What should we scale, fix or stop?</h2>

@@ -1,29 +1,37 @@
 import { useCases } from "@/lib/seed";
-import { portfolio, evidenceBackedSpend } from "@/lib/portfolio";
+import { portfolio, value } from "@/lib/portfolio";
 import { audCompact } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { OutcomeLedger } from "@/components/OutcomeLedger";
 
 export default function OutcomePage() {
   const total = portfolio.totalAnnualSpendAud;
-  const backed = evidenceBackedSpend(useCases);
 
   return (
     <>
       <PageHeader
         eyebrow="Outcome Ledger"
         title="Whether AI earns back"
-        lead="The evidence standard — baseline, target, evidence and confidence for every use case. Confidence is the spine: most spend is not backed by hard outcome evidence."
+        lead="The return on every use case — cost against quantified annual benefit, net value and ROI, with evidence confidence as the trust signal. A CFO buys on return, not operational metrics."
         narrative={
           <>
-            Turn on <strong className="font-semibold text-ink">&ldquo;evidence-backed spend&rdquo;</strong> and
-            the picture sharpens: only <strong className="font-semibold text-ink">{audCompact(backed)} of {audCompact(total)}</strong>{" "}
-            is backed by high or medium-high outcome evidence. The rest is vendor claims and self-reported time savings.
+            Turn on <strong className="font-semibold text-ink">&ldquo;evidence-backed only&rdquo;</strong> and the
+            real picture appears: the {audCompact(value.evidenceBackedCostAud)} of evidence-backed spend returns{" "}
+            <strong className="font-semibold text-ink">{audCompact(value.evidenceBackedBenefitAud)} ({value.evidenceBackedRoiPct}% ROI)</strong>.
+            The rest is vendor claims and self-reported savings — currently underwater.
           </>
         }
       />
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <OutcomeLedger useCases={useCases} total={total} />
+        <OutcomeLedger
+          useCases={useCases}
+          total={total}
+          evidenceBackedCost={value.evidenceBackedCostAud}
+          evidenceBackedBenefit={value.evidenceBackedBenefitAud}
+          evidenceBackedRoi={value.evidenceBackedRoiPct}
+          totalBenefit={value.totalAnnualBenefitAud}
+          portfolioRoi={value.portfolioRoiPct}
+        />
       </div>
     </>
   );

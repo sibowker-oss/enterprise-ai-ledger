@@ -8,7 +8,17 @@
  * which is the whole point: charts and the JSON can never silently disagree.
  */
 import { describe, expect, it } from "vitest";
-import { useCases, declaredRollup } from "@/lib/seed";
+import { useCases, declaredRollup, declaredValueRollup, benchmarks } from "@/lib/seed";
+import {
+  computeValueRollup,
+  netValue,
+  roiPct,
+  paybackMonths,
+  vendorPricedCost,
+  subsidyAdjustedVendorCost,
+  audPerMillionTokens,
+  findUseCase,
+} from "@/lib/portfolio";
 import {
   computePortfolioRollup,
   totalAnnualSpend,
@@ -178,5 +188,65 @@ describe("evidence-backed spend (BUILD_SPEC §5.4 what-if)", () => {
       "UC-05",
       "UC-07",
     ]);
+  });
+});
+
+describe("ROI / value selectors reproduce valueRollup", () => {
+  const derived = computeValueRollup(useCases);
+
+  it("portfolio: A$8.82M benefit, A$5.107M net, 138% ROI", () => {
+    expect(derived.totalAnnualBenefitAud).toBe(8_820_000);
+    expect(derived.netValueAud).toBe(5_107_000);
+    expect(derived.portfolioRoiPct).toBe(138);
+    expect(derived).toMatchObject({
+      totalAnnualBenefitAud: declaredValueRollup.totalAnnualBenefitAud,
+      netValueAud: declaredValueRollup.netValueAud,
+      portfolioRoiPct: declaredValueRollup.portfolioRoiPct,
+    });
+  });
+
+  it("evidence-backed: A$2.066M cost → A$8.0M value = A$5.934M net, 287% ROI (the CFO punchline)", () => {
+    expect(derived.evidenceBackedCostAud).toBe(2_066_000);
+    expect(derived.evidenceBackedBenefitAud).toBe(8_000_000);
+    expect(derived.evidenceBackedNetValueAud).toBe(5_934_000);
+    expect(derived.evidenceBackedRoiPct).toBe(287);
+  });
+
+  it("unproven spend is underwater: A$1.647M cost → A$0.82M value = −A$827K net", () => {
+    expect(derived.unprovenCostAud).toBe(1_647_000);
+    expect(derived.unprovenBenefitAud).toBe(820_000);
+    expect(derived.unprovenNetValueAud).toBe(-827_000);
+  });
+
+  it("net value by decision: scale +5.934M / fix −361K / stop −466K", () => {
+    expect(derived.netValueByDecision).toEqual(declaredValueRollup.netValueByDecision);
+    expect(derived.netValueByDecision).toEqual({ scale: 5_934_000, fix: -361_000, stop: -466_000 });
+  });
+
+  it("per-use-case ROI: UC-05 dev assistant tops at 692%; UC-09 collections is −100%", () => {
+    const uc05 = findUseCase(useCases, "UC-05")!;
+    const uc09 = findUseCase(useCases, "UC-09")!;
+    expect(netValue(uc05)).toBe(2_097_000);
+    expect(roiPct(uc05)).toBe(692);
+    expect(paybackMonths(uc05)).toBeGreaterThan(0);
+    expect(roiPct(uc09)).toBe(-100);
+    expect(paybackMonths(uc09)).toBeNull();
+  });
+});
+
+describe("AI Ledger benchmark layer (real TAIL data)", () => {
+  it("blended token rate converts USD→AUD via FX", () => {
+    // 0.70 USD/M × 1.52 = 1.06 A$/M
+    expect(audPerMillionTokens(benchmarks)).toBeCloseTo(1.06, 2);
+  });
+
+  it("vendor-priced cost = licences + tokens + cloud = A$2.448M", () => {
+    expect(vendorPricedCost(useCases)).toBe(1_108_000 + 915_000 + 425_000);
+  });
+
+  it("subsidy stress test scales vendor-priced cost by the AI Ledger recovery multiple", () => {
+    const mult = benchmarks.subsidyEconomics.priceToCostRecoveryMultiple; // 2.78
+    expect(subsidyAdjustedVendorCost(useCases, 1)).toBe(2_448_000);
+    expect(subsidyAdjustedVendorCost(useCases, mult)).toBe(Math.round(2_448_000 * mult));
   });
 });

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { UseCase } from "@/lib/types";
-import { aiRoleCategory, COST_COMPONENTS } from "@/lib/portfolio";
+import { aiRoleCategory, COST_COMPONENTS, netValue, roiPct, paybackMonths } from "@/lib/portfolio";
 import { aud, pct, reviewDate } from "@/lib/format";
 import { costComponentLabel, confidenceMeta } from "@/lib/labels";
 import { costTypeColor } from "@/styles/tokens";
@@ -97,6 +97,42 @@ export function UseCaseDetail({ uc }: { uc: UseCase }) {
           </ul>
         </section>
       </div>
+
+      {/* Return on investment (dollarised, not operational) */}
+      <section className="rounded-card border border-border bg-surface p-5">
+        <SectionTitle>Return on investment</SectionTitle>
+        <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-ink-faint">Annual cost</p>
+            <p className="tabular text-xl font-semibold text-ink">{aud(uc.cost.totalAnnual)}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-ink-faint">Annual benefit</p>
+            <p className="tabular text-xl font-semibold text-ink">{aud(uc.value.annualBenefitAud)}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-ink-faint">Net value</p>
+            <p className={`tabular text-xl font-semibold ${netValue(uc) >= 0 ? "text-status-green-fg" : "text-status-red-fg"}`}>
+              {netValue(uc) >= 0 ? "+" : "−"}
+              {aud(Math.abs(netValue(uc)))}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-ink-faint">ROI{paybackMonths(uc) ? " · payback" : ""}</p>
+            <p className={`tabular text-xl font-semibold ${roiPct(uc) >= 0 ? "text-status-green-fg" : "text-status-red-fg"}`}>
+              {roiPct(uc) >= 0 ? "+" : ""}
+              {roiPct(uc)}%
+              {paybackMonths(uc) && (
+                <span className="ml-1 text-sm font-normal text-ink-faint">· {paybackMonths(uc)} mo</span>
+              )}
+            </p>
+          </div>
+        </div>
+        <p className="mt-4 border-t border-border pt-3 text-sm text-ink-muted">
+          <span className="font-medium text-ink">Basis: </span>
+          {uc.value.basis}
+        </p>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Outcome */}
