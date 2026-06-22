@@ -110,7 +110,9 @@
       "nextAction": "Expand to outbound retention team; renegotiate licence on proven usage",
       "value": {
         "annualBenefitAud": 2600000,
-        "basis": "12% measured AHT reduction across 800 agents -> freed capacity and avoided seasonal hires; cost per resolved case A$4.10 -> A$3.20. Independently validated across 3 contact centres."
+        "basis": "12% measured AHT reduction across 800 agents -> freed capacity and avoided seasonal hires; cost per resolved case A$4.10 -> A$3.20. Independently validated across 3 contact centres.",
+        "bankedValueAud": 780000,
+        "bankedBasis": "A$780K booked — seasonal and backfill hiring avoided across 3 centres. The rest is freed handle-time capacity not yet converted to cost-out."
       }
     },
     {
@@ -148,7 +150,9 @@
       "nextAction": "Extend to scam and account-takeover queues with explainability controls",
       "value": {
         "annualBenefitAud": 1850000,
-        "basis": "+28% analyst throughput (45 analysts) plus faster triage cutting fraud losses; false positives -18%. Benefit = analyst capacity released + avoided fraud loss, measured on the card-fraud pilot queue."
+        "basis": "+28% analyst throughput (45 analysts) plus faster triage cutting fraud losses; false positives -18%. Benefit = analyst capacity released + avoided fraud loss, measured on the card-fraud pilot queue.",
+        "bankedValueAud": 650000,
+        "bankedBasis": "A$650K of prevented fraud losses booked to the P&L. The analyst-throughput gain is real capacity but has not been taken as cost."
       }
     },
     {
@@ -186,7 +190,9 @@
       "nextAction": "Add retrieval grounding to policy + financials; set a measured baseline before scaling",
       "value": {
         "annualBenefitAud": 320000,
-        "basis": "Self-reported ~35% drafting-time saving across 120 analysts, NOT validated against a controlled baseline; output quality variable. Projected only - not yet bankable."
+        "basis": "Self-reported ~35% drafting-time saving across 120 analysts, NOT validated against a controlled baseline; output quality variable. Projected only - not yet bankable.",
+        "bankedValueAud": 0,
+        "bankedBasis": "Nothing banked — no controlled baseline; the saving is self-reported drafting time, not a booked number."
       }
     },
     {
@@ -224,7 +230,9 @@
       "nextAction": "Tighten human-verification gate; build audit evidence before any reliance claim",
       "value": {
         "annualBenefitAud": 90000,
-        "basis": "Cycle-time gains largely offset by manual re-checking; extraction accuracy below threshold on complex structures. Net realised benefit minimal, and AUSTRAC-relevant work cannot creditably rely on unverified output."
+        "basis": "Cycle-time gains largely offset by manual re-checking; extraction accuracy below threshold on complex structures. Net realised benefit minimal, and AUSTRAC-relevant work cannot creditably rely on unverified output.",
+        "bankedValueAud": 0,
+        "bankedBasis": "Nothing banked — cycle-time gains are offset by manual re-checking; no hard saving has reached the P&L."
       }
     },
     {
@@ -262,7 +270,9 @@
       "nextAction": "Standardise across all squads; track sustained throughput vs licence cost",
       "value": {
         "annualBenefitAud": 2400000,
-        "basis": "+22% PR throughput across 600 engineers at loaded engineering cost; 31% suggestion acceptance. Benefit = realised delivery capacity reinvested, measured pre/post."
+        "basis": "+22% PR throughput across 600 engineers at loaded engineering cost; 31% suggestion acceptance. Benefit = realised delivery capacity reinvested, measured pre/post.",
+        "bankedValueAud": 120000,
+        "bankedBasis": "A$120K of contractor spend reduced. The 22% throughput gain is reinvested into delivery, not taken as cash — the classic developer-productivity gap between value and P&L."
       }
     },
     {
@@ -300,7 +310,9 @@
       "nextAction": "Reduce to a small power-user pool; reclaim ~A$140K of idle licences",
       "value": {
         "annualBenefitAud": 60000,
-        "basis": "Only 28% of 180 seats active monthly; no measurable throughput or cost-per-asset gain. Realised value limited to a small power-user pool; ~A$140K of idle licences reclaimable."
+        "basis": "Only 28% of 180 seats active monthly; no measurable throughput or cost-per-asset gain. Realised value limited to a small power-user pool; ~A$140K of idle licences reclaimable.",
+        "bankedValueAud": 0,
+        "bankedBasis": "Nothing banked. ~A$140K of idle licences is bankable on a seat reduction, but no action has been taken."
       }
     },
     {
@@ -338,7 +350,9 @@
       "nextAction": "Integrate into advice CRM; extend to review-meeting workflow",
       "value": {
         "annualBenefitAud": 1150000,
-        "basis": "-25% adviser admin time across 250 advisers redeployed to client-facing advice; file-note completeness up. Benefit = additional advice capacity at adviser margin, measured."
+        "basis": "-25% adviser admin time across 250 advisers redeployed to client-facing advice; file-note completeness up. Benefit = additional advice capacity at adviser margin, measured.",
+        "bankedValueAud": 290000,
+        "bankedBasis": "A$290K of incremental advice revenue booked from redeployed adviser time. Remaining freed capacity is not yet converted to revenue or cost-out."
       }
     },
     {
@@ -376,7 +390,9 @@
       "nextAction": "Improve escalation classifier; add mandatory specialist review on high-risk cases",
       "value": {
         "annualBenefitAud": 180000,
-        "basis": "Resolution cycle time improving, but escalation mis-classification observed; benefit partly realised and partly at risk until the classifier is fixed. ASIC-regulated, so reliance needs the error rate down first."
+        "basis": "Resolution cycle time improving, but escalation mis-classification observed; benefit partly realised and partly at risk until the classifier is fixed. ASIC-regulated, so reliance needs the error rate down first.",
+        "bankedValueAud": 0,
+        "bankedBasis": "Nothing banked — gated on fixing the escalation classifier before any reliance or saving can be claimed."
       }
     },
     {
@@ -414,7 +430,9 @@
       "nextAction": "Pause automated outreach; revisit only with conduct-risk controls and human approval gate",
       "value": {
         "annualBenefitAud": 0,
-        "basis": "Vendor projects ~A$520K contact/cure-rate uplift, but it is not evidenced on bank data and the sample is too small - on a defensible basis the realised benefit is unproven (A$0). Automated hardship outreach also carries significant conduct risk."
+        "basis": "Vendor projects ~A$520K contact/cure-rate uplift, but it is not evidenced on bank data and the sample is too small - on a defensible basis the realised benefit is unproven (A$0). Automated hardship outreach also carries significant conduct risk.",
+        "bankedValueAud": 0,
+        "bankedBasis": "Nothing banked; the benefit is unproven and the use case is paused."
       }
     },
     {
@@ -452,7 +470,9 @@
       "nextAction": "Ground on source-of-truth data; formalise verification and provenance before scaling",
       "value": {
         "annualBenefitAud": 170000,
-        "basis": "Drafting effort down, but every output needs full human verification, so net effort saving is modest. Regulator-facing; benefit is not creditable until provenance controls are in place."
+        "basis": "Drafting effort down, but every output needs full human verification, so net effort saving is modest. Regulator-facing; benefit is not creditable until provenance controls are in place.",
+        "bankedValueAud": 0,
+        "bankedBasis": "Nothing banked — regulator-facing output is verification-gated and the net effort saving is modest."
       }
     }
   ],
@@ -476,6 +496,17 @@
       "scale": 5934000,
       "fix": -361000,
       "stop": -466000
+    },
+    "totalBankedValueAud": 1840000,
+    "bankedConversionPct": 21,
+    "bankedNetValueAud": -1873000,
+    "evidenceBackedBankedAud": 1840000,
+    "evidenceBackedBankedNetAud": -226000,
+    "evidenceBackedBankedConversionPct": 23,
+    "bankedByDecision": {
+      "scale": 1840000,
+      "fix": 0,
+      "stop": 0
     }
   }
 }

@@ -362,6 +362,17 @@ export function paybackMonths(uc: UseCase): number | null {
   return Math.round((uc.cost.totalAnnual / uc.value.annualBenefitAud) * 12 * 10) / 10;
 }
 
+/** Banked (actual P&L) value for a use case. */
+export function bankedValue(uc: UseCase): number {
+  return uc.value.bankedValueAud;
+}
+
+/** Share of theoretical value actually banked, as a whole percent. */
+export function bankedConversionPct(uc: UseCase): number {
+  if (uc.value.annualBenefitAud <= 0) return 0;
+  return Math.round((uc.value.bankedValueAud / uc.value.annualBenefitAud) * 100);
+}
+
 export interface DerivedValueRollup {
   totalAnnualBenefitAud: number;
   netValueAud: number;
@@ -375,6 +386,13 @@ export interface DerivedValueRollup {
   unprovenNetValueAud: number;
   benefitByDecision: Record<Decision, number>;
   netValueByDecision: Record<Decision, number>;
+  totalBankedValueAud: number;
+  bankedConversionPct: number;
+  bankedNetValueAud: number;
+  evidenceBackedBankedAud: number;
+  evidenceBackedBankedNetAud: number;
+  evidenceBackedBankedConversionPct: number;
+  bankedByDecision: Record<Decision, number>;
 }
 
 const isEvidenceBacked = (uc: UseCase) =>
@@ -382,16 +400,21 @@ const isEvidenceBacked = (uc: UseCase) =>
 
 export function computeValueRollup(useCases: UseCase[]): DerivedValueRollup {
   const totalBenefit = useCases.reduce((s, uc) => s + uc.value.annualBenefitAud, 0);
+  const totalBanked = useCases.reduce((s, uc) => s + uc.value.bankedValueAud, 0);
   const totalCost = totalAnnualSpend(useCases);
-  const ebCost = useCases.filter(isEvidenceBacked).reduce((s, uc) => s + uc.cost.totalAnnual, 0);
-  const ebBenefit = useCases.filter(isEvidenceBacked).reduce((s, uc) => s + uc.value.annualBenefitAud, 0);
+  const eb = useCases.filter(isEvidenceBacked);
+  const ebCost = eb.reduce((s, uc) => s + uc.cost.totalAnnual, 0);
+  const ebBenefit = eb.reduce((s, uc) => s + uc.value.annualBenefitAud, 0);
+  const ebBanked = eb.reduce((s, uc) => s + uc.value.bankedValueAud, 0);
   const benefitByDecision = zeroRecord(DECISIONS);
   const netByDecision = zeroRecord(DECISIONS);
+  const bankedByDecision = zeroRecord(DECISIONS);
   for (const uc of useCases) {
     benefitByDecision[uc.decision] += uc.value.annualBenefitAud;
     netByDecision[uc.decision] += netValue(uc);
+    bankedByDecision[uc.decision] += uc.value.bankedValueAud;
   }
-  const pct = (net: number, cost: number) => (cost === 0 ? 0 : Math.round((net / cost) * 100));
+  const pct = (net: number, base: number) => (base === 0 ? 0 : Math.round((net / base) * 100));
   return {
     totalAnnualBenefitAud: totalBenefit,
     netValueAud: totalBenefit - totalCost,
@@ -405,6 +428,13 @@ export function computeValueRollup(useCases: UseCase[]): DerivedValueRollup {
     unprovenNetValueAud: totalBenefit - ebBenefit - (totalCost - ebCost),
     benefitByDecision,
     netValueByDecision: netByDecision,
+    totalBankedValueAud: totalBanked,
+    bankedConversionPct: pct(totalBanked, totalBenefit),
+    bankedNetValueAud: totalBanked - totalCost,
+    evidenceBackedBankedAud: ebBanked,
+    evidenceBackedBankedNetAud: ebBanked - ebCost,
+    evidenceBackedBankedConversionPct: pct(ebBanked, ebBenefit),
+    bankedByDecision,
   };
 }
 

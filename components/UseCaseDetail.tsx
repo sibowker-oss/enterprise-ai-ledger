@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { UseCase } from "@/lib/types";
-import { aiRoleCategory, COST_COMPONENTS, netValue, roiPct, paybackMonths } from "@/lib/portfolio";
+import { aiRoleCategory, COST_COMPONENTS, netValue, roiPct, paybackMonths, bankedConversionPct } from "@/lib/portfolio";
 import { aud, pct, reviewDate } from "@/lib/format";
 import { costComponentLabel, confidenceMeta } from "@/lib/labels";
 import { costTypeColor } from "@/styles/tokens";
@@ -98,7 +98,7 @@ export function UseCaseDetail({ uc }: { uc: UseCase }) {
         </section>
       </div>
 
-      {/* Return on investment (dollarised, not operational) */}
+      {/* Return on investment — theoretical value vs banked P&L */}
       <section className="rounded-card border border-border bg-surface p-5">
         <SectionTitle>Return on investment</SectionTitle>
         <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -107,31 +107,33 @@ export function UseCaseDetail({ uc }: { uc: UseCase }) {
             <p className="tabular text-xl font-semibold text-ink">{aud(uc.cost.totalAnnual)}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-ink-faint">Annual benefit</p>
+            <p className="text-xs uppercase tracking-wide text-ink-faint">Theoretical value</p>
             <p className="tabular text-xl font-semibold text-ink">{aud(uc.value.annualBenefitAud)}</p>
+            <p className={`tabular text-xs ${roiPct(uc) >= 0 ? "text-status-green-fg" : "text-status-red-fg"}`}>
+              {roiPct(uc) >= 0 ? "+" : ""}{roiPct(uc)}% ROI{paybackMonths(uc) ? ` · ${paybackMonths(uc)} mo` : ""}
+            </p>
+          </div>
+          <div className="rounded-card border border-status-green-solid/30 bg-status-green-soft/30 p-3 -m-px">
+            <p className="text-xs uppercase tracking-wide text-ink-faint">Banked (P&amp;L)</p>
+            <p className="tabular text-xl font-semibold text-status-green-fg">
+              {uc.value.bankedValueAud > 0 ? aud(uc.value.bankedValueAud) : "A$0"}
+            </p>
+            <p className="text-xs text-ink-faint">
+              {uc.value.annualBenefitAud > 0 ? `${bankedConversionPct(uc)}% of theoretical` : "nothing banked"}
+            </p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-ink-faint">Net value</p>
+            <p className="text-xs uppercase tracking-wide text-ink-faint">Net (theoretical)</p>
             <p className={`tabular text-xl font-semibold ${netValue(uc) >= 0 ? "text-status-green-fg" : "text-status-red-fg"}`}>
               {netValue(uc) >= 0 ? "+" : "−"}
               {aud(Math.abs(netValue(uc)))}
             </p>
           </div>
-          <div>
-            <p className="text-xs uppercase tracking-wide text-ink-faint">ROI{paybackMonths(uc) ? " · payback" : ""}</p>
-            <p className={`tabular text-xl font-semibold ${roiPct(uc) >= 0 ? "text-status-green-fg" : "text-status-red-fg"}`}>
-              {roiPct(uc) >= 0 ? "+" : ""}
-              {roiPct(uc)}%
-              {paybackMonths(uc) && (
-                <span className="ml-1 text-sm font-normal text-ink-faint">· {paybackMonths(uc)} mo</span>
-              )}
-            </p>
-          </div>
         </div>
-        <p className="mt-4 border-t border-border pt-3 text-sm text-ink-muted">
-          <span className="font-medium text-ink">Basis: </span>
-          {uc.value.basis}
-        </p>
+        <div className="mt-4 space-y-2 border-t border-border pt-3 text-sm text-ink-muted">
+          <p><span className="font-medium text-ink">Value basis: </span>{uc.value.basis}</p>
+          <p><span className="font-medium text-ink">Banked: </span>{uc.value.bankedBasis}</p>
+        </div>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-3">

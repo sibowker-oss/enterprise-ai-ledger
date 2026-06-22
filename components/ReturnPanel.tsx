@@ -79,14 +79,29 @@ export function ReturnPanel({ value }: { value: DerivedValueRollup }) {
           caption="The other 6 use cases return vendor claims and self-reported savings — currently underwater. Fix the workflow/evidence, or stop."
         />
       </div>
-      <p className="mt-3 text-sm text-ink-muted">
-        The economic case is not the operational metric — it is the return.{" "}
-        <strong className="font-semibold text-ink">
-          {audCompact(value.evidenceBackedCostAud)} of evidence-backed spend earns {audCompact(value.evidenceBackedBenefitAud)}
-          {" "}({value.evidenceBackedRoiPct}% ROI)
-        </strong>
-        ; the remaining {audCompact(value.unprovenCostAud)} does not yet pay its way.
-      </p>
+      {/* Theoretical vs banked — the CFO honesty layer */}
+      <div className="mt-4 rounded-card border border-border bg-surface p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-ink">But how much has actually been banked?</p>
+            <p className="mt-0.5 max-w-xl text-sm text-ink-muted">
+              Across the portfolio that is {audCompact(value.totalAnnualBenefitAud)} of <em>theoretical</em> value — but only{" "}
+              <strong className="font-semibold text-status-green-fg">{audCompact(value.totalBankedValueAud)} ({value.bankedConversionPct}%)</strong>{" "}
+              has hit the P&amp;L. The rest is freed capacity, not cash.
+            </p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="tabular text-2xl font-semibold text-status-green-fg">{audCompact(value.totalBankedValueAud)}</p>
+            <p className="text-xs text-ink-faint">banked of {audCompact(value.totalAnnualBenefitAud)} theoretical</p>
+          </div>
+        </div>
+        <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-surface-muted" role="img" aria-label={`${value.bankedConversionPct}% of theoretical value banked`}>
+          <div className="h-full rounded-full bg-status-green-solid" style={{ width: `${value.bankedConversionPct}%` }} />
+        </div>
+        <p className="mt-2 text-xs text-ink-faint">
+          Banking the gap — deliberate cost-out or revenue conversion of proven capacity — is the work. It is also the engagement.
+        </p>
+      </div>
     </section>
   );
 }

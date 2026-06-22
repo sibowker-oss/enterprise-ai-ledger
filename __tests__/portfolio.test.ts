@@ -14,6 +14,8 @@ import {
   netValue,
   roiPct,
   paybackMonths,
+  bankedValue,
+  bankedConversionPct,
   vendorPricedCost,
   subsidyAdjustedVendorCost,
   audPerMillionTokens,
@@ -231,6 +233,38 @@ describe("ROI / value selectors reproduce valueRollup", () => {
     expect(paybackMonths(uc05)).toBeGreaterThan(0);
     expect(roiPct(uc09)).toBe(-100);
     expect(paybackMonths(uc09)).toBeNull();
+  });
+});
+
+describe("theoretical value vs banked P&L (the CFO honesty layer)", () => {
+  const derived = computeValueRollup(useCases);
+
+  it("only A$1.84M of A$8.82M theoretical value is banked (21%)", () => {
+    expect(derived.totalAnnualBenefitAud).toBe(8_820_000); // theoretical
+    expect(derived.totalBankedValueAud).toBe(1_840_000); // actual P&L
+    expect(derived.bankedConversionPct).toBe(21);
+    expect(derived.totalBankedValueAud).toBe(declaredValueRollup.totalBankedValueAud);
+  });
+
+  it("on a hard-cash basis the portfolio is still net negative (−A$1.873M banked vs cost)", () => {
+    expect(derived.bankedNetValueAud).toBe(-1_873_000);
+  });
+
+  it("even the evidence-backed set has only 23% banked, ≈ break-even in cash", () => {
+    expect(derived.evidenceBackedBankedAud).toBe(1_840_000);
+    expect(derived.evidenceBackedBankedConversionPct).toBe(23);
+    expect(derived.evidenceBackedBankedNetAud).toBe(-226_000);
+  });
+
+  it("all banked value sits in scale use cases", () => {
+    expect(derived.bankedByDecision).toEqual({ scale: 1_840_000, fix: 0, stop: 0 });
+    expect(derived.bankedByDecision).toEqual(declaredValueRollup.bankedByDecision);
+  });
+
+  it("per-use-case conversion: UC-05 books only 5% of its theoretical value (the dev-productivity gap)", () => {
+    const uc05 = findUseCase(useCases, "UC-05")!;
+    expect(bankedValue(uc05)).toBe(120_000);
+    expect(bankedConversionPct(uc05)).toBe(5);
   });
 });
 

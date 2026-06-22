@@ -12,26 +12,18 @@ export default function OutcomePage() {
       <PageHeader
         eyebrow="Outcome Ledger"
         title="Whether AI earns back"
-        lead="The return on every use case — cost against quantified annual benefit, net value and ROI, with evidence confidence as the trust signal. A CFO buys on return, not operational metrics."
+        lead="The return on every use case — separating theoretical value from what has actually been banked in the P&L. A CFO trusts cash that has hit the books, not modeled capacity."
         narrative={
           <>
-            Turn on <strong className="font-semibold text-ink">&ldquo;evidence-backed only&rdquo;</strong> and the
-            real picture appears: the {audCompact(value.evidenceBackedCostAud)} of evidence-backed spend returns{" "}
-            <strong className="font-semibold text-ink">{audCompact(value.evidenceBackedBenefitAud)} ({value.evidenceBackedRoiPct}% ROI)</strong>.
-            The rest is vendor claims and self-reported savings — currently underwater.
+            The model says {audCompact(value.totalAnnualBenefitAud)} of value — but only{" "}
+            <strong className="font-semibold text-ink">{audCompact(value.totalBankedValueAud)} ({value.bankedConversionPct}%) is actually banked</strong>{" "}
+            in the P&amp;L. The rest is freed capacity and projected savings that need deliberate cost-out or
+            revenue conversion. <em>Banking it is the engagement.</em>
           </>
         }
       />
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <OutcomeLedger
-          useCases={useCases}
-          total={total}
-          evidenceBackedCost={value.evidenceBackedCostAud}
-          evidenceBackedBenefit={value.evidenceBackedBenefitAud}
-          evidenceBackedRoi={value.evidenceBackedRoiPct}
-          totalBenefit={value.totalAnnualBenefitAud}
-          portfolioRoi={value.portfolioRoiPct}
-        />
+        <OutcomeLedger useCases={useCases} total={total} value={value} />
       </div>
     </>
   );

@@ -46,8 +46,13 @@ export interface Risk {
  * the use case's `outcome.confidence` (high/medium-high == evidence-backed).
  */
 export interface ValueBlock {
+  /** Theoretical / gross modeled value (freed capacity, projected savings). */
   annualBenefitAud: number;
   basis: string;
+  /** Banked value — the portion actually converted to hard P&L (cost removed,
+   *  losses avoided, revenue booked). The gap is value that isn't cash yet. */
+  bankedValueAud: number;
+  bankedBasis: string;
 }
 
 export interface UseCase {
@@ -132,6 +137,14 @@ export interface ValueRollup {
   unprovenNetValueAud: number;
   benefitByDecision: Record<Decision, number>;
   netValueByDecision: Record<Decision, number>;
+  // Banked (actual P&L) layer — theoretical value vs what's hit the books.
+  totalBankedValueAud: number;
+  bankedConversionPct: number;
+  bankedNetValueAud: number;
+  evidenceBackedBankedAud: number;
+  evidenceBackedBankedNetAud: number;
+  evidenceBackedBankedConversionPct: number;
+  bankedByDecision: Record<Decision, number>;
 }
 
 export interface SeedData {
