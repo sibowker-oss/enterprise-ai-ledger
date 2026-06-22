@@ -21,6 +21,7 @@ import { RiskBar } from "@/components/RiskBar";
 import { DecisionChip, RagChip } from "@/components/StatusChip";
 import { ConfidenceDots } from "@/components/ConfidenceDots";
 import { PrintButton } from "@/components/PrintButton";
+import { GuidedTour } from "@/components/GuidedTour";
 
 export default function ControlRoom() {
   const total = portfolio.totalAnnualSpendAud;
@@ -32,7 +33,23 @@ export default function ControlRoom() {
         eyebrow="Executive Control Room"
         title={company.name}
         lead={company.headlineQuestion}
-        actions={<PrintButton />}
+        actions={
+          <>
+            <GuidedTour
+              figures={{
+                total,
+                reclaimable: portfolio.reclaimableAnnualSpendAud,
+                evidenceBackedCost: value.evidenceBackedCostAud,
+                evidenceBackedBenefit: value.evidenceBackedBenefitAud,
+                evidenceBackedRoi: value.evidenceBackedRoiPct,
+                banked: value.totalBankedValueAud,
+                bankedConversion: value.bankedConversionPct,
+                tokens: portfolio.spendByCostType.tokens,
+              }}
+            />
+            <PrintButton />
+          </>
+        }
         narrative={
           <>
             <strong className="font-semibold text-ink">The 30-second read:</strong>{" "}
