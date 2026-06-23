@@ -19,7 +19,7 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="border-b border-border bg-surface px-6 pb-6 pt-8">
+    <header className="border-b border-border bg-surface px-4 pb-6 pt-8 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

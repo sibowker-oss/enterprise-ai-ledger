@@ -110,7 +110,7 @@ export function AppShell({
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
-            className="rounded-control border border-border px-3 py-2 text-sm text-ink"
+            className="inline-flex min-h-[44px] items-center rounded-control border border-border px-4 text-sm font-medium text-ink active:bg-surface-muted"
           >
             {menuOpen ? "Close" : "Menu"}
           </button>

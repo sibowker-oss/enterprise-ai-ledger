@@ -120,8 +120,47 @@ export function OutcomeLedger({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-card border border-border bg-surface">
+      {/* Mobile: stacked cards */}
+      <ul className="space-y-3 lg:hidden">
+        {sorted.map((uc) => {
+          const backed = isBacked(uc.outcome.confidence);
+          const dimmed = onlyBacked && !backed;
+          return (
+            <li key={uc.id} className={dimmed ? "opacity-40" : ""}>
+              <div className="rounded-card border border-border bg-surface p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <Link href={`/register/${uc.id}`} className="min-w-0 font-medium text-ink active:text-accent">
+                    {uc.name}
+                    <span className="block text-xs font-normal text-ink-faint">{uc.id} · {uc.outcome.primaryMetric}</span>
+                  </Link>
+                  <span className="tabular shrink-0 text-right font-semibold">
+                    {showFuture ? (
+                      <span className="text-status-red-fg">
+                        {aud(futureCost(uc, futureMultiple))}
+                        <span className="block text-[11px] font-normal text-ink-faint">was {aud(uc.cost.totalAnnual)}</span>
+                      </span>
+                    ) : (
+                      <span className="text-ink">{aud(uc.cost.totalAnnual)}</span>
+                    )}
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <ConfidenceDots confidence={uc.outcome.confidence} />
+                  <div className="flex items-center gap-2">
+                    {showFuture && flips(uc) && (
+                      <span className="text-[11px] font-semibold text-status-red-fg">▼ flips</span>
+                    )}
+                    <DecisionChip decision={uc.decision} size="sm" />
+                  </div>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Desktop: table */}
+      <div className="hidden overflow-x-auto rounded-card border border-border bg-surface lg:block">
         <table className="w-full min-w-[900px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-surface-muted/50 text-xs uppercase tracking-wide text-ink-faint">

@@ -117,7 +117,7 @@ export function GuidedTour({ figures: f }: { figures: TourFigures }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-control border border-accent/40 bg-accent-soft/60 px-3.5 py-2 text-sm font-medium text-accent hover:bg-accent-soft"
+        className="inline-flex min-h-[44px] items-center gap-1.5 rounded-control border border-accent/40 bg-accent-soft/60 px-3.5 text-sm font-medium text-accent-text hover:bg-accent-soft"
       >
         <span aria-hidden="true">▷</span>
         Take the tour

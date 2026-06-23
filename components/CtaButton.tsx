@@ -12,7 +12,7 @@ export function CtaButton({
   className?: string;
 }) {
   const base =
-    "inline-flex items-center gap-1.5 rounded-control px-3.5 py-2 text-sm font-medium transition-colors";
+    "inline-flex min-h-[44px] items-center gap-1.5 rounded-control px-4 text-sm font-medium transition-colors";
   const styles =
     variant === "solid"
       ? "bg-accent text-white hover:bg-accent-hover"

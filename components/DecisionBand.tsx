@@ -37,7 +37,7 @@ export function DecisionBand({ useCases }: { useCases: UseCase[] }) {
         return (
           <section
             key={decision}
-            className={`rounded-card border border-border border-t-4 bg-surface p-5 ${headerTone[m.tone]}`}
+            className={`min-w-0 rounded-card border border-border border-t-4 bg-surface p-5 ${headerTone[m.tone]}`}
             aria-label={`${m.label} — ${items.length} use cases, ${aud(spend)}`}
           >
             <div className="flex items-baseline justify-between">
@@ -62,9 +62,9 @@ export function DecisionBand({ useCases }: { useCases: UseCase[] }) {
                 <li key={uc.id}>
                   <Link
                     href={`/register/${uc.id}`}
-                    className="group flex items-baseline justify-between gap-3 text-sm hover:text-accent"
+                    className="group flex items-baseline justify-between gap-3 py-1 text-sm hover:text-accent"
                   >
-                    <span className="truncate text-ink group-hover:text-accent group-hover:underline">
+                    <span className="min-w-0 truncate text-ink group-hover:text-accent group-hover:underline">
                       {uc.name}
                     </span>
                     <span className="tabular shrink-0 text-ink-muted">{aud(uc.cost.totalAnnual)}</span>

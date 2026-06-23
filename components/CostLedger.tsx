@@ -107,7 +107,7 @@ export function CostLedger({
                 key={p}
                 type="button"
                 onClick={() => setPeriod(p)}
-                className={`rounded-[4px] px-3 py-1 capitalize ${period === p ? "bg-accent text-white" : "text-ink-muted hover:text-ink"}`}
+                className={`rounded-[4px] px-3 py-2 capitalize ${period === p ? "bg-accent text-white" : "text-ink-muted hover:text-ink"}`}
               >
                 {p}
               </button>
@@ -127,7 +127,7 @@ export function CostLedger({
             role="tab"
             aria-selected={lens === "useCase"}
             onClick={() => setLens("useCase")}
-            className={`rounded-[4px] px-3 py-1.5 ${lens === "useCase" ? "bg-accent text-white" : "text-ink-muted hover:text-ink"}`}
+            className={`rounded-[4px] px-3 py-2 ${lens === "useCase" ? "bg-accent text-white" : "text-ink-muted hover:text-ink"}`}
           >
             By use case
           </button>
@@ -136,7 +136,7 @@ export function CostLedger({
             role="tab"
             aria-selected={lens === "businessUnit"}
             onClick={() => setLens("businessUnit")}
-            className={`rounded-[4px] px-3 py-1.5 ${lens === "businessUnit" ? "bg-accent text-white" : "text-ink-muted hover:text-ink"}`}
+            className={`rounded-[4px] px-3 py-2 ${lens === "businessUnit" ? "bg-accent text-white" : "text-ink-muted hover:text-ink"}`}
           >
             By business unit
           </button>
@@ -152,8 +152,57 @@ export function CostLedger({
         </label>
       </div>
 
-      {/* Breakdown table */}
-      <div className="overflow-x-auto rounded-card border border-border bg-surface">
+      {/* Mobile: stacked cards with a mini cost-mix bar (the matrix is too wide for a phone) */}
+      <ul className="space-y-3 lg:hidden">
+        {sorted.map((r) => {
+          const nameInner = (
+            <>
+              {r.label}
+              {r.sublabel && <span className="block text-xs font-normal text-ink-faint">{r.sublabel}</span>}
+            </>
+          );
+          return (
+            <li key={r.key}>
+              <div className="rounded-card border border-border bg-surface p-4">
+                <div className="flex items-start justify-between gap-3">
+                  {lens === "useCase" ? (
+                    <Link href={`/register/${r.key}`} className="min-w-0 font-medium text-ink active:text-accent">
+                      {nameInner}
+                    </Link>
+                  ) : (
+                    <span className="min-w-0 font-medium text-ink">{nameInner}</span>
+                  )}
+                  <span className="tabular shrink-0 text-right">
+                    <span className="block font-semibold text-ink">{aud(scale(r.total))}</span>
+                    {showFuture && (
+                      <span className="block text-[11px] font-medium text-status-red-fg">→ {aud(scale(futureTotal(r)))}</span>
+                    )}
+                  </span>
+                </div>
+                {/* mini cost-mix bar */}
+                <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-surface-muted">
+                  {COMPONENTS.map((c) =>
+                    r[c] > 0 ? (
+                      <div key={c} style={{ width: `${(r[c] / r.total) * 100}%`, backgroundColor: costTypeColor[c] }} title={`${costComponentLabel[c]}: ${aud(scale(r[c]))}`} />
+                    ) : null,
+                  )}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ink-muted">
+                  {COMPONENTS.filter((c) => r[c] > 0).map((c) => (
+                    <span key={c} className="inline-flex items-center gap-1">
+                      <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: costTypeColor[c] }} />
+                      {costComponentLabel[c]} <span className="tabular text-ink-faint">{aud(scale(r[c]))}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Desktop: full matrix table */}
+      <div className="hidden overflow-x-auto rounded-card border border-border bg-surface lg:block">
         <table className="w-full min-w-[820px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-surface-muted/50 text-xs uppercase tracking-wide text-ink-faint">

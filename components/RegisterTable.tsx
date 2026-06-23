@@ -169,8 +169,42 @@ export function RegisterTable({ useCases }: { useCases: UseCase[] }) {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="mt-4 overflow-x-auto rounded-card border border-border bg-surface">
+      {/* Mobile: stacked cards (the table is unreadable on a phone). */}
+      <ul className="mt-4 space-y-3 lg:hidden">
+        {rows.map((uc) => (
+          <li key={uc.id}>
+            <Link
+              href={`/register/${uc.id}`}
+              className="block rounded-card border border-border bg-surface p-4 active:bg-surface-muted"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-ink">{uc.name}</p>
+                  <p className="mt-0.5 text-xs text-ink-faint">{uc.id} · {uc.businessUnit}</p>
+                </div>
+                <span className="tabular shrink-0 text-right font-semibold text-ink">{aud(uc.cost.totalAnnual)}</span>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <RagChip rag={uc.risk.rag} size="sm" />
+                <DecisionChip decision={uc.decision} size="sm" />
+                <span className="inline-flex items-center gap-1.5 text-xs text-ink-muted">
+                  <ConfidenceDots confidence={uc.outcome.confidence} showLabel={false} />
+                  evidence
+                </span>
+                <span className="text-xs text-ink-faint">{aiRoleCategory(uc)} · {uc.vendor}</span>
+              </div>
+            </Link>
+          </li>
+        ))}
+        {rows.length === 0 && (
+          <li className="rounded-card border border-border bg-surface px-4 py-10 text-center text-ink-faint">
+            No use cases match these filters.
+          </li>
+        )}
+      </ul>
+
+      {/* Desktop: full table */}
+      <div className="mt-4 hidden overflow-x-auto rounded-card border border-border bg-surface lg:block">
         <table className="w-full min-w-[860px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-surface-muted/50 text-xs uppercase tracking-wide text-ink-faint">

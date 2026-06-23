@@ -65,7 +65,7 @@ export default function ControlRoom() {
         }
       />
 
-      <div className="mx-auto max-w-6xl space-y-8 px-6 py-8">
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6">
         {/* Template / differentiation framing */}
         <div className="flex flex-col gap-2 rounded-card border border-accent/30 bg-accent-soft/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
           <p className="text-sm text-ink-muted">
@@ -168,7 +168,33 @@ export default function ControlRoom() {
             </Link>
           }
         >
-          <div className="-mx-2 overflow-x-auto">
+          {/* Mobile: stacked cards */}
+          <ul className="space-y-3 lg:hidden">
+            {top5.map((uc) => (
+              <li key={uc.id}>
+                <Link href={`/register/${uc.id}`} className="block rounded-card border border-border bg-surface-muted/40 p-4 active:bg-surface-muted">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-ink">{uc.name}</p>
+                      <p className="mt-0.5 text-xs text-ink-faint">{uc.id} · {uc.businessUnit}</p>
+                    </div>
+                    <span className="tabular shrink-0 text-right font-semibold text-ink">
+                      {aud(uc.cost.totalAnnual)}
+                      <span className="block text-xs font-normal text-ink-faint">{pct(uc.cost.totalAnnual, total)}</span>
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <RagChip rag={uc.risk.rag} size="sm" />
+                    <DecisionChip decision={uc.decision} size="sm" />
+                    <ConfidenceDots confidence={uc.outcome.confidence} showLabel={false} />
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desktop: table */}
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full min-w-[680px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-ink-faint">

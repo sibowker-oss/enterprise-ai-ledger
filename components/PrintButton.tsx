@@ -10,7 +10,7 @@ export function PrintButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="inline-flex items-center gap-2 rounded-control border border-border bg-surface px-3.5 py-2 text-sm font-medium text-ink hover:border-border-strong hover:bg-surface-muted"
+      className="inline-flex min-h-[44px] items-center gap-2 rounded-control border border-border bg-surface px-3.5 text-sm font-medium text-ink hover:border-border-strong hover:bg-surface-muted"
     >
       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6 9V2h12v7" />

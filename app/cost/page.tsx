@@ -42,7 +42,7 @@ export default function CostPage() {
         }
       />
 
-      <div className="mx-auto max-w-6xl space-y-8 px-6 py-8">
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6">
         <CostLedger
           byUseCase={costMatrixByUseCase(useCases)}
           byBusinessUnit={costMatrixByBusinessUnit(useCases)}

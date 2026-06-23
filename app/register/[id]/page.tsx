@@ -23,7 +23,7 @@ export default function UseCasePage({ params }: { params: { id: string } }) {
   if (!uc) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <UseCaseDetail uc={uc} />
     </div>
   );

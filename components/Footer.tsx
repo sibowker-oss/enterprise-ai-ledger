@@ -7,7 +7,7 @@ import { CtaButton } from "./CtaButton";
  */
 export function Footer({ disclaimer }: { disclaimer: string }) {
   return (
-    <footer className="mt-16 border-t border-border bg-surface px-6 py-8 print:mt-8">
+    <footer className="mt-16 border-t border-border bg-surface px-4 py-8 sm:px-6 print:mt-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-2xl space-y-2">
           <p className="text-sm font-medium text-ink">
