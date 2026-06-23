@@ -15,10 +15,10 @@ function CompareRow({
   worse?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-[1fr_auto_auto] items-baseline gap-x-4 py-2">
+    <div className="grid grid-cols-[minmax(0,1fr)_4.5rem_4.5rem] items-baseline gap-x-2 py-2 sm:grid-cols-[minmax(0,1fr)_5.5rem_5.5rem] sm:gap-x-3">
       <span className="text-sm text-ink-muted">{label}</span>
-      <span className="tabular text-right text-sm font-medium text-ink">{today}</span>
-      <span className={`tabular w-28 text-right text-sm font-semibold ${worse ? "text-status-red-fg" : "text-ink"}`}>
+      <span className="tabular whitespace-nowrap text-right text-sm font-medium text-ink">{today}</span>
+      <span className={`tabular whitespace-nowrap text-right text-sm font-semibold ${worse ? "text-status-red-fg" : "text-ink"}`}>
         {future}
       </span>
     </div>
@@ -58,10 +58,10 @@ export function FuturePricingPanel({
       <div className="mt-4 grid gap-6 lg:grid-cols-[1.1fr_1fr]">
         {/* Comparison */}
         <div>
-          <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 border-b border-border pb-1 text-xs font-medium uppercase tracking-wide text-ink-faint">
+          <div className="grid grid-cols-[minmax(0,1fr)_4.5rem_4.5rem] gap-x-2 border-b border-border pb-1 text-xs font-medium uppercase tracking-wide text-ink-faint sm:grid-cols-[minmax(0,1fr)_5.5rem_5.5rem] sm:gap-x-3">
             <span></span>
             <span className="text-right">Today</span>
-            <span className="w-28 text-right">Future pricing</span>
+            <span className="text-right">Future</span>
           </div>
           <CompareRow label="Annual AI cost" today={audCompact(future.todayCost)} future={audCompact(future.futureCost)} worse />
           <CompareRow

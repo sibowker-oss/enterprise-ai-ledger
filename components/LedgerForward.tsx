@@ -45,7 +45,7 @@ export function LedgerForward({
   return (
     <section
       aria-label="The AI Ledger forward view"
-      className="space-y-6 rounded-card border border-accent/30 bg-accent-soft/40 p-5 sm:p-6"
+      className="space-y-6 rounded-card border border-accent/30 bg-accent-soft/40 p-4 sm:p-6"
     >
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-accent">
@@ -86,7 +86,7 @@ export function LedgerForward({
       </div>
 
       {/* Part A — token-price uplift by use case */}
-      <div className="rounded-card border border-border bg-surface p-5">
+      <div className="rounded-card border border-border bg-surface p-4 sm:p-5">
         <h3 className="text-base font-semibold text-ink">1 · Token-price uplift, by use case</h3>
         <p className="mt-1 max-w-3xl text-sm text-ink-muted">
           At today&rsquo;s subsidised prices Meridian&rsquo;s token bill is <strong className="font-semibold text-ink">{aud(tokensToday)}</strong>.
@@ -98,11 +98,11 @@ export function LedgerForward({
           {tokenUplift.map((r) => (
             <li key={r.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3">
               <div className="col-span-2 flex items-baseline justify-between gap-2 text-sm">
-                <span className="truncate text-ink">
+                <span className="min-w-0 truncate text-ink">
                   {r.name} <span className="text-ink-faint">· {r.vendor}</span>
                 </span>
-                <span className="tabular shrink-0 text-ink-muted">
-                  {aud(r.tokensToday)} → <span className="font-medium text-ink">{aud(r.tokensUplifted)}</span>
+                <span className="tabular shrink-0 whitespace-nowrap text-ink-muted">
+                  {audCompact(r.tokensToday)} → <span className="font-medium text-ink">{audCompact(r.tokensUplifted)}</span>
                 </span>
               </div>
               <div className="col-span-2 flex h-2.5 overflow-hidden rounded-full bg-surface-muted">
@@ -119,7 +119,7 @@ export function LedgerForward({
       </div>
 
       {/* Part B — seats → consumption by vendor */}
-      <div className="rounded-card border border-border bg-surface p-5">
+      <div className="rounded-card border border-border bg-surface p-4 sm:p-5">
         <h3 className="text-base font-semibold text-ink">2 · Seats → consumption, by vendor</h3>
         <p className="mt-1 max-w-3xl text-sm text-ink-muted">
           <strong className="font-semibold text-ink">{seats.seatsPct}%</strong> of Meridian&rsquo;s licence-and-token spend is
@@ -139,8 +139,8 @@ export function LedgerForward({
                     {p?.arrUsdB != null && <span className="ml-2 font-normal text-ink-faint">US${p.arrUsdB}B ARR{p.growth ? ` · ${p.growth}` : ""}</span>}
                     {p?.arrUsdB == null && p?.growth && <span className="ml-2 font-normal text-ink-faint">{p.growth}</span>}
                   </span>
-                  <span className="tabular shrink-0 text-ink-muted">
-                    {aud(v.seats)} seats · {v.consumption > 0 ? aud(v.consumption) : "no"} consumption
+                  <span className="tabular whitespace-nowrap text-ink-muted">
+                    {audCompact(v.seats)} seats · {v.consumption > 0 ? audCompact(v.consumption) : "no"} consumption
                   </span>
                 </div>
                 <div className="mt-1 flex h-3 overflow-hidden rounded-full bg-surface-muted" style={{ width: `${Math.max((w / maxVendor) * 100, 12)}%` }} role="img" aria-label={`${v.vendor}: ${aud(v.seats)} seats, ${aud(v.consumption)} consumption`}>
