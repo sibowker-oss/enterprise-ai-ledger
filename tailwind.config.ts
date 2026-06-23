@@ -18,6 +18,7 @@ const config: Config = {
         paper: palette.paper,
         surface: palette.surface,
         "surface-muted": palette.surfaceMuted,
+        "nav-bg": palette.navBg,
         ink: palette.ink,
         "ink-muted": palette.inkMuted,
         "ink-faint": palette.inkFaint,
@@ -26,6 +27,7 @@ const config: Config = {
         accent: palette.accent,
         "accent-hover": palette.accentHover,
         "accent-soft": palette.accentSoft,
+        "accent-text": palette.accentText,
         // Status — fg/soft/solid exposed as nested utilities (text-status-green-fg etc.)
         "status-green": { fg: status.green.fg, soft: status.green.soft, solid: status.green.solid },
         "status-amber": { fg: status.amber.fg, soft: status.amber.soft, solid: status.amber.solid },
@@ -40,6 +42,7 @@ const config: Config = {
       borderRadius: {
         chip: radii.chip,
         card: radii.card,
+        tile: radii.tile,
         control: radii.control,
       },
       fontFamily: {

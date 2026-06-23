@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { FutureRollup } from "@/lib/portfolio";
 import { aud, audCompact } from "@/lib/format";
+import { ProvenancePill } from "./ProvenancePill";
 
 function CompareRow({
   label,
@@ -33,15 +34,20 @@ function CompareRow({
 export function FuturePricingPanel({
   future,
   evidenceBackedTodayRoi,
+  asOf,
 }: {
   future: FutureRollup;
   evidenceBackedTodayRoi: number;
+  asOf: string;
 }) {
   return (
     <section aria-label="Future pricing stress test" className="rounded-card border border-border bg-surface p-5 sm:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-lg font-semibold text-ink">Will it survive future pricing?</h2>
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Powered by The AI Ledger</span>
+        <span className="text-xs font-semibold uppercase tracking-[0.08em] text-accent">Powered by The AI Ledger</span>
+      </div>
+      <div className="mt-3">
+        <ProvenancePill tier={3} confidence="Med" asOf={asOf} />
       </div>
       <p className="mt-1 max-w-3xl text-sm text-ink-muted">
         Today&rsquo;s token prices are subsidised. Stress the portfolio against the Ledger&rsquo;s

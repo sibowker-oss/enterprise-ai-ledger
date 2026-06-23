@@ -1,54 +1,50 @@
 /**
  * Design tokens — the single source of truth for the Enterprise AI Ledger's
- * visual system. Centralised here (per BUILD_SPEC §7/§8) so the prototype can
- * be reskinned to TAIL's real palette by editing this one file.
+ * visual system. The Enterprise AI Ledger is a data-first product and the
+ * sister surface to The AI Ledger (TAIL), so it adopts the **Ledger (dark)
+ * surface** of the Hepburn Advisory design system:
+ *   page #0A0E1A · cards #111827 · nav #0F172A · blue accent #3B82F6.
  *
- * Principles:
- *  - Neutral, editorial base (off-white paper, near-black ink). One restrained
- *    accent for interactive elements.
- *  - Semantic colour (green/amber/red) is reserved STRICTLY for status — RAG
- *    risk and scale/fix/stop decisions. Never use it decoratively.
- *  - Chips must never rely on colour alone; these tokens pair a `fg`/`bg` with
- *    a `label` so components can carry text + icon as well as colour (AA).
- *
- * NOTE: these are plain hex values (not Tailwind class names) so the same
- * tokens can feed Tailwind, inline SVG charts (Recharts), and the print
- * stylesheet without divergence.
+ * Design-system rules honoured here:
+ *  - Semantic colour only: green/amber/red are reserved for status (RAG risk,
+ *    scale/fix/stop). Red also appears for "reality-check" annotations (the
+ *    future-pricing uplift). Charts use a cool, non-semantic ramp.
+ *  - No gradient backgrounds. Tabular figures everywhere. AA contrast on dark.
+ *  - To reskin to the light Advisory surface, this one file flips.
  */
 
 export const palette = {
-  // Neutral base
-  paper: "#FAF9F6", // off-white page background
-  surface: "#FFFFFF", // cards / panels
-  surfaceMuted: "#F2F1ED", // subtle fills, table zebra
-  ink: "#1A1A18", // near-black primary text
-  inkMuted: "#5B5A55", // secondary text
-  inkFaint: "#8A8984", // tertiary / captions
-  border: "#E3E1DB", // hairlines, dividers
-  borderStrong: "#CBC8C0",
+  // Ledger (dark) base
+  paper: "#0A0E1A", // page background
+  surface: "#111827", // cards / panels
+  surfaceMuted: "#1A2332", // subtle fills, table zebra, hover
+  navBg: "#0F172A", // sticky nav / sidebar
+  ink: "#F1F5F9", // primary text (light on dark)
+  inkMuted: "#9CA8BA", // secondary text
+  inkFaint: "#8A95A6", // tertiary / captions (AA on dark)
+  border: "#1F2937", // hairlines, dividers
+  borderStrong: "#374151",
 
-  // One restrained interactive accent (slate-blue — calm, "trustworthy")
-  accent: "#2F4858",
-  accentHover: "#243845",
-  accentSoft: "#E7ECEF",
+  // Interactive accent — blue (links, primary actions)
+  accent: "#3B82F6",
+  accentHover: "#60A5FA",
+  accentSoft: "#16243C", // dark blue-tinted chip / active-nav background
+  accentText: "#93C5FD", // bright blue text on dark tints
 } as const;
 
 /**
- * Semantic status colours. Each carries a strong `fg` (AA on its own `soft`
- * background and on white), a `soft` chip background, and a `solid` for chart
- * fills / bars. Decision and RAG share the same green/amber/red ramp by design
- * (scale↔green, fix↔amber, stop↔red) — the deck ties them together.
+ * Semantic status colours, tuned for AA on the dark surface. `fg` is a bright
+ * readable text colour, `soft` a low-opacity tinted chip background, `solid`
+ * a chart/bar fill.
  */
 export const status = {
-  green: { fg: "#1F6B3B", soft: "#E5F0E8", solid: "#2E7D49", label: "Green" },
-  amber: { fg: "#8A5A00", soft: "#FBF0DC", solid: "#C07D12", label: "Amber" },
-  red: { fg: "#A11E1E", soft: "#F7E3E1", solid: "#C0392B", label: "Red" },
-  // "stop" leans on red but the deck also allows a neutral/grey reading; keep a
-  // dedicated grey for the stop-decision chip variant where red is too loud.
-  grey: { fg: "#44433E", soft: "#ECEAE4", solid: "#6B6A64", label: "Grey" },
+  green: { fg: "#4ADE80", soft: "#10271B", solid: "#22C55E", label: "Green" },
+  amber: { fg: "#FBBF24", soft: "#2C2310", solid: "#F59E0B", label: "Amber" },
+  red: { fg: "#F87171", soft: "#2C1718", solid: "#EF4444", label: "Red" },
+  grey: { fg: "#94A3B8", soft: "#1C2430", solid: "#64748B", label: "Grey" },
 } as const;
 
-/** Decision → status colour mapping (BUILD_SPEC §5.2). */
+/** Decision → status colour mapping (scale↔green, fix↔amber, stop↔red). */
 export const decisionColor = {
   scale: status.green,
   fix: status.amber,
@@ -62,26 +58,32 @@ export const ragColor = {
   red: status.red,
 } as const;
 
-/** Cost-type palette for the donut — neutral ramp, NOT semantic green/amber/red. */
+/**
+ * Cost-type ramp for charts — a cool, NON-semantic set (blue/cyan/indigo/sky/
+ * slate) so it never reads as the Ledger's semantic layer colours and never
+ * collides with green/amber/red status. Tokens get the standout cyan (the
+ * "tokens are nearly as big as licences" aha).
+ */
 export const costTypeColor = {
-  licences: "#2F4858",
-  tokens: "#5B7C8D",
-  cloud: "#8FA9B5",
-  integration: "#B7C5C9",
-  people: "#D8D5CC",
+  licences: "#3B82F6",
+  tokens: "#22D3EE",
+  cloud: "#818CF8",
+  integration: "#38BDF8",
+  people: "#64748B",
 } as const;
 
 export const typography = {
-  // One clean sans for UI; system stack keeps the prototype dependency-light.
+  // Inter for UI (self-hosted via next/font); tabular figures for all numbers.
   sans: 'var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif)',
-  // Tabular figures everywhere numbers appear, so columns align.
   numericFeatures: '"tnum" 1, "lnum" 1',
+  eyebrowTracking: "0.08em", // design-system eyebrow tracking
 } as const;
 
 export const radii = {
   chip: "9999px",
-  card: "10px",
-  control: "6px",
+  card: "12px",
+  tile: "16px",
+  control: "8px",
 } as const;
 
 export const tokens = {

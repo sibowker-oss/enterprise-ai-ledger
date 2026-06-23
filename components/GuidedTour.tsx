@@ -125,7 +125,7 @@ export function GuidedTour({ figures: f }: { figures: TourFigures }) {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm sm:p-8"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:p-8"
           role="dialog"
           aria-modal="true"
           aria-label="Guided tour"
@@ -136,7 +136,7 @@ export function GuidedTour({ figures: f }: { figures: TourFigures }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-border px-5 py-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-accent">
+              <p className="text-sm font-semibold uppercase tracking-[0.08em] text-accent">
                 The 90-second story
               </p>
               <button

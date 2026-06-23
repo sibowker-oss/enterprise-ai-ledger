@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Benchmarks } from "@/lib/types";
 import { aud, audCompact, reviewDate } from "@/lib/format";
+import { ProvenancePill } from "./ProvenancePill";
 
 function Stat({ value, label, sub }: { value: string; label: string; sub?: string }) {
   return (
@@ -15,7 +16,7 @@ function Stat({ value, label, sub }: { value: string; label: string; sub?: strin
 }
 
 /**
- * The differentiation layer (BUILD addendum — the site should leverage The AI
+ * The differentiation layer (BUILD addendum — the site should draw on The AI
  * Ledger's proprietary market data for an economic view a generic adviser can't
  * reproduce). Uses REAL TAIL figures (data/ledger-benchmarks.json) to benchmark
  * Meridian and to run a subsidy-normalisation stress test — today's AI prices
@@ -45,12 +46,15 @@ export function LedgerBenchmark({
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-accent">
             Powered by The AI Ledger
           </p>
           <h2 className="mt-1 text-lg font-semibold text-ink">
             Benchmarked against the real market economics of AI
           </h2>
+          <div className="mt-3">
+            <ProvenancePill tier={2} confidence="Med" asOf={meta.asOf} />
+          </div>
         </div>
         <a
           href={meta.sourceUrl}

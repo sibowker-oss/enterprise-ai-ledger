@@ -1,7 +1,7 @@
 "use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { costTypeColor } from "@/styles/tokens";
+import { costTypeColor, palette } from "@/styles/tokens";
 import { costComponentLabel } from "@/lib/labels";
 import { aud, audCompact, pct } from "@/lib/format";
 import type { CostComponent } from "@/lib/types";
@@ -42,7 +42,7 @@ export function CostDonut({
               outerRadius={88}
               startAngle={90}
               endAngle={-270}
-              stroke="#FFFFFF"
+              stroke={palette.surface}
               strokeWidth={2}
               isAnimationActive={false}
             >
@@ -54,9 +54,13 @@ export function CostDonut({
               formatter={(value: number, name) => [aud(value), name as string]}
               contentStyle={{
                 borderRadius: 8,
-                border: "1px solid #E3E1DB",
+                border: `1px solid ${palette.borderStrong}`,
+                background: palette.surface,
+                color: palette.ink,
                 fontSize: 13,
               }}
+              itemStyle={{ color: palette.ink }}
+              labelStyle={{ color: palette.inkMuted }}
             />
           </PieChart>
         </ResponsiveContainer>

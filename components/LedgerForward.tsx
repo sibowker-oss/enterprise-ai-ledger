@@ -2,6 +2,7 @@ import type { Benchmarks } from "@/lib/types";
 import type { TokenUpliftRow, VendorCost } from "@/lib/portfolio";
 import { aud, audCompact } from "@/lib/format";
 import { costTypeColor, palette, status } from "@/styles/tokens";
+import { ProvenancePill } from "./ProvenancePill";
 
 function StatTile({ value, label }: { value: string; label: string }) {
   return (
@@ -47,7 +48,7 @@ export function LedgerForward({
       className="space-y-6 rounded-card border border-accent/30 bg-accent-soft/40 p-5 sm:p-6"
     >
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-accent">
           The AI Ledger forward view
         </p>
         <h2 className="mt-1 text-lg font-semibold text-ink">Where your AI bill is going — not just what it is today</h2>
@@ -57,6 +58,9 @@ export function LedgerForward({
           the subsidy unwinds, and <strong className="font-medium text-ink">consumption exploding</strong> as
           vendors move you off fixed seats onto metered usage.
         </p>
+        <div className="mt-3">
+          <ProvenancePill tier={3} confidence="Med" asOf={benchmarks.meta.asOf} />
+        </div>
       </div>
 
       {/* Trajectory anchor */}

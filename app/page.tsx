@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { company, meta, useCases } from "@/lib/seed";
+import { company, meta, useCases, benchmarks } from "@/lib/seed";
 import {
   portfolio,
   value,
@@ -73,7 +73,7 @@ export default function ControlRoom() {
             The same view, on your real AI spend — benchmarked against{" "}
             <strong className="font-medium text-ink">The AI Ledger</strong>, market intelligence only Hepburn holds.
           </p>
-          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-accent">
             Powered by The AI Ledger
           </span>
         </div>
@@ -113,6 +113,7 @@ export default function ControlRoom() {
         <FuturePricingPanel
           future={computeFutureRollup(useCases, futureMultiple)}
           evidenceBackedTodayRoi={value.evidenceBackedRoiPct}
+          asOf={benchmarks.meta.asOf}
         />
 
         {/* 3 — Decision summary: the punchline, now with net value per column */}

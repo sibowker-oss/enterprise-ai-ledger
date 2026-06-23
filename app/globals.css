@@ -3,12 +3,14 @@
 @tailwind utilities;
 
 :root {
+  /* Fallback if next/font hasn't set --font-sans yet. */
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
+  color-scheme: dark;
 }
 
 html {
-  /* Tabular, lining figures everywhere so numeric columns align (BUILD_SPEC §7). */
+  /* Tabular, lining figures everywhere so numeric columns align (design system). */
   font-feature-settings: "tnum" 1, "lnum" 1;
   scroll-behavior: smooth;
 }
@@ -20,45 +22,83 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+}
+
 /* Numbers-first helper: explicit tabular figures for numeric cells. */
 .tabular {
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* Keyboard focus — visible AA ring on interactive elements. */
+/* Eyebrow: UPPERCASE, design-system tracking. */
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Keyboard focus — visible AA ring on the dark surface. */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid #2f4858;
+  outline: 2px solid #3b82f6;
   outline-offset: 2px;
   border-radius: 4px;
 }
 
+/* Dark-surface form controls. */
+input,
+select {
+  color-scheme: dark;
+}
+
 /*
-  Print stylesheet — the "Generate board pack" view (BUILD_SPEC §5.1 item 6).
-  Hide chrome, force the neutral palette, keep cards from breaking across pages.
+  Board-pack print stylesheet. The screen is the dark Ledger surface, but a
+  printed/PDF board pack must be light (ink on white) — legible and ink-frugal.
+  Flip the core surfaces and text for print only.
 */
 @media print {
   @page {
     margin: 14mm;
   }
-  body {
-    background: #fff;
+  :root {
+    color-scheme: light;
   }
+  body {
+    background: #fff !important;
+    color: #0a0e1a !important;
+  }
+  aside,
   .print\:hidden {
     display: none !important;
   }
-  /* Collapse the sidebar grid to a single column for print. */
   .lg\:grid-cols-\[16rem_1fr\] {
     display: block !important;
   }
-  aside {
-    display: none !important;
+  .bg-paper,
+  .bg-surface,
+  .bg-surface-muted,
+  .bg-nav-bg {
+    background: #fff !important;
+  }
+  .text-ink {
+    color: #0a0e1a !important;
+  }
+  .text-ink-muted {
+    color: #374151 !important;
+  }
+  .text-ink-faint {
+    color: #6b7280 !important;
+  }
+  .border-border,
+  .border-border-strong {
+    border-color: #e5e7eb !important;
   }
   section,
-  .rounded-card {
+  .rounded-card,
+  .rounded-tile {
     break-inside: avoid;
   }
   a {
