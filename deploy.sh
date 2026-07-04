@@ -13,6 +13,9 @@ REPO="sibowker-oss/enterprise-ai-ledger"
 BASEPATH="${1-/enterprise-ai-ledger}"   # default project path; pass "" for root
 CNAME="${2-}"                            # optional custom domain for the gh-pages CNAME file
 
+echo "▶ Release check: validating the token estimate library (wq-120a guard)…"
+npm run validate:library        # set -e aborts the deploy if the demand-side data has drifted
+
 echo "▶ Building static export (basePath='${BASEPATH}')…"
 NEXT_PUBLIC_BASE_PATH="${BASEPATH}" npm run build
 
