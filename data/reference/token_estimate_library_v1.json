@@ -1,0 +1,653 @@
+{
+  "_schema": {
+    "name": "token_estimate_library",
+    "version": "1.0.0",
+    "as_of": "2026-07-04",
+    "supersedes": "benchmark_token_priors.json v0.1-draft (2026-06-18)",
+    "purpose": "Per-use-case token consumption estimates for the Investment-Case Simulator and Hepburn diagnostic. Every band is anchored to named public evidence, provenance-graded, dated, and machine-validated (validate_token_estimate_library.py). Methodology: HA_EnterpriseAI_TokenEstimateLibrary_Methodology_v1_2026-07-04.md (Enterprise AI Adoption Project folder).",
+    "units": "tokens per transaction unless stated; USD per 1,000,000 tokens for prices (see benchmark_price_sheet.json)",
+    "band_semantics": {
+      "low": "well-engineered deployment (lean context, tuned retrieval, disciplined outputs)",
+      "mid": "typical production deployment",
+      "high": "naive deployment (context stuffing, no output discipline, default settings)",
+      "note": "Bands are behavioural, NOT statistical percentiles. Width is honest uncertainty plus real deployment spread. Consumption optimisation moves you within the band; it must NOT be stacked on top of the low band."
+    },
+    "provenance_scale": "TAIL standard: 1A filed/audited · 1B first-party docs/blog/telemetry · 2A analyst citing first-party · 2B journalist/single-source · 3A podcast/conference paraphrase · 3B community-measured (leaderboards, traced runs) · 3C editorial",
+    "anchor_types": "A first-party telemetry · B dollar-per-task back-derivation · C community-measured logs · D first-principles composition from conversion constants · E practitioner consensus · F editorial",
+    "reference_model_rule": "Every band is stated for the named default_model and reasoning_mode. Changing model applies model_adjustment_factors — consumption is NOT model-invariant.",
+    "evidence_sweep": "2026-07-04, three-stream research fan-out (per-use-case anchors; optimisation levers; model-change effects). ~45 sources fetched/verified."
+  },
+  "_changelog": [
+    {
+      "date": "2026-07-04",
+      "version": "1.0.0",
+      "change": "Initial library. Coverage 6 -> 15 use cases. v0.1 bands retained where evidence supported them (code_assistant chat, enterprise_rag_search, document_claims_processing, back_office_reconciliation, contact_centre_summarisation). Material restatement: marketing_content transaction redefined to iterated asset (13-round median, Anthropic Economic Index, 1B) — v0.1 single-shot band preserved as variant. Volume guidance: code-assistant 60 interactions/dev/day reclassified from mid to high; new band 10/30/80 (3C, flagged). 11 of 15 use cases now carry non-editorial load-bearing anchors.",
+      "approved_by": "pending Simon sign-off"
+    }
+  ],
+
+  "conversion_constants": {
+    "tokens_per_english_word": {"value": 1.33, "tier": "1B", "src": "OpenAI tokenizer docs (~4 chars/token, 0.75 words/token)"},
+    "tokens_per_1000_words_english": {"value": 1333, "tier": "1B", "src": "derived from above"},
+    "tokens_per_page_text": {"low": 500, "high": 700, "tier": "1B/2A", "src": "AWS Bedrock pricing worked example (500); general range; structured docs (invoices) run ~2,500 incl. layout"},
+    "tokens_per_hour_speech_transcript": {"low": 10000, "high": 13000, "tier": "1B", "src": "AssemblyAI (90 min ~ 15-20K tokens); 150 wpm x 1.33"},
+    "tokens_per_hour_audio_native": {"value": 60000, "tier": "1B", "src": "Microsoft TechCommunity — ~1,000 audio tokens/min (GPT-4o-class audio tokenisation). 5x the transcript route — architecture choice matters."},
+    "tokens_per_1000_lines_code": {"value": 10000, "tier": "3C", "src": "consistent across community calculators; ~10 tokens/line, code 1.5-2x prose density"},
+    "vision_tokens_per_512px_tile": {"value": 170, "tier": "1B", "src": "OpenAI vision docs (hi-detail); typical invoice image ~900 input tokens"},
+    "language_fertility_multiplier_vs_english": {"romance": [1.25, 1.45], "germanic": [1.4, 1.6], "slavic": [1.8, 2.1], "uralic_baltic": [2.2, 2.5], "cjk": [2.0, 4.0], "worst_case_indic": 10, "tier": "2A", "src": "arXiv 2605.24718 (25 European languages, May 2026) + community measurements; values normalised to English = 1.2 tokens/word"}
+  },
+
+  "use_cases": {
+
+    "code_assistant": {
+      "transaction_def": "one chat/edit interaction in-IDE (context-heavy). Autocomplete is a separate variant — do not blend.",
+      "input_tokens": {"low": 3000, "mid": 6000, "high": 12000},
+      "output_tokens": {"low": 500, "mid": 1000, "high": 2000},
+      "fan_out": {"low": 1, "mid": 1, "high": 2},
+      "io_class": "input_heavy_~6:1",
+      "default_model": "claude_sonnet_4_6",
+      "reasoning_mode": "hybrid_low",
+      "tier": "3C",
+      "confidence": "Band unchanged from v0.1 — no direct public telemetry for IDE chat interactions exists. Consistent with practitioner consensus and with SKU price ceilings once caching is assumed (see derivation), but still editorial.",
+      "anchors": [
+        {"type": "E", "value": "repo-context chat interactions cluster 3-12K input in practitioner guidance", "source": "community/practitioner consensus", "date": "2026", "tier": "3C"},
+        {"type": "B", "value": "Copilot-class SKU $19-39/seat/mo (incl. ~60% packaging margin per TAIL marginPcts) bounds underlying AI spend at ~$8-16/seat/mo", "source": "GitHub/vendor pricing; TAIL sankey marginPcts", "date": "2026", "tier": "1B price / 3C margin"}
+      ],
+      "derivation": "v0.1 band retained. Consistency check: mid band x 30 interactions/day x 21 days at Sonnet list = ~$21/seat/mo raw; with 70% cache-read on input = ~$14/seat/mo — inside the $8-16 SKU-implied AI floor. The reconciliation only works WITH caching, which is evidence vendors run cached — and why naive direct-API replication can cost more than the SKU.",
+      "dollar_anchors": [],
+      "volume_hints": {"chat_interactions_per_dev_per_day": {"low": 10, "mid": 30, "high": 80, "tier": "3C", "note": "REPLACES the flat 60/dev/day used in the 18 Jun worked example — 60 is now graded high-side, not mid. No robust public source exists; client telemetry required."}},
+      "variants": {
+        "autocomplete": {"input_tokens": {"low": 500, "mid": 1500, "high": 3000}, "output_tokens": {"low": 10, "mid": 20, "high": 50}, "volume_per_dev_per_day": {"low": 100, "mid": 200, "high": 300}, "tier": "3C", "note": "Single source (onprem.ai role model). GitHub excludes completions from paid credit metering — signal that marginal cost is negligible; runs on small custom models, not frontier."}
+      },
+      "optimisation_profile": {
+        "top_levers": ["prompt_caching", "model_routing", "output_control"],
+        "billing_envelope_vs_naive_pct": {"low": 40, "high": 60},
+        "note": "Repo/system context is highly cacheable (50-70% hit realistic). Autocomplete already routes to tiny models industry-wide."
+      },
+      "model_sensitivity": ["tokenizer_code (±10-20% input)", "reasoning_toggle if agent-mode invoked (3-20x output)", "verbosity_same_class (1.5-2.6x output)"],
+      "path_to_upgrade": "Client IDE telemetry (Cursor/Copilot usage exports) via gated diagnostic; any first-party interaction-level disclosure.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "agentic_coding": {
+      "transaction_def": "one delegated coding task (a Claude Code / Cursor-agent / Devin-class session-task: multi-turn, multi-tool, context replayed each call). Input counted as physical tokens processed INCLUDING cache reads — see billing_assumptions.",
+      "input_tokens": {"low": 100000, "mid": 500000, "high": 2000000},
+      "output_tokens": {"low": 5000, "mid": 15000, "high": 50000},
+      "fan_out": {"low": 1, "mid": 1, "high": 1},
+      "io_class": "input_dominated_cache_heavy_~30:1_physical",
+      "default_model": "claude_sonnet_4_6",
+      "reasoning_mode": "hybrid_on",
+      "billing_assumptions": {"cache_read_share": {"low": 0.7, "mid": 0.8, "high": 0.9}, "tier": "3B", "src": "dirac.run OpenRouter effective-pricing analysis (agent traffic 65-87% cache-read share); Anthropic caching docs"},
+      "tier": "2B",
+      "confidence": "Best-anchored agentic use case in the library. Output side is 1B (Anthropic telemetry); input side is back-derived from three independent dollar anchors agreeing within ~2x.",
+      "anchors": [
+        {"type": "A", "value": "~4 turns/session, ~10 agent actions/prompt (2% of sessions >100), ~3,200 tokens output/turn => ~13K output/session median; users avg 20 hrs/week active runtime", "source": "Anthropic — Agentic coding & expertise (~400K sessions)", "url": "https://www.anthropic.com/research/claude-code-expertise", "date": "2026-06-16", "tier": "1B"},
+        {"type": "B", "value": "Anthropic revised average Claude Code cost $6 -> $13/dev/active-day (Apr 2026); $150-250/dev/mo; 90% of users <$30/day", "source": "Anthropic docs change, reported Briefs.co/LetsDataScience", "date": "2026-04", "tier": "2B reporting 1B"},
+        {"type": "C", "value": "Aider polyglot single-shot tasks: $0.006-0.29/task across models; SWE-bench Verified cap 2M uncached + 20M cached-read tokens/problem (rarely hit); SWE-agent community budget $3/instance", "source": "Aider leaderboard; Epoch AI SWE-bench methodology", "date": "2025-2026", "tier": "3B / 1B-for-eval"},
+        {"type": "B", "value": "Cursor docs illustrative heavy agent request: ~350K input + 20K output (~$1.50 at Sonnet rates); Devin: 1 ACU ~ 15 min work at $2.00-2.25 => $8-9/hour of agent work", "source": "Cursor docs; Devin pricing", "date": "2026", "tier": "1B"}
+      ],
+      "derivation": "Output band centred on Anthropic's measured ~13K/session. Input band back-derived: $13/day at ~0.65/task (mid band, 80% cache-read, Sonnet rates) implies ~20 tasks/active-day at the observed intensity — coherent with Cursor's 350K illustrative request and Epoch's 2M/20M cap as the high end.",
+      "dollar_anchors": [
+        {"label": "cost per delegated task", "usd_low": 0.10, "usd_high": 3.00, "reference_model": "claude_sonnet_4_6", "includes": "LLM only, cache-adjusted (see billing_assumptions); brackets Aider single-shot low end and SWE-agent $3 budget high end", "tier": "2B"}
+      ],
+      "volume_hints": {"tasks_per_dev_per_active_day": {"low": 2, "mid": 8, "high": 20, "tier": "3C", "note": "high end back-derived from $13/day / $0.65/task; median usage is lower"}},
+      "optimisation_profile": {
+        "top_levers": ["prompt_caching", "agentic_context_engineering", "reasoning_effort_dial"],
+        "billing_envelope_vs_naive_pct": {"low": 75, "high": 90},
+        "note": "Caching IS the economics here: at 80% cache-read share, effective input price ~0.28x list. Cache-hostile prompt design (mutating prefixes) is the costliest single mistake — documented production fix took hit rate 7% -> 84%, total cost -59% (ProjectDiscovery). Context editing cuts 84% of tokens on 100-turn runs. NOTE: the architecture itself runs ~4-15x chat token volumes — these levers contain agentic cost, they do not make agents cheap."
+      },
+      "model_sensitivity": ["caching behaviour and pricing (dominant)", "agentic turn count (input x turns drives cost; documented 5.5x cost delta with output flat)", "reasoning_effort_dial (1.8-3.5x output)", "tokenizer_generation_change (1.0-1.35x input at flat prices, Claude 4.6->4.7 case)"],
+      "path_to_upgrade": "Client Claude Code / Cursor admin analytics (per-seat token telemetry is exportable) — fastest 1A upgrade in the library.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "contact_centre_summarisation": {
+      "transaction_def": "one inbound contact summarised/drafted (agent-assist: summary + suggested response; QA scoring as fan-out)",
+      "input_tokens": {"low": 1500, "mid": 3000, "high": 6000},
+      "output_tokens": {"low": 300, "mid": 500, "high": 1000},
+      "fan_out": {"low": 1, "mid": 2, "high": 3},
+      "io_class": "input_heavy_~6:1",
+      "default_model": "claude_haiku_4_5",
+      "reasoning_mode": "off",
+      "tier": "3B",
+      "confidence": "v0.1 band retained and now bracketed by an independent operations-wiki cost model. Upgraded 3C -> 3B.",
+      "anchors": [
+        {"type": "B", "value": "500-seat centre, 8,000 interactions/day running summarisation + copilot + QA: $2,000-8,000/mo API cost => $0.008-0.033/interaction full-assist stack", "source": "WFM Labs wiki — GenAI impact on contact centre operations", "date": "2026-05-19", "tier": "3B"},
+        {"type": "B", "value": "LLM QA evaluation $0.05-0.20 per 100%-coverage evaluation (vs $3-8 human)", "source": "WFM Labs wiki", "date": "2026-05", "tier": "3B"},
+        {"type": "D", "value": "10-min contact transcript ~ 1,700-2,200 tokens + system prompt => mid 3K input coheres", "source": "composition from conversion constants", "date": "2026-07", "tier": "D"}
+      ],
+      "derivation": "Mid band x fan-out 2 at Haiku = ~$0.011/interaction — inside the WFM $0.008-0.033 bracket. First-principles transcript composition agrees with mid input.",
+      "dollar_anchors": [
+        {"label": "full agent-assist stack per interaction", "usd_low": 0.008, "usd_high": 0.033, "reference_model": "claude_haiku_4_5", "includes": "summarisation + copilot + QA calls (fan_out)", "tier": "3B"}
+      ],
+      "volume_hints": {"contacts_per_agent_per_day": {"low": 20, "mid": 40, "high": 60, "tier": "3C", "note": "industry norm, no single citable source; client WFM data replaces this trivially"}},
+      "optimisation_profile": {
+        "top_levers": ["prompt_caching", "batch_flex", "output_control"],
+        "billing_envelope_vs_naive_pct": {"low": 40, "high": 70},
+        "note": "System prompt + policy context highly cacheable; QA scoring is batchable (async by nature, 50% off)."
+      },
+      "model_sensitivity": ["verbosity_same_class (output x1.5-2.6)", "tokenizer_english (±5-10%)", "routing headroom large — task rarely needs frontier"],
+      "path_to_upgrade": "Client CCaaS platform token/cost exports; vendor (Nice/Genesys/Five9) disclosures.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "customer_support_chatbot": {
+      "transaction_def": "one contained (deflected) customer conversation end-to-end — multi-turn totals INCLUDING per-turn RAG context; not per-turn",
+      "input_tokens": {"low": 600, "mid": 2000, "high": 6000},
+      "output_tokens": {"low": 300, "mid": 600, "high": 1500},
+      "fan_out": {"low": 1, "mid": 1, "high": 2},
+      "io_class": "balanced_to_input_heavy_2-4:1",
+      "default_model": "claude_sonnet_4_6",
+      "reasoning_mode": "off",
+      "tier": "2B",
+      "confidence": "Well-bracketed by vendor per-resolution prices (ceiling) and cloud worked examples (floor). Turn-count and RAG-depth assumptions drive the band.",
+      "anchors": [
+        {"type": "B", "value": "Per-resolution vendor prices: Intercom Fin $0.99; Zendesk $1.50-2.00; Gorgias ~$0.60-1.27; Decagon ~$0.50 (reported) — all-in prices incl. margin; ceilings not token measures", "source": "vendor pricing pages / comparisons", "date": "2026", "tier": "1B (Fin/Zendesk), 2B (Decagon)"},
+        {"type": "B", "value": "Underlying LLM cost $0.01-0.10 per bot conversation", "source": "Chatarmin / Crescendo cost analyses", "date": "2026", "tier": "2B"},
+        {"type": "A", "value": "AWS Bedrock worked example: ~200 input (query + retrieved context) + ~100 output per turn; 10K queries/mo = $21.11 on Sonnet-class (~$0.002/turn)", "source": "AWS ML blog — Demystifying Bedrock pricing for a chatbot", "date": "2025-08-11", "tier": "1B"},
+        {"type": "E", "value": "3-8 turns per contained conversation; LLM containment 40-60% vs 15-25% decision-tree bots", "source": "practitioner consensus / WFM Labs", "date": "2026", "tier": "3B/E"}
+      ],
+      "derivation": "Per-conversation band = AWS-style per-turn shape x 3-8 turns with RAG context per turn. Mid at Sonnet = ~$0.015/conversation — inside the $0.01-0.10 LLM bracket, and ~1.5-6% of the Fin $0.99 resolution price (the rest is vendor platform + margin — Gap #1 quantified for support).",
+      "dollar_anchors": [
+        {"label": "LLM cost per contained conversation", "usd_low": 0.01, "usd_high": 0.10, "reference_model": "claude_sonnet_4_6", "includes": "LLM only; vendor per-resolution prices sit 10-60x above this", "tier": "2B"}
+      ],
+      "volume_hints": {"note": "volume = monthly inbound contacts x deflection share (40-60% LLM containment, 3B) — client-known quantities"},
+      "optimisation_profile": {
+        "top_levers": ["model_routing", "semantic_caching", "prompt_caching"],
+        "billing_envelope_vs_naive_pct": {"low": 65, "high": 85},
+        "note": "The routing showcase: heterogeneous difficulty, FAQ-heavy. Semantic cache realistic hit band 40-60% on FAQ traffic (NOT the 95% of vendor marketing — that is match accuracy). Stacking: semantic-cache hits remove requests; routing applies to misses only."
+      },
+      "model_sensitivity": ["routing headroom (frontier rarely needed)", "verbosity (x1.5-2.6 output)", "multilingual fertility if serving non-English customers (x1.25-2.6 input)"],
+      "path_to_upgrade": "Client bot-platform analytics; per-resolution invoice reconciliation against measured conversations.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "enterprise_rag_search": {
+      "transaction_def": "one knowledge query answered over retrieved documents",
+      "input_tokens": {"low": 4000, "mid": 9000, "high": 20000},
+      "output_tokens": {"low": 400, "mid": 800, "high": 1500},
+      "fan_out": {"low": 1, "mid": 1, "high": 2},
+      "io_class": "input_heavy_10-20:1",
+      "default_model": "gemini_2_5_pro",
+      "reasoning_mode": "off",
+      "tier": "3B",
+      "confidence": "v0.1 band retained — practitioner consensus is convergent but NO large-scale first-party telemetry of production RAG token distributions exists publicly. The most consensus-dependent band in the library.",
+      "anchors": [
+        {"type": "E", "value": "5-20 chunks retrieved, 2,000-10,000 tokens assembled context per query; keep <8K; chunks 400-512 tokens with 10-20% overlap", "source": "PremAI production guide; AI21; Redis — convergent practitioner guidance", "date": "2025-2026", "tier": "2B/3C"},
+        {"type": "A", "value": "Light-RAG bot floor: ~$0.002/query at Sonnet-class on small context (AWS worked example)", "source": "AWS ML blog", "date": "2025-08", "tier": "1B"},
+        {"type": "C", "value": "Context-rot evidence: 18-model test shows degradation as context grows — engineered-low band (lean context) is also the QUALITY optimum, not just the cost one", "source": "Chroma research via 2A coverage", "date": "2025-07", "tier": "2A"}
+      ],
+      "derivation": "Band = query + system (~500-1K) + 5-20 chunks x ~450 tokens. The 3:1-5:1 input skew note from v0.1 (multi-model-token-estimates-2026-04-04.md, apac-ai-intel repo) understates heavy retrieval — production skew runs 10-20:1.",
+      "dollar_anchors": [
+        {"label": "LLM cost per query, cheap-model reference", "usd_low": 0.002, "usd_high": 0.02, "reference_model": "gemini_2_5_flash", "includes": "LLM only; embedding/vector-store costs excluded (typically <5% at query time)", "tier": "2B"}
+      ],
+      "volume_hints": {"queries_per_knowledge_worker_per_day": {"low": 2, "mid": 8, "high": 25, "tier": "3C", "note": "no public telemetry; search-replacement behaviour varies enormously"}},
+      "optimisation_profile": {
+        "top_levers": ["rag_retrieval_efficiency", "prompt_caching", "batch_flex"],
+        "billing_envelope_vs_naive_pct": {"low": 40, "high": 60},
+        "note": "Reranking is the rare win-win: ~1/3 the context at matched-or-better answer quality. Caching helps little here (chunks are per-query; only the system prompt caches — 10-30% of input). Offline/batch RAG pipelines reach 70-80%."
+      },
+      "model_sensitivity": ["long-context pricing tiers (some providers surcharge >200K)", "tokenizer_english (±5-10%)", "reasoning_toggle if agentic retrieval loops added (3-20x output + turn growth)"],
+      "path_to_upgrade": "Client RAG-pipeline logs (context sizes are logged by default in LangSmith-class tooling); any vendor telemetry disclosure.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "document_claims_processing": {
+      "transaction_def": "one document/claim processed end-to-end (may fan out to several model calls: extract, validate, decide, draft)",
+      "input_tokens": {"low": 5000, "mid": 12000, "high": 30000},
+      "output_tokens": {"low": 800, "mid": 1800, "high": 4000},
+      "fan_out": {"low": 1.5, "mid": 2.5, "high": 4},
+      "io_class": "input_heavy_normally_BUT_inverts_on_structured_extraction",
+      "default_model": "claude_sonnet_4_6",
+      "reasoning_mode": "hybrid_low",
+      "tier": "2B",
+      "confidence": "v0.1 band retained; now bracketed by three independent per-document/per-page dollar anchors. Fan-out remains the softest factor.",
+      "anchors": [
+        {"type": "B", "value": "Direct PDF -> frontier LLM ~$0.13/page (Gemini 2.5 Pro-class); decoupled OCR-then-LLM ~$0.05/document; cheap end Gemini-Flash-class $0.17 per 1,000 pages", "source": "Parsli LLM-OCR cost analysis (vendor; self-interested on the decoupled claim)", "date": "2026", "tier": "2B"},
+        {"type": "B", "value": "Typical invoice ~2,500 tokens per extraction; 10-page contract 20K+ tokens", "source": "Mindee LLM vs OCR cost comparison", "date": "2025", "tier": "2A"},
+        {"type": "C", "value": "STRUCTURED-OUTPUT INVERSION: a scanned page with 80 records => 12,000+ output tokens of JSON from ~500 tokens of raw text — output can exceed input 20x on dense extraction", "source": "Parsli", "date": "2026", "tier": "2B"},
+        {"type": "D", "value": "500-1,000 input tokens/page text; ~900 tokens/page as vision input (tile maths)", "source": "conversion constants; OpenAI vision docs", "date": "2026", "tier": "1B/2A"}
+      ],
+      "derivation": "Band = 5-30 page-equivalents x per-page constants, fan-out per pipeline stage. Mid x fan-out mid at Sonnet = ~$0.16/claim — inside the composite $0.05-0.50 bracket.",
+      "dollar_anchors": [
+        {"label": "cost per document processed end-to-end", "usd_low": 0.05, "usd_high": 0.50, "reference_model": "claude_sonnet_4_6", "includes": "LLM calls across pipeline (fan_out); OCR preprocessing excluded", "tier": "2B"}
+      ],
+      "volume_hints": {"note": "volume = client's claims/documents per month — a known business quantity; this use case has the LEAST volume uncertainty"},
+      "optimisation_profile": {
+        "top_levers": ["batch_flex", "output_control", "prompt_caching"],
+        "billing_envelope_vs_naive_pct": {"low": 60, "high": 80},
+        "note": "The batch showcase: document pipelines are async by nature — flat 50% off everything. Schema/instruction prefix caches well across documents. Structured-output discipline (minimal JSON schema) contains the inversion risk."
+      },
+      "model_sensitivity": ["reasoning_toggle (3-20x output — validation/decision steps)", "structured-output inversion (output up to 20x input on dense extraction)", "vision vs text ingestion route (~2x input delta)"],
+      "path_to_upgrade": "Client pipeline telemetry; insurer/TPA case studies with disclosed volumetrics.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "back_office_reconciliation": {
+      "transaction_def": "one reconciliation run / exception handled (ERP agent: fetch, compare, explain, propose journal)",
+      "input_tokens": {"low": 3000, "mid": 7000, "high": 15000},
+      "output_tokens": {"low": 500, "mid": 1200, "high": 2500},
+      "fan_out": {"low": 1.5, "mid": 2.5, "high": 4},
+      "io_class": "input_heavy_~6:1",
+      "default_model": "claude_sonnet_4_6",
+      "reasoning_mode": "hybrid_low",
+      "tier": "3C",
+      "confidence": "DECLARED VOID — the July 2026 evidence sweep found NO public token or per-task LLM cost data for ERP/reconciliation agents from any vendor (Hypatos, V7, D365 agents, NetSuite/SAP checked). Band is editorial, composed from document-extraction economics + agent fan-out. Treat outputs for this archetype as illustrative-only until client telemetry exists.",
+      "anchors": [
+        {"type": "B", "value": "Manual baseline $12-15 per hand-processed invoice — an economic ceiling, NOT a token anchor", "source": "MSDynamicsWorld (CFO/ERP agents)", "date": "2026", "tier": "2A"},
+        {"type": "F", "value": "Band composed from document_claims per-page constants + exception-handling context; no direct evidence", "source": "editorial", "date": "2026-07-04", "tier": "3C"}
+      ],
+      "derivation": "Composition only: exception context (ledger lines + policy + matched docs, ~3-15K) + explanation/journal output. Mid x fan-out mid at Sonnet = ~$0.10/exception — plausible against a $12-15 manual ceiling but unverified.",
+      "dollar_anchors": [],
+      "volume_hints": {"note": "volume = client's monthly reconciliation exceptions — known business quantity"},
+      "optimisation_profile": {
+        "top_levers": ["batch_flex", "prompt_caching", "model_routing"],
+        "billing_envelope_vs_naive_pct": {"low": 60, "high": 80},
+        "note": "Async by nature — batch applies to almost everything. Policy/schema context caches across exceptions."
+      },
+      "model_sensitivity": ["reasoning_toggle (3-20x output on judgement steps)", "agentic turn count if tool-looping"],
+      "path_to_upgrade": "ONLY client telemetry — this is the flagship case for 'we size it from priors, then measure yours in a week'. Watch: Microsoft/SAP agent pricing disclosures (Microsoft testing cheaper models for Copilot agents is the visible cost-pressure signal).",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "marketing_content": {
+      "transaction_def": "one content asset produced via a REALISTIC ITERATED workflow (median 13 rounds of drafting/refinement — Anthropic EI). RESTATED from v0.1, which priced a single-shot draft; that band survives as variant single_shot_draft.",
+      "input_tokens": {"low": 5000, "mid": 15000, "high": 35000},
+      "output_tokens": {"low": 3000, "mid": 8000, "high": 18000},
+      "fan_out": {"low": 1, "mid": 1, "high": 1},
+      "io_class": "balanced_~2:1_iteration_replay",
+      "default_model": "gemini_2_5_flash",
+      "reasoning_mode": "off",
+      "tier": "2B",
+      "confidence": "The iteration multiplier is the best-evidenced fact here (1B); per-turn sizes are composed. v0.1's single-shot framing understated real per-asset consumption ~10x — a material correction.",
+      "anchors": [
+        {"type": "A", "value": "Median chat conversation producing a blog/article = 13 user turns; marketing-manager-task conversations ~2.5x tokens of editor-task ones", "source": "Anthropic Economic Index — Cadences report", "url": "https://www.anthropic.com/research/economic-index-june-2026-report", "date": "2026-06-26", "tier": "1B"},
+        {"type": "D", "value": "1,500-word article = ~2,000-2,250 output tokens single-shot (word->token composition agrees with community calculators)", "source": "conversion constants; BenchLM-class calculators", "date": "2026", "tier": "3B/D"}
+      ],
+      "derivation": "Iterated band = single-shot shape x 10-15 rounds with history replay on input and partial regeneration on output. Single-shot at Sonnet = ~$0.02/asset (matches the circulating ~$0.03/article figure); iterated at Flash = ~$0.02-0.06/asset.",
+      "dollar_anchors": [
+        {"label": "LLM cost per finished asset (iterated, cheap-model reference)", "usd_low": 0.005, "usd_high": 0.25, "reference_model": "gemini_2_5_flash", "includes": "full iteration history; human time excluded (and dominates true cost)", "tier": "3C derived"}
+      ],
+      "volume_hints": {"assets_per_marketer_per_week": {"low": 3, "mid": 10, "high": 30, "tier": "3C"}},
+      "variants": {
+        "single_shot_draft": {"input_tokens": {"low": 800, "mid": 1500, "high": 3000}, "output_tokens": {"low": 600, "mid": 1200, "high": 2500}, "tier": "3B", "note": "v0.1 band preserved. Valid for API/batch generation pipelines (no human iteration)."}
+      },
+      "optimisation_profile": {
+        "top_levers": ["model_routing", "output_control", "prompt_caching"],
+        "billing_envelope_vs_naive_pct": {"low": 60, "high": 85},
+        "note": "Cheapest inference of the set — the floor-vs-SKU illustration survives. Iteration discipline (fewer rounds via better briefs) is a CONSUMPTION lever worth more than any billing lever here; brand/style guides cache well."
+      },
+      "model_sensitivity": ["verbosity_same_class (1.5-2.6x output — directly multiplies cost here)", "tokenizer_english (±5-10%)"],
+      "path_to_upgrade": "Team workspace analytics (Claude/ChatGPT team token reporting); content-ops platform telemetry.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "meeting_intelligence": {
+      "transaction_def": "one meeting-hour processed via the TRANSCRIPT route (STT -> text -> LLM summary/actions). Audio-native route is a variant at ~5x input.",
+      "input_tokens": {"low": 8000, "mid": 12000, "high": 18000},
+      "output_tokens": {"low": 400, "mid": 800, "high": 1500},
+      "fan_out": {"low": 1, "mid": 1.5, "high": 3},
+      "io_class": "input_heavy_15-30:1",
+      "default_model": "claude_haiku_4_5",
+      "reasoning_mode": "off",
+      "tier": "2A",
+      "confidence": "Strong: first-party transcript-volume telemetry and first-principles composition agree within 20%. The architecture fork (transcript vs audio-native) is the main sizing risk — 5x input difference.",
+      "anchors": [
+        {"type": "A", "value": "90-minute meeting ~ 15,000-20,000 transcript tokens (=> ~10-13K/hour); chunked summarisation at 4K + 500 overlap standard", "source": "AssemblyAI engineering blog", "date": "2025", "tier": "1B"},
+        {"type": "A", "value": "Audio-native ~1,000 tokens/minute => ~60K/hour — 5x the transcript route", "source": "Microsoft TechCommunity (GPT-4o-class audio)", "date": "2025", "tier": "1B"},
+        {"type": "B", "value": "STT anchor $0.006/min = $0.36/hour — STT typically exceeds the LLM summarisation cost", "source": "OpenAI pricing", "date": "2026", "tier": "1B"}
+      ],
+      "derivation": "Input = transcript tokens/hour + prompt; output = summary + actions. Mid x fan-out 1.5 at Haiku = ~$0.024/meeting-hour LLM — small next to the $0.36/hr STT line, which the investment case must carry separately.",
+      "dollar_anchors": [
+        {"label": "LLM cost per meeting-hour (transcript route)", "usd_low": 0.005, "usd_high": 0.10, "reference_model": "claude_haiku_4_5", "includes": "summary + actions + chapters (fan_out); STT excluded", "tier": "2A"}
+      ],
+      "volume_hints": {"meeting_hours_per_employee_per_week": {"low": 2, "mid": 5, "high": 10, "tier": "3C", "note": "meeting-heavy roles; org calendars make this measurable instantly"}},
+      "variants": {
+        "audio_native": {"input_tokens": {"low": 45000, "mid": 60000, "high": 75000}, "output_tokens": {"low": 400, "mid": 800, "high": 1500}, "tier": "1B", "note": "per meeting-hour at ~1K audio tokens/min. Choose route deliberately — it is a 5x input decision."}
+      },
+      "optimisation_profile": {
+        "top_levers": ["batch_flex", "model_routing", "output_control"],
+        "billing_envelope_vs_naive_pct": {"low": 70, "high": 90},
+        "note": "Fully async — batch everything. Small models handle summarisation well (routing headroom large). Naive = frontier + audio-native + sync; engineered = Haiku-class + transcript + batch."
+      },
+      "model_sensitivity": ["route choice transcript vs audio-native (5x input — bigger than any model swap)", "verbosity (x1.5-2.6 output)"],
+      "path_to_upgrade": "Vendor telemetry (Fireflies/Granola/Zoom disclose little); client pilot measurement is trivial (transcripts are logged).",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "deep_research": {
+      "transaction_def": "one agentic research report (multi-step: search, fetch, read, synthesise — 40-180 tool steps)",
+      "input_tokens": {"low": 60000, "mid": 250000, "high": 900000},
+      "output_tokens": {"low": 20000, "mid": 60000, "high": 100000},
+      "fan_out": {"low": 1, "mid": 1, "high": 1},
+      "io_class": "input_heavy_3-11:1_cache_heavy",
+      "default_model": "gemini_2_5_pro",
+      "reasoning_mode": "on",
+      "billing_assumptions": {"cache_read_share": {"low": 0.5, "mid": 0.6, "high": 0.7}, "tier": "2A", "src": "Gemini Deep Research analyses report 50-70% of input cached"},
+      "tier": "2A",
+      "confidence": "The best-measured agentic use case publicly: a full token trace, vendor pricing, and independent lab measurements all exist and cohere.",
+      "anchors": [
+        {"type": "C", "value": "Full single-query trace (o4-mini-deep-research): 60,506 input / 22,883 output (20,416 of it reasoning) = $0.30 inference + $0.77 search fees + $0.03 code = $1.10 total; 45 searches, 24 page-opens, 180 steps", "source": "Simon Willison traced run", "url": "https://til.simonwillison.net/llms/o4-mini-deep-research", "date": "2025-10-18", "tier": "3B"},
+        {"type": "C", "value": "10 test queries on o3-deep-research: ~$10/query average, up to ~$30/call; o4-mini-DR ~$0.92/query", "source": "Artificial Analysis", "date": "2025-07", "tier": "2A"},
+        {"type": "B", "value": "Gemini Deep Research: standard ~80 searches, ~250K input (50-70% cached), ~60K output ~ $2/task; Max tier ~160 searches, ~900K input, ~80K output ~ $5/task; search grounding fees add $1-2/task", "source": "TokenCost / MindStudio analyses of Google pricing", "date": "2026-04-06", "tier": "2A"}
+      ],
+      "derivation": "Band spans the measured o4-mini trace (low) through Gemini standard (mid) to Gemini Max (high). Reasoning share of output ~50-90%. Tool fees (search grounding) can equal or exceed inference — carry separately in the cost model.",
+      "dollar_anchors": [
+        {"label": "cost per research report (inference only)", "usd_low": 0.30, "usd_high": 30.00, "reference_model": "gemini_2_5_pro", "includes": "LLM inference; search/grounding fees EXCLUDED (add $0.8-2.2/task where applicable)", "tier": "2A"}
+      ],
+      "volume_hints": {"reports_per_analyst_per_week": {"low": 2, "mid": 8, "high": 25, "tier": "3C"}},
+      "optimisation_profile": {
+        "top_levers": ["reasoning_effort_dial", "prompt_caching", "output_control"],
+        "billing_envelope_vs_naive_pct": {"low": 30, "high": 60},
+        "note": "Provider-side caching already embedded (50-70%). The user-controllable levers are breadth caps (searches/steps), effort dial (1.8-3.5x output span), and tier choice (mini-class does 80% of reports at ~1/10th cost — the o4-mini vs o3 gap is 10x)."
+      },
+      "model_sensitivity": ["reasoning share (50-90% of output)", "agentic breadth (searches x pages read drives input 15x across tiers)", "tool fees priced per-call not per-token (invisible to token estimates)"],
+      "path_to_upgrade": "Own-account usage exports (admin consoles expose per-feature token draw).",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "translation_localisation": {
+      "transaction_def": "1,000 words of source text translated (document-grade, with instructions/glossary context)",
+      "input_tokens": {"low": 1400, "mid": 1600, "high": 2000},
+      "output_tokens": {"low": 1300, "mid": 1500, "high": 2000},
+      "fan_out": {"low": 1, "mid": 1, "high": 2},
+      "io_class": "symmetric_~1:1_UNIQUE",
+      "default_model": "mistral_small_3_2",
+      "reasoning_mode": "off",
+      "tier": "2B",
+      "confidence": "Tightest band in the library — the task determines the token count (source text in, translated text out). The only symmetric use case. Target-language fertility is the main multiplier.",
+      "anchors": [
+        {"type": "B", "value": "Budget heuristic 1,000 chars ~ 250 in + 250 out; LLM translation ~$0.60 per MILLION source words on nano-class models — ~186x cheaper than Google NMT, ~230x cheaper than DeepL per-character pricing", "source": "SimpleLocalize AI translation cost comparison", "date": "2026", "tier": "2B"},
+        {"type": "D", "value": "1,000 words = ~1,333 tokens + instructions/glossary ~200-600; output = same content in target language x fertility", "source": "conversion constants", "date": "2026", "tier": "D"},
+        {"type": "C", "value": "Fertility multipliers vs English: Romance 1.25-1.45x, Germanic 1.4-1.6x, Slavic 1.8-2.1x, CJK 2-4x", "source": "arXiv 2605.24718", "date": "2026-05", "tier": "2A"}
+      ],
+      "derivation": "Composition and the dollar heuristic agree within 15%. At mistral_small the mid band = ~$0.0006/1,000 words — matching the published $0.60/M-words figure almost exactly.",
+      "dollar_anchors": [
+        {"label": "LLM cost per 1,000 source words", "usd_low": 0.0005, "usd_high": 0.005, "reference_model": "mistral_small_3_2", "includes": "LLM only; review/QA workflow excluded; fan_out high covers back-translation QA", "tier": "2B"}
+      ],
+      "volume_hints": {"note": "volume = client's localisation word count — contractually known"},
+      "optimisation_profile": {
+        "top_levers": ["batch_flex", "model_routing", "prompt_caching"],
+        "billing_envelope_vs_naive_pct": {"low": 85, "high": 95},
+        "note": "The clearest arbitrage in the library: batchable (50% off), small models suffice (frontier -> small = ~90-95% off), glossaries cache. Naive = frontier + sync; engineered = small + batch. The 186-230x gap vs legacy MT vendor pricing is the sharpest SKU-vs-floor illustration TAIL holds."
+      },
+      "model_sensitivity": ["tokenizer fertility DOMINANT (output-side x1.25-4 by target language)", "quality floor varies by language pair — cheap models degrade on low-resource pairs"],
+      "path_to_upgrade": "Client TMS integration telemetry; per-language measured fertility on client content.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "text_to_sql_analytics": {
+      "transaction_def": "one natural-language analytics question answered against a governed schema (NL -> SQL -> execute -> explain)",
+      "input_tokens": {"low": 700, "mid": 3000, "high": 9000},
+      "output_tokens": {"low": 200, "mid": 1500, "high": 12000},
+      "fan_out": {"low": 1, "mid": 1.5, "high": 3},
+      "io_class": "METHOD_DEPENDENT_flips_input_to_output_heavy",
+      "default_model": "claude_sonnet_4_6",
+      "reasoning_mode": "hybrid_low",
+      "tier": "3B",
+      "confidence": "Widest method variance of any use case — published per-query totals span 700 to 150,000 tokens depending on prompting architecture. The band prices the sane middle; the derivation carries the extremes.",
+      "anchors": [
+        {"type": "C", "value": "Tokens/query by method: DAIL-SQL ~700; PTD-SQL 1,855; C3 2,803; DIN-SQL 9,126", "source": "PTD-SQL paper (arXiv 2409.14082)", "date": "2024", "tier": "3B"},
+        {"type": "C", "value": "Agentic orchestration (SQLConductor): 7.1K input + 12.2K OUTPUT per query — reasoning/agentic methods flip the ratio output-heavy; still 2-16x fewer tokens than CHESS/Alpha-SQL-class agents", "source": "arXiv 2606.23537", "date": "2026", "tier": "3B"},
+        {"type": "B", "value": "Production correction: Dataherald cut 150K -> 25.5K tokens/query (-83%) via few-shot pruning + schema pruning under monitoring", "source": "ZenML LLMOps database", "date": "2024-25", "tier": "2B"},
+        {"type": "B", "value": "~$0.01/query typical on GPT-4o-class; schema prefix caches at 90% off", "source": "practitioner cost analyses", "date": "2025-26", "tier": "2B"}
+      ],
+      "derivation": "Low = lean single-call (DAIL-class). Mid = few-shot + schema context. High = agentic/reasoning with self-correction. The Dataherald case is the canonical naive-band story: unmonitored schema stuffing ran 150K/query — 17x our high band — until measured.",
+      "dollar_anchors": [
+        {"label": "LLM cost per analytics question", "usd_low": 0.005, "usd_high": 0.25, "reference_model": "claude_sonnet_4_6", "includes": "LLM only; warehouse compute excluded", "tier": "2B"}
+      ],
+      "volume_hints": {"queries_per_analyst_per_day": {"low": 5, "mid": 15, "high": 40, "tier": "3C"}},
+      "optimisation_profile": {
+        "top_levers": ["prompt_context_compression", "prompt_caching", "model_routing"],
+        "billing_envelope_vs_naive_pct": {"low": 60, "high": 85},
+        "note": "Schema pruning is the measured big win (-83%, production). Schema/few-shot prefix is the textbook cache candidate (90% off, stable across queries). Route simple aggregations to small models."
+      },
+      "model_sensitivity": ["reasoning_toggle FLIPS the io ratio (output 200 -> 12,000 on the same question)", "effort dial (1.8-3.5x output)", "verbosity"],
+      "path_to_upgrade": "Client BI-copilot logs; per-method A/B measurement in a week-long pilot.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "email_crm_drafting": {
+      "transaction_def": "one personalised outreach/CRM email drafted, INCLUDING enrichment context in the prompt (research context is the driver, not the email)",
+      "input_tokens": {"low": 300, "mid": 1500, "high": 5000},
+      "output_tokens": {"low": 200, "mid": 300, "high": 600},
+      "fan_out": {"low": 1, "mid": 1, "high": 3},
+      "io_class": "balanced_to_input_heavy_enrichment_dependent",
+      "default_model": "claude_haiku_4_5",
+      "reasoning_mode": "off",
+      "tier": "3C",
+      "confidence": "Editorial with consistent vendor-price ceilings. Generation is trivially cheap; enrichment/research context (and any agentic research fan-out) is where real AI-SDR token bills live. No SDR vendor publishes token telemetry.",
+      "anchors": [
+        {"type": "F", "value": "Drafts ~50-200 input + 250-300 output; recruiter-style 200 in / 300 out", "source": "onprem.ai role model", "date": "2025-12", "tier": "3C"},
+        {"type": "B", "value": "AiSDR <$1 per email ALL-IN (~$900/mo product — margin-dominated ceiling); Sendr ~$0.12 per enriched personalised lead", "source": "vendor pricing", "date": "2026", "tier": "1B pricing, margin-dominated"},
+        {"type": "A", "value": "Email drafts = 7% of work-related Claude conversation artifacts (volume context)", "source": "Anthropic Economic Index — Cadences", "date": "2026-06-26", "tier": "1B"}
+      ],
+      "derivation": "Raw LLM cost per drafted email ~$0.001-0.01 — negligible against the $0.12-1.00 all-in vendor prices. The investment case for AI-SDR tooling is therefore about workflow and data, not inference cost.",
+      "dollar_anchors": [
+        {"label": "raw LLM cost per personalised email", "usd_low": 0.001, "usd_high": 0.01, "reference_model": "claude_haiku_4_5", "includes": "drafting + enrichment context in prompt; agentic prospect-research fan-out excluded", "tier": "3C"}
+      ],
+      "volume_hints": {"emails_per_sdr_per_day": {"low": 20, "mid": 50, "high": 150, "tier": "3C"}},
+      "optimisation_profile": {
+        "top_levers": ["model_routing", "prompt_caching", "batch_flex"],
+        "billing_envelope_vs_naive_pct": {"low": 70, "high": 90},
+        "note": "Small models suffice; templates/brand voice cache; enrichment batches overnight. Cost is a rounding error either way — optimisation matters only at very high volume."
+      },
+      "model_sensitivity": ["verbosity (minor)", "if agentic research per prospect is added, consumption moves to deep_research-lite shape (10-50x)"],
+      "path_to_upgrade": "SDR-platform telemetry; client outbound-ops logs.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "voice_agents": {
+      "transaction_def": "one minute of live voice conversation — LLM component only (STT/TTS carried separately; TTS is often the largest stack line). History replays each turn (~4 turns/min) so input grows with call length.",
+      "input_tokens": {"low": 4000, "mid": 8000, "high": 15000},
+      "output_tokens": {"low": 400, "mid": 800, "high": 1500},
+      "fan_out": {"low": 1, "mid": 1, "high": 1},
+      "io_class": "input_heavy_~10:1_history_replay",
+      "default_model": "claude_sonnet_4_6",
+      "reasoning_mode": "off",
+      "tier": "3B",
+      "confidence": "Back-derived from published per-minute dollar figures across two independent calculator/platform sources; no vendor publishes measured tokens/minute. Latency requirements constrain model choice more than cost does.",
+      "anchors": [
+        {"type": "B", "value": "LLM component: GPT-4o-mini-class ~$0.003/min; Sonnet-class $0.02-0.04/min; full stack $0.05-0.30/min with TTS often largest (ElevenLabs $0.08-0.12/min); STT 3-8%", "source": "Softcery calculator; Retell AI pricing analysis", "date": "2026", "tier": "2B/3C"},
+        {"type": "E", "value": "~150 wpm, ~4 turns/minute, 1.8x 'reality factor' for history replay + function calls + barge-in; input grows quadratically with call length", "source": "Softcery/SigmaMind embedded assumptions", "date": "2026", "tier": "3C"},
+        {"type": "A", "value": "Audio-native alternative ~1,000 tokens/min input", "source": "Microsoft TechCommunity", "date": "2025", "tier": "1B"}
+      ],
+      "derivation": "Band back-derived so that Sonnet-reference cost/minute lands inside the published $0.02-0.04; mini-class models land near $0.002-0.003/min on the same band — both anchors satisfied within 2x.",
+      "dollar_anchors": [
+        {"label": "LLM cost per conversation-minute", "usd_low": 0.002, "usd_high": 0.05, "reference_model": "claude_sonnet_4_6", "includes": "LLM only; STT/TTS excluded", "tier": "2B"}
+      ],
+      "volume_hints": {"note": "volume = call minutes/month — telephony metrics the client already has"},
+      "optimisation_profile": {
+        "top_levers": ["prompt_caching", "prompt_context_compression", "model_routing"],
+        "billing_envelope_vs_naive_pct": {"low": 50, "high": 80},
+        "note": "History replay makes caching structural (system prompt + growing transcript prefix). Aggressive history truncation/summarisation caps the quadratic. Batch inapplicable (real-time)."
+      },
+      "model_sensitivity": ["latency floor constrains model class (small/fast models mandatory — cost follows)", "caching pricing structure", "audio-native vs pipeline architecture (different token economics entirely)"],
+      "path_to_upgrade": "Voice-platform (Retell/Vapi-class) per-call token exports; client telephony pilot.",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    },
+
+    "hr_legal_document_review": {
+      "transaction_def": "one document reviewed (contract risk review, policy compliance check, or CV batch-equivalent) — reasoning-heavy read-and-judge",
+      "input_tokens": {"low": 8000, "mid": 20000, "high": 50000},
+      "output_tokens": {"low": 2000, "mid": 12000, "high": 35000},
+      "fan_out": {"low": 1, "mid": 2, "high": 8},
+      "io_class": "balanced_reasoning_inflated_~1:0.6",
+      "default_model": "claude_sonnet_4_6",
+      "reasoning_mode": "on",
+      "tier": "3A",
+      "confidence": "The load-bearing dollar anchors are a named exec's podcast disclosures (3A) plus a vendor estimate (3C) — they agree within ~2x of the composed band, but nothing here is measured telemetry. High fan-out end (complex drafting) is very soft.",
+      "anchors": [
+        {"type": "B", "value": "Harvey (named exec, on record): single complex drafting query ~ $20 compute; contract review across 100K documents ~ $20,000 => ~$0.20/document bulk review; a major client burned its full-year agentic budget in 3-4 months", "source": "Sourcery podcast via BigGo Finance", "date": "2026-06-18", "tier": "3A"},
+        {"type": "F", "value": "50-page contract: 20K in + 26K reasoning out; 100-page risk review 50K in + 38.5K out; 2-page resume 1.1K in + ~3.2K reasoning out (output-heavy 1:3)", "source": "onprem.ai role model", "date": "2025-12", "tier": "3C"},
+        {"type": "B", "value": "Harvey ~$1,200/lawyer/mo seat price (reported) — economic ceiling", "source": "Bind/eesel pricing analyses", "date": "2026", "tier": "2B"}
+      ],
+      "derivation": "Mid (20K/12K at Sonnet ~ $0.24) sits on the Harvey bulk-review ~$0.20/doc anchor. The $20 drafting query = high band x high fan-out (agentic drafting loops) — carried as fan-out, not inflated into the base band. Reasoning mode is assumed ON: this is the use case where turning it off most misprices.",
+      "dollar_anchors": [
+        {"label": "cost per document reviewed", "usd_low": 0.10, "usd_high": 2.00, "reference_model": "claude_sonnet_4_6", "includes": "single review pass to moderate fan-out; complex agentic drafting ($20/query) excluded from this bracket", "tier": "3A"}
+      ],
+      "volume_hints": {"documents_per_reviewer_per_day": {"low": 5, "mid": 15, "high": 40, "tier": "3C"}},
+      "optimisation_profile": {
+        "top_levers": ["batch_flex", "reasoning_effort_dial", "prompt_caching"],
+        "billing_envelope_vs_naive_pct": {"low": 50, "high": 75},
+        "note": "Bulk review batches (50% off). Playbook/policy context caches across documents. Effort dial matters here more than anywhere: medium effort ~ -40-50% cost for single-digit accuracy points — a risk-appetite decision the client must own, not a default."
+      },
+      "model_sensitivity": ["reasoning_toggle/effort (3-20x output — THE driver)", "generation upgrades shift reasoning-token behaviour unpredictably (documented both directions)", "long-document context pricing tiers"],
+      "path_to_upgrade": "Legal-ops platform telemetry; client pilot on own contract set (a week of logs beats every anchor above).",
+      "volatility_class": "V2", "as_of": "2026-07-04", "review_by": "2027-01-04"
+    }
+  },
+
+  "optimisation_levers": {
+    "_families": {
+      "consumption": "reduce tokens processed — these define WHERE IN THE BAND a deployment sits. The low band already assumes them. NEVER stack consumption savings on top of the low band.",
+      "billing": "reduce price per token — these apply to whatever consumption lands at, and DO stack (multiplicatively, with the stated exceptions)."
+    },
+    "prompt_caching": {
+      "family": "billing",
+      "mechanism": "provider stores KV-cache of a byte-identical prompt prefix; repeat requests bill cached tokens at reduced rate",
+      "applies_to": "cached share of INPUT tokens only",
+      "value": {"cache_read_multiplier": 0.1, "providers": "Anthropic, OpenAI, Google (Gemini 3.x/2.5), AWS Bedrock — all 0.1x as of 2026-07-04", "write_premiums": "Anthropic 1.25x (5-min) / 2x (1-hr); OpenAI free+automatic; Gemini explicit-cache storage fee $1.00-4.50/M tokens/hr; Bedrock +25% on Claude, none on Nova"},
+      "realistic_hit_rates": {"agentic": [0.7, 0.9], "chat_support": [0.5, 0.7], "single_shot_rag": [0.1, 0.3], "tier": "3B/2A", "src": "dirac.run OpenRouter telemetry; Helicone/Vellum production bands; ProjectDiscovery case (7%->84% hit, -59% total cost)"},
+      "conditions": "byte-identical prefix >= provider minimum (512-4,096 tokens); requests within TTL; stable tool/system preamble — any upstream change invalidates downstream",
+      "quality_tradeoff": "none (identical outputs — provider-guaranteed)",
+      "tier": "1B", "as_of": "2026-07-04", "volatility_class": "V1", "review_by": "2026-08-31"
+    },
+    "batch_flex": {
+      "family": "billing",
+      "mechanism": "async submission on spare capacity (<=24h; most jobs 1-6h); or synchronous flex tiers at same discount with availability risk",
+      "applies_to": "ALL tokens (input and output)",
+      "value": {"multiplier": 0.5, "providers": "Anthropic, OpenAI, Google — flat 50% as of 2026-07-04; inverse lever exists (priority tiers cost 1.8-2.5x)"},
+      "conditions": "latency-insensitive workloads only; caps ~50-100K requests/job",
+      "quality_tradeoff": "none (same models)",
+      "stacking": "multiplies with caching (vendor-confirmed; exception: Gemini 3.1 Pro batch cache-read is 0.2x of batch input, not 0.1x)",
+      "tier": "1B", "as_of": "2026-07-04", "volatility_class": "V1", "review_by": "2026-08-31"
+    },
+    "model_routing": {
+      "family": "billing",
+      "mechanism": "classifier/cascade sends easy queries to cheap models, hard ones to frontier",
+      "applies_to": "entire routed request (input + output at the cheaper model's price)",
+      "value": {"measured": "45-85% cost reduction at ~95% frontier quality (RouteLLM: >85% MT-Bench, 45% MMLU, 35% GSM8K; best router needed frontier on only 14% of calls); FrugalGPT up to 98% on 2023-era models", "vendor_claims": "Martian 92% and NotDiamond claims are unverified/mixed — RouterArena ranks NotDiamond #12 for over-selecting expensive models"},
+      "conditions": "heterogeneous difficulty mix; calibration data; ongoing evals",
+      "quality_tradeoff": "definitional — 'matched quality' is benchmark-specific; the residual % IS the trade",
+      "stacking": "changes the base price; other levers' percentages then apply. Routing and distillation are the SAME lever — never count both on the same traffic",
+      "tier": "1B research", "as_of": "2026-07-04", "volatility_class": "V2", "review_by": "2027-01-04"
+    },
+    "fine_tune_distill": {
+      "family": "billing",
+      "mechanism": "replace frontier model with a small model fine-tuned on the narrow task",
+      "applies_to": "ALL tokens on migrated traffic",
+      "value": {"per_token_gap": "~85% (current small-vs-frontier list gap) plus shorter prompts (fewer few-shot examples)", "caveat": "OpenAI fine-tuning platform winding down (July 2026, closed to new users) — route now runs through open-weight LoRA hosting / Vertex / Bedrock; hosted-FT inference premiums can be 3-4x the base small model"},
+      "conditions": "narrow stable task, eval discipline, sustained volume; break-even NOT publicly established (single-digit M tokens/month is derived arithmetic, flagged)",
+      "quality_tradeoff": "matched-or-better in-domain; brittle out-of-distribution; drift requires retraining",
+      "tier": "1B pricing / 3C break-even", "as_of": "2026-07-04", "volatility_class": "V1", "review_by": "2026-08-31"
+    },
+    "semantic_caching": {
+      "family": "billing",
+      "mechanism": "embed query; return stored response if similarity exceeds threshold — removes the request entirely",
+      "applies_to": "100% of hit requests (input and output)",
+      "value": {"realistic_hit_band": [0.20, 0.45], "by_workload": "FAQ/support 40-60%; classification 50-70%; code queries 40-60%; open-ended chat 5-15%", "marketing_correction": "vendor '95%' figures are match ACCURACY on hits, not hit FREQUENCY"},
+      "conditions": "repetitive query distributions; threshold tuning; TTLs; personalised content excluded",
+      "quality_tradeoff": "REAL — false positives serve wrong/stale answers; adversarial-robustness concerns documented",
+      "stacking": "total = 1 - (1-hit_rate) x (1-downstream_saving); hits skew easy, cannibalising routing's cheap tier",
+      "tier": "3B", "as_of": "2026-07-04", "volatility_class": "V2", "review_by": "2027-01-04"
+    },
+    "prompt_context_compression": {
+      "family": "consumption",
+      "mechanism": "small model prunes low-information tokens (LLMLingua-class) or history is truncated/summarised before the main call",
+      "applies_to": "INPUT tokens (dynamic portion)",
+      "value": {"measured": "up to 20x compression at ~1.5-point benchmark loss (LLMLingua, strong on reasoning prompts, moderate on conversational); LLMLingua-2 targets 3-6x task-agnostic (unverified this sweep)"},
+      "conditions": "long dynamic contexts (retrieved text, transcripts, history tails)",
+      "quality_tradeoff": "small at moderate ratios; higher when compressing instructions",
+      "stacking": "CANNIBALISES caching if applied to the stable prefix (compressed prefixes differ per request -> cache misses; and cached tokens already cost 0.1x, capping the win at <=10% of input rate). Rule: cache the stable prefix verbatim; compress only the dynamic suffix",
+      "tier": "1B research", "as_of": "2026-07-04", "volatility_class": "V2", "review_by": "2027-01-04"
+    },
+    "output_control": {
+      "family": "consumption",
+      "mechanism": "concise-reasoning prompting (Chain-of-Draft), style constraints, structured outputs, max_tokens backstop",
+      "applies_to": "OUTPUT tokens (priced 3-6x input — proportional cuts are potent)",
+      "value": {"measured": "Chain-of-Draft: matched CoT accuracy at as little as 7.6% of reasoning tokens (~92% cut; one measured case -92.4% tokens with accuracy UP); general concise prompting 70-90% output reduction on reasoning benchmarks", "unmeasured": "structured-outputs-vs-prose deltas — no rigorous public study (flagged)"},
+      "conditions": "task-dependent; naive max_tokens capping truncates mid-answer (real degradation) — it is a backstop, not a saving",
+      "quality_tradeoff": "neutral-to-positive on benchmarks at moderate settings; validate per task",
+      "tier": "1B research", "as_of": "2026-07-04", "volatility_class": "V2", "review_by": "2027-01-04"
+    },
+    "reasoning_effort_dial": {
+      "family": "consumption",
+      "mechanism": "provider effort/thinking-budget parameter (low/medium/high) controls reasoning-token spend",
+      "applies_to": "OUTPUT (thinking) tokens",
+      "value": {"measured": "low->high spans 1.79-3.37x completion tokens on identical 225-task suite (GPT-5, Aider logs: 780K -> 2.62M tokens, $10.37 -> $29.08); medium ~ -40-50% cost vs high for -1 to -7 benchmark points; parameter ceilings allow up to ~9.5x minimal->xhigh"},
+      "conditions": "reasoning-capable models; quality delta must be owned by the client (risk-appetite decision)",
+      "quality_tradeoff": "explicit and dose-dependent",
+      "tier": "3B raw logs + 1B parameter docs", "as_of": "2026-07-04", "volatility_class": "V1", "review_by": "2026-08-31"
+    },
+    "rag_retrieval_efficiency": {
+      "family": "consumption",
+      "mechanism": "rerankers, contextual retrieval, chunk tuning — fewer, better chunks in context",
+      "applies_to": "INPUT tokens (the context block)",
+      "value": {"measured": "reranked top-k matched/exceeded quality of sending ~3x the chunks at ~1/3 context cost; contextual retrieval + rerank -67% retrieval failures (Anthropic eval)"},
+      "conditions": "retrieval-based workloads; reranker adds a small per-query cost and latency",
+      "quality_tradeoff": "usually IMPROVES quality (context-rot avoidance) — the rare win-win",
+      "stacking": "complementary to caching (shrinks exactly the per-query portion caching cannot touch)",
+      "tier": "1B vendor eval / 3B", "as_of": "2026-07-04", "volatility_class": "V2", "review_by": "2027-01-04"
+    },
+    "agentic_context_engineering": {
+      "family": "consumption",
+      "mechanism": "context editing (clear stale tool results), deferred tool loading, programmatic tool calling, compaction, sub-agent isolation",
+      "applies_to": "INPUT tokens (context overhead across turns)",
+      "value": {"measured": "context editing: -84% tokens on 100-turn agentic search (vendor eval, quality UP); deferred tool loading: tool definitions 77K -> 8.7K (-85%) with accuracy up; programmatic tool calling: -37% average, to -98.7% on tool-heavy extremes", "caveat": "these CONTAIN an architecture that runs 4-15x chat token volumes — they do not make agents cheap"},
+      "conditions": "agentic/multi-turn workloads with tool use",
+      "quality_tradeoff": "generally positive (less context rot); compaction summaries can drop details",
+      "stacking": "overlaps caching (rewriting history invalidates cached prefix that turn — one-off rewrite cost, net positive on long runs); the -84% and cache -90% do NOT simply add",
+      "tier": "1B vendor evals", "as_of": "2026-07-04", "volatility_class": "V2", "review_by": "2027-01-04"
+    }
+  },
+
+  "stacking_rules": {
+    "confirmed_multiplicative": ["prompt_caching x batch_flex (vendor-documented, one Gemini 3.1 Pro exception)", "routing/distillation rebase price; consumption levers and cache/batch percentages then apply", "output_control is orthogonal to all input-side levers"],
+    "same_lever_never_double": ["model_routing and fine_tune_distill on the same traffic", "consumption levers vs the low band (the low band IS the engineered state)"],
+    "cannibalisation": ["compression vs caching on the stable prefix (see lever entry)", "semantic-cache hits skew easy and eat routing's cheap tier", "compaction invalidates cache on the rewrite turn"],
+    "combined_envelopes_vs_naive_uncached_frontier": {
+      "chat_support": {"base_stack_pct": [40, 60], "mature_stack_pct": [65, 85], "note": "mature end accepts routing quality risk"},
+      "rag_interactive": {"pct": [40, 60]},
+      "rag_offline_batch": {"pct": [70, 80]},
+      "agentic": {"pct": [75, 90], "note": "contains, not cheapens — architecture runs 4-15x chat volumes"},
+      "tier": "derived from 1B/3B components, 2026-07-04"
+    }
+  },
+
+  "model_adjustment_factors": {
+    "_rule": "Bands are stated for each use case's default_model + reasoning_mode. A model change is a CONSUMPTION event, not a price-sheet swap. Apply factors below; where a migration is real, re-measure (re-baseline rule).",
+    "tokenizer_cross_vendor_english": {"multiplier_on_input": [0.95, 1.10], "tier": "3B", "note": "major tokenizers within single-digit % on English prose"},
+    "tokenizer_code": {"multiplier_on_input": [0.85, 1.20], "tier": "3B", "note": "o200k ~10-20% fewer tokens than cl100k on code; families vary"},
+    "tokenizer_non_english_latin": {"multiplier_on_input": [1.25, 2.6], "tier": "2A", "note": "fertility spans 2.5x across 25 European languages (arXiv 2605.24718)"},
+    "tokenizer_cjk_low_resource": {"multiplier_on_input": [2.0, 4.0], "worst_case": 10, "tier": "3B/3C"},
+    "tokenizer_generation_change_same_family": {"multiplier_on_input": [1.0, 1.35], "measured_extreme": 1.47, "tier": "1B+3B", "note": "Claude 4.6->4.7 tokenizer change at FLAT prices — an upgrade can be a silent repricing via consumption; measure on real traffic"},
+    "reasoning_on_vs_off": {"multiplier_on_output": [3, 20], "hard_task_extreme": 30, "tier": "1B/3B", "note": "reasoning tokens billed as output; R1-class thinks 12-23K tokens/question against ~0.7K visible answers"},
+    "reasoning_effort_dial": {"multiplier_on_output_low_to_high": [1.8, 3.5], "parameter_ceiling": 9.5, "tier": "3B measured", "note": "circulating '23x between efforts' claims are ceiling-driven, not typical — treat >4x as suspect"},
+    "verbosity_same_class": {"multiplier_on_output": [0.6, 2.6], "tier": "3B", "note": "same-class models on identical tasks span 2.6x output (Artificial Analysis eval-suite token usage); GPT-5.1-style adaptive reasoning cut avg reasoning tokens ~55% vs GPT-5"},
+    "agentic_turn_behaviour": {"multiplier_on_input": [0.5, 2.5], "tier": "2A/3B", "note": "turn count x context replay drives input; documented 5.5x cost change with output flat (Gemini 3->3.5 Flash decomposition); direction is model-specific"},
+    "generation_upgrade_net": {"multiplier_on_total": [0.2, 2.3], "tier": "1B/2A heterogeneous", "note": "documented BOTH directions: -76% output at matched score (Opus 4.5 effort) vs +92% thinking tokens (R1-0528) vs >2x (Gemini 3 Flash). NEVER assume direction — re-baseline"},
+    "cost_per_task_rule": {"note": "price-per-token is NOT cost-per-task: same-score cost differences of 2-7x documented where per-token price explains under half (Aider: identical 76.9% scores at $13.75 vs $37.41; o4-mini at half o3's per-token price cost 1.4x per run). All library comparisons are $-per-transaction at stated consumption.", "tier": "3B raw logs"}
+  },
+
+  "freshness": {
+    "mechanism": "hybrid — automated scan proposes, analyst disposes. Numbers change ONLY via analyst sign-off + changelog + validator pass. Operating detail: TokenEstimateLibrary_RefreshRunbook_v1.md",
+    "volatility_classes": {
+      "V1": {"review_days": [30, 90], "covers": "prices, cache/batch multipliers, model roster, effort-dial behaviour, provider policy (e.g. FT wind-down)", "next_review": "2026-08-31 (aligned to TAIL post-Q2-earnings refresh)"},
+      "V2": {"review_days": 180, "covers": "per-use-case token bands, hit-rate priors, optimisation savings ranges", "next_review": "2027-01-04"},
+      "V3": {"review_days": 365, "covers": "conversion constants, io classes, structural rules", "next_review": "2027-07-04"}
+    },
+    "event_triggers": ["new model generation from any tracked provider (forces model_adjustment re-baseline for affected use cases)", "any provider price move >=20% (precedent: GPT-5 line doubling 2026-04-23)", "provider policy change touching a lever (precedent: OpenAI fine-tuning wind-down 2026-07)", "new Anthropic Economic Index or equivalent first-party telemetry release"],
+    "watchlist": [
+      {"source": "Anthropic Economic Index / research blog", "feeds": "usage telemetry anchors", "cadence": "on release"},
+      {"source": "Artificial Analysis model pages (eval-suite token usage, cost-to-run)", "feeds": "verbosity + cost-per-task factors", "cadence": "monthly"},
+      {"source": "Aider polyglot leaderboard (completion-token logs)", "feeds": "effort-dial + cost-per-task", "cadence": "monthly"},
+      {"source": "Epoch AI SWE-bench methodology & results", "feeds": "agentic coding budgets", "cadence": "quarterly"},
+      {"source": "provider pricing + caching/batch docs (Anthropic, OpenAI, Google, Bedrock)", "feeds": "billing levers, price sheet", "cadence": "monthly"},
+      {"source": "OpenRouter rankings + third-party analyses (e.g. cache-share telemetry)", "feeds": "hit-rate priors, traffic mix", "cadence": "monthly"},
+      {"source": "vendor per-task price pages (Intercom Fin, Zendesk, Devin, AiSDR, Harvey reporting)", "feeds": "dollar anchors", "cadence": "quarterly"},
+      {"source": "arXiv (compression, routing, text-to-SQL token studies)", "feeds": "consumption levers, method variance", "cadence": "quarterly"}
+    ],
+    "client_telemetry_ratchet": "every gated diagnostic that measures real client usage produces private 1A anchors -> tightens the gated library; public library receives direction-only, anonymised adjustments. The public/gated data line (concept brief §5) is unchanged."
+  }
+}

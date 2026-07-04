@@ -1,0 +1,26 @@
+{
+  "_schema": {
+    "version": "0.1-draft",
+    "purpose": "Phase 1 spec §3b / §7 item 3. The TAIL-unique layer: how far current frontier pricing sits below true production cost = the structural repricing headroom. Derived from data/sankey_cost_structure.json:2025.validation_targets (value = true production cost; customer_revenue = what customers actually pay). multiple = value / customer_revenue.",
+    "source_file": "apac-ai-intel/data/sankey_cost_structure.json -> 2025.validation_targets",
+    "as_of": "2025 (validation_targets vintage); re-derive on every validation_targets change (D-§8.1).",
+    "interpretation": "At current pricing, customers cover `cost_recovery_pct` of true production cost; the rest is VC/parent subsidy. If subsidy unwinds AND unit cost holds, prices have ~`multiple`x structural headroom to reach cost recovery.",
+    "honesty_constraints": [
+      "UPPER-BOUND SENSITIVITY, NOT A FORECAST. Assumes full customer cost-recovery, zero subsidy, unchanged unit cost.",
+      "Must be shown against the efficiency-offset counter-force (falling unit cost), never one-sided (D-§8.2).",
+      "OpenAI value is AUDITED (wq-116); Anthropic/Google value = collected_revenue + operating_loss (derived). Carry per-provider tier."
+    ]
+  },
+  "multiples": {
+    "openai":    {"true_cost_usd_b": 33.98, "customer_revenue_usd_b": 13.07, "cost_recovery_pct": 38.5, "repricing_multiple": 2.60, "tier": "1B", "basis": "audited (wq-116): CoR 7.5 + R&D 19.18 + S&M 5.73 + G&A 1.57"},
+    "anthropic": {"true_cost_usd_b": 9.91,  "customer_revenue_usd_b": 4.71,  "cost_recovery_pct": 47.5, "repricing_multiple": 2.10, "tier": "2B", "basis": "derived: collected_revenue + operating_loss"},
+    "google":    {"true_cost_usd_b": 6.25,  "customer_revenue_usd_b": 2.25,  "cost_recovery_pct": 36.0, "repricing_multiple": 2.78, "tier": "2B", "basis": "derived: collected_revenue + operating_loss"},
+    "iaas":      {"true_cost_usd_b": 0.60,  "customer_revenue_usd_b": 0.30,  "cost_recovery_pct": 50.0, "repricing_multiple": 2.00, "tier": "2B", "basis": "IaaS/Open aggregation node"}
+  },
+  "frontier_band": {
+    "_doc": "Summary band across frontier providers for archetypes not pinned to one provider.",
+    "cost_recovery_pct_range": [36.0, 50.0],
+    "repricing_multiple_range": [2.0, 2.8],
+    "corroboration": "GPT-5 line actually doubled (2.0x) on 2026-04-23 — see benchmark_price_sheet.json:repricing_note. Real prices moving toward this headroom, not away."
+  }
+}
