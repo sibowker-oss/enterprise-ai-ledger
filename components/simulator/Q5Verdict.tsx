@@ -1,0 +1,121 @@
+import type { CostBand, Verdict } from "@/lib/simulator/types";
+import { PINS, Q5 } from "@/lib/simulator/labels";
+import { coverageRatio, type BreakEvenHuman } from "@/lib/simulator/engine";
+import {
+  breakEvenSentence,
+  timesLabel,
+  verdictMarginSentence,
+  verdictRiskSentence,
+  verdictWeighingSentence,
+} from "@/lib/simulator/copy";
+import { usdK } from "@/lib/simulator/format";
+
+function Tile({ label, value, sub, tone }: { label: string; value: string; sub: string; tone: string }) {
+  return (
+    <div className="rounded-tile border border-border bg-surface/60 p-3 text-center">
+      <div className="text-[10.5px] uppercase tracking-wide text-ink-faint">{label}</div>
+      <div className={`mt-1 text-[19px] font-bold tabular ${tone}`}>{value}</div>
+      <div className="mt-0.5 text-[10.5px] leading-tight text-ink-faint">{sub}</div>
+    </div>
+  );
+}
+
+/**
+ * Q5 — the conditional verdict. Four states (a clear no is a no, not "close" —
+ * CTO review item 6), never a single ROI number; the status is carried by label
+ * text + icon, not colour alone (a11y). Beyond the yes/no: the margin of
+ * safety, the break-even (in dollars AND in human units anyone can sanity-
+ * check), and the first-year payback month from the budget line.
+ */
+export function Q5Verdict({
+  verdict,
+  band,
+  valueBase,
+  breakEven,
+  haircut,
+  paybackMonth,
+  onPin,
+  pinDisabled,
+  isPinned,
+}: {
+  verdict: Verdict;
+  band: CostBand;
+  /** The COUNTED (realisation-discounted) base value — what the verdict runs on. */
+  valueBase: number;
+  breakEven: BreakEvenHuman;
+  haircut: number;
+  paybackMonth: number | null;
+  onPin: () => void;
+  pinDisabled: boolean;
+  isPinned: boolean;
+}) {
+  const tone = {
+    good: { box: "border-status-green-fg/40 bg-status-green-soft", label: "text-status-green-fg", icon: "✓" },
+    conditional: { box: "border-status-amber-fg/40 bg-status-amber-soft", label: "text-status-amber-fg", icon: "!" },
+    marginal: { box: "border-status-amber-fg/40 bg-status-amber-soft", label: "text-status-amber-fg", icon: "~" },
+    no: { box: "border-status-red-fg/40 bg-status-red-soft", label: "text-status-red-fg", icon: "✕" },
+  }[verdict.klass];
+
+  const coverage = coverageRatio(valueBase, band);
+  const marginTone =
+    coverage >= 3 ? "text-status-green-fg" : coverage >= 1 ? "text-status-amber-fg" : "text-status-red-fg";
+
+  return (
+    <div>
+      <p className="eyebrow mb-2 mt-2 text-xs font-semibold text-ink-faint">Question 5 — {Q5.title}</p>
+      <div className={`rounded-card border p-5 sm:p-6 ${tone.box}`}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${tone.label}`}>
+            <span
+              aria-hidden="true"
+              className={`flex h-5 w-5 items-center justify-center rounded-chip border ${tone.label}`}
+            >
+              {tone.icon}
+            </span>
+            {verdict.label}
+          </div>
+          {/* Pin this case — feeds the side-by-side compare tray below. */}
+          <button
+            type="button"
+            onClick={onPin}
+            disabled={pinDisabled || isPinned}
+            title={pinDisabled ? PINS.limitNote : undefined}
+            className="rounded-control border border-border bg-surface px-3 py-1.5 text-[12px] font-semibold text-ink-muted transition-colors hover:border-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isPinned ? PINS.pinned : `⊕ ${PINS.pin}`}
+          </button>
+        </div>
+        <p className="mt-2 text-xl font-bold tracking-tight text-ink">{verdict.headline}</p>
+
+        {/* Margin of safety + break-even + payback — a lopsided "yes" made informative. */}
+        <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+          <Tile label={Q5.marginLabel} value={timesLabel(coverage)} sub={Q5.marginSub} tone={marginTone} />
+          <Tile
+            label={Q5.breakEvenLabel}
+            value={`${usdK(band.repriced)}/mo`}
+            sub={Q5.breakEvenSub}
+            tone="text-ink"
+          />
+          <Tile
+            label={Q5.paybackLabel}
+            value={paybackMonth == null ? Q5.paybackNone : `${Q5.paybackMonthPrefix} ${paybackMonth}`}
+            sub={Q5.paybackSub}
+            tone={paybackMonth == null ? "text-status-red-fg" : "text-ink"}
+          />
+        </div>
+
+        <p className="mt-4 text-[14.5px] leading-relaxed text-ink-muted">
+          {verdictWeighingSentence(valueBase, band)} {verdictMarginSentence(valueBase, band)}
+        </p>
+        {/* The break-even in units an executive can sanity-check in their head. */}
+        <p className="mt-2.5 text-[14px] leading-relaxed text-ink">
+          {breakEvenSentence(breakEven, haircut)}
+        </p>
+        <p className="mt-2.5 text-[14px] leading-relaxed text-ink-muted">{verdictRiskSentence(band)}</p>
+        <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-faint">
+          <b className="font-semibold text-ink-muted">What keeps it true:</b> {verdict.condition}
+        </p>
+      </div>
+    </div>
+  );
+}

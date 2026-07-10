@@ -1,0 +1,69 @@
+{
+  "_schema": {
+    "version": "0.1-draft",
+    "purpose": "Phase 1 spec §7 item 4 / cost Layers 4 and 5. Editorial cost bands for the run-cost and governance-carry layers, keyed to the AI Estate Register's AI-Inventory fields. NOT from TAIL — these come from the Register structure. All ranged, illustrative, user-overridable (D4).",
+    "units": "USD per unit per month (unit = seat, FTE-equivalent, or process — defined per archetype), unless flagged qualitative",
+    "register_link": "Layer-4 keys off Register fields stage / monitoring / lifecycle ownership (oDesign..oDecom) / humanLoop / channel. Layer-5 keys off the Register's computed exception fields (vendor concentration, contract gaps, exit-tested, NHI kill-path).",
+    "as_of": "2026-06-18",
+    "tier": "3C"
+  },
+  "layer4_integration_run": {
+    "_doc": "Implementation amortised + ongoing run: data plumbing, monitoring, human-in-the-loop labour, model-swap churn. Higher when monitoring is Continuous and when a human is in the loop on every transaction.",
+    "bands_per_unit_month": {
+      "light":  {"low": 2,  "mid": 5,   "high": 10,  "applies": "IDE plugin / embedded SKU, periodic monitoring, no per-transaction human"},
+      "medium": {"low": 8,  "mid": 20,  "high": 45,  "applies": "custom integration, continuous monitoring OR human-in-loop sampling"},
+      "heavy":  {"low": 40, "mid": 100, "high": 250, "applies": "agentic + orchestration, continuous monitoring AND human-in-loop on every transaction (e.g. claims)"}
+    },
+    "human_in_loop_note": "Where humanLoop=Y on high-volume transactions, the reviewer-labour cost can dwarf inference. Model it explicitly as reviewer-minutes x loaded labour rate, not just a band.",
+    "fixed_plus_marginal_note": "REFINEMENT (surfaced by the RAG worked example 2026-06-18): for retrieval and agentic archetypes, L4 is mostly a FIXED build/run cost (retrieval pipeline, vector store, monitoring) plus a small per-seat marginal — NOT pure per-seat. Model L4 as fixed + (marginal x seats); per-seat amortisation falls with scale. Pure-per-seat bands above suit only the light/embedded archetypes (code assistant, summarisation).",
+    "fixed_run_bands_per_month": {
+      "_doc": "Fixed L4 component for retrieval/agentic archetypes (independent of seat count).",
+      "rag_retrieval":   {"low": 3000,  "mid": 8000,  "high": 20000},
+      "agentic_orchestration": {"low": 5000, "mid": 15000, "high": 40000}
+    }
+  },
+  "one_off_build": {
+    "_doc": "One-off build cost band per use case (the capex-style figure a budget paper needs), SEPARATE from the monthly bands above — the monthly Layer-4 bands amortise ongoing run, not the initial build. Added 2026-07-10 for the first-year budget line (CTO review item 2). EDITORIAL: ranged, illustrative, user-overridable (D4); heuristic anchor is roughly 1–8 months of the use case's monthly build-and-run cost at the illustrative volume — lighter for embedded per-seat SKUs (rollout/config only), heavier where a pipeline or orchestration layer must be built.",
+    "as_of": "2026-07-10",
+    "tier": "3C",
+    "usd_bands": {
+      "code_assistant":       {"low": 5000,  "mid": 15000,  "high": 40000},
+      "summarisation":        {"low": 10000, "mid": 25000,  "high": 60000},
+      "rag_search":           {"low": 25000, "mid": 60000,  "high": 150000},
+      "claims":               {"low": 50000, "mid": 120000, "high": 300000},
+      "reconciliation":       {"low": 30000, "mid": 80000,  "high": 200000},
+      "agentic_coding":       {"low": 20000, "mid": 50000,  "high": 120000},
+      "deep_research":        {"low": 15000, "mid": 40000,  "high": 100000},
+      "support_chatbot":      {"low": 25000, "mid": 60000,  "high": 150000},
+      "legal_review":         {"low": 20000, "mid": 50000,  "high": 120000},
+      "text_to_sql":          {"low": 15000, "mid": 35000,  "high": 90000},
+      "marketing_content":    {"low": 4000,  "mid": 10000,  "high": 25000},
+      "meeting_intelligence": {"low": 5000,  "mid": 12000,  "high": 30000},
+      "email_drafting":       {"low": 4000,  "mid": 10000,  "high": 25000},
+      "translation":          {"low": 8000,  "mid": 20000,  "high": 50000},
+      "voice_agents":         {"low": 30000, "mid": 75000,  "high": 180000}
+    }
+  },
+  "adoption_ramp_default": {
+    "_doc": "Default first-year adoption ramp for the budget line: adoption starts at start_pct in month 1 and climbs linearly to 100% by full_month, then holds. EDITORIAL planning assumption (CTO review item 2: 'simple ramp assumption is enough; label it editable') — the UI exposes both numbers.",
+    "as_of": "2026-07-10",
+    "tier": "3C",
+    "start_pct": 50,
+    "full_month": 4
+  },
+  "layer5_risk_carry": {
+    "_doc": "Governance carrying cost from the Register's exception flags. Often qualitative in v1; attach a $ band only where defensible.",
+    "drivers": {
+      "high_vendor_concentration": {"load": "high", "note": "Register vendor score HIGH (>=3.5) + critical op → switching/exit-readiness cost."},
+      "untested_exit":             {"load": "high", "note": "exitTested != Y on a critical-op vendor → unquantified continuity risk."},
+      "contract_gaps_urgent":      {"load": "medium", "note": "3+ gaps with renewal <=12mo → renegotiation exposure."},
+      "nhi_no_kill_path":          {"load": "medium", "note": "non-human identity without tested kill-path → security/ops risk carry."},
+      "outside_approved_channel":  {"load": "medium", "note": "channel Tolerated/Shadow → unmanaged spend + governance remediation."}
+    },
+    "dollar_band_per_unit_month": {
+      "low_governance":  {"low": 0,  "mid": 1,  "high": 3},
+      "med_governance":  {"low": 2,  "mid": 5,  "high": 12},
+      "high_governance": {"low": 8,  "mid": 18, "high": 40}
+    }
+  }
+}

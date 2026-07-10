@@ -1,0 +1,79 @@
+{
+  "_schema": {
+    "version": "0.1-draft",
+    "purpose": "Phase 1 spec §3b / §7 item 3. The TAIL-unique layer: how far current frontier pricing sits below true production cost = the structural repricing headroom. Derived from data/sankey_cost_structure.json:2025.validation_targets (value = true production cost; customer_revenue = what customers actually pay). multiple = value / customer_revenue.",
+    "source_file": "apac-ai-intel/data/sankey_cost_structure.json -> 2025.validation_targets",
+    "as_of": "2025 (validation_targets vintage); re-derive on every validation_targets change (D-§8.1).",
+    "interpretation": "At current pricing, customers cover `cost_recovery_pct` of true production cost; the rest is VC/parent subsidy. If subsidy unwinds AND unit cost holds, prices have ~`multiple`x structural headroom to reach cost recovery.",
+    "honesty_constraints": [
+      "UPPER-BOUND SENSITIVITY, NOT A FORECAST. Assumes full customer cost-recovery, zero subsidy, unchanged unit cost.",
+      "Must be shown against the efficiency-offset counter-force (falling unit cost), never one-sided (D-§8.2).",
+      "OpenAI value is AUDITED (wq-116); Anthropic/Google value = collected_revenue + operating_loss (derived). Carry per-provider tier."
+    ]
+  },
+  "multiples": {
+    "openai":    {"true_cost_usd_b": 33.98, "customer_revenue_usd_b": 13.07, "cost_recovery_pct": 38.5, "repricing_multiple": 2.60, "tier": "1B", "basis": "audited (wq-116): CoR 7.5 + R&D 19.18 + S&M 5.73 + G&A 1.57"},
+    "anthropic": {"true_cost_usd_b": 9.91,  "customer_revenue_usd_b": 4.71,  "cost_recovery_pct": 47.5, "repricing_multiple": 2.10, "tier": "2B", "basis": "derived: collected_revenue + operating_loss"},
+    "google":    {"true_cost_usd_b": 6.25,  "customer_revenue_usd_b": 2.25,  "cost_recovery_pct": 36.0, "repricing_multiple": 2.78, "tier": "2B", "basis": "derived: collected_revenue + operating_loss"},
+    "iaas":      {"true_cost_usd_b": 0.60,  "customer_revenue_usd_b": 0.30,  "cost_recovery_pct": 50.0, "repricing_multiple": 2.00, "tier": "2B", "basis": "IaaS/Open aggregation node"},
+    "untracked": {"true_cost_usd_b": null,  "customer_revenue_usd_b": null,  "cost_recovery_pct": null, "repricing_multiple": 1.10, "tier": "3C", "basis": "Open-weight / self-hostable models are not tied to a single provider's pricing; nominal upward drift only. NOT a tracked supply-side read — illustrative floor for the price-hold scenario."}
+  },
+  "forward_signal": {
+    "_doc": "Editorial forward-pricing narrative for the PUBLIC teaser Q2 ('Will the price hold?'). STATIC snapshot — the live, maintained per-provider signal stays gated (concept.md §5; that is the moat). Numbers transcribed from the Investment-Case work: cost_recovery_pct + repricing_multiple from validation_targets (above); underwater_pct (operating_loss / ARR), revenue_per_employee_usd_m (ARR / headcount) and valuation_to_arr from spec/five-questions-reframe.md; direction + reason prose from HA_EnterpriseAI_InvestmentCaseSimulator_Prototype. Shown WITH provenance, never presented as a live feed. The efficiency-offset counter-force is mandatory alongside this (honesty_constraints).",
+    "as_of": "2026-06",
+    "efficiency_offset": "Cheaper models are improving fast — the same work already runs for a fraction on a budget model. Always show this counter-force beside the rise; the honest answer is a range, and the biggest lever is model choice.",
+    "corroboration": "GPT-5 line actually doubled (2.0x) on 2026-04-23 — see benchmark_price_sheet.json:repricing_note.",
+    "providers": {
+      "openai": {
+        "tracked": true,
+        "tier": "audited",
+        "cost_recovery_pct": 38,
+        "underwater_pct": 56,
+        "revenue_per_employee_usd_m": 3.1,
+        "valuation_to_arr": 34,
+        "repricing_multiple": 2.60,
+        "direction": "Likely to rise sharply",
+        "reason": "They get back only about 38 cents on every dollar it costs them, and they're deep in the red. They expect to break even around 2027 — but with roughly US$25bn a year going out and a US$50bn compute bill to pay off, that money has to come back somehow. Price is the easiest lever."
+      },
+      "anthropic": {
+        "tracked": true,
+        "tier": "derived",
+        "cost_recovery_pct": 48,
+        "underwater_pct": 37,
+        "revenue_per_employee_usd_m": 12.0,
+        "valuation_to_arr": 13,
+        "repricing_multiple": 2.10,
+        "direction": "Likely to rise",
+        "reason": "They get back about 48 cents on the dollar. But they make around 4x OpenAI's sales per employee and hold most of the enterprise market — so they can grow into their costs a bit before raising prices."
+      },
+      "google": {
+        "tracked": true,
+        "tier": "derived",
+        "cost_recovery_pct": 36,
+        "underwater_pct": null,
+        "revenue_per_employee_usd_m": null,
+        "valuation_to_arr": null,
+        "repricing_multiple": 2.78,
+        "direction": "Likely to rise",
+        "reason": "They get back only about 36 cents on the dollar — the widest gap of the three. A big parent company cushions them, so the direction is clearer than the timing."
+      }
+    },
+    "untracked_default": {
+      "tracked": false,
+      "tier": "illustrative",
+      "cost_recovery_pct": null,
+      "underwater_pct": null,
+      "revenue_per_employee_usd_m": null,
+      "valuation_to_arr": null,
+      "repricing_multiple": 1.10,
+      "direction": "Low risk of a price jump",
+      "reason": "This one is open-source and can be run in-house, so it isn't tied to a provider's pricing the same way. The risk of a sudden price jump is low. Shown as an example only — not from our own research."
+    }
+  },
+  "frontier_band": {
+    "_doc": "Summary band across frontier providers for archetypes not pinned to one provider.",
+    "cost_recovery_pct_range": [36.0, 50.0],
+    "repricing_multiple_range": [2.0, 2.8],
+    "corroboration": "GPT-5 line actually doubled (2.0x) on 2026-04-23 — see benchmark_price_sheet.json:repricing_note. Real prices moving toward this headroom, not away."
+  }
+}

@@ -32,6 +32,23 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
       <div className="!mt-4 border-t border-border pt-4">
         <p className="px-3 pb-1 text-[11px] font-medium uppercase tracking-wide text-ink-faint">
+          Sister tool
+        </p>
+        <Link
+          href="/simulator"
+          onClick={onNavigate}
+          className="block rounded-control border border-accent/30 bg-accent-soft px-3 py-2 transition-colors hover:border-accent/60 hover:bg-accent-soft/80"
+        >
+          <span className="flex items-center gap-1.5 text-sm font-semibold text-accent-text">
+            Investment-Case Simulator
+            <span aria-hidden="true">→</span>
+          </span>
+          <span className="block text-xs text-ink-muted">Is one use case worth doing? · public</span>
+        </Link>
+      </div>
+
+      <div className="!mt-4 border-t border-border pt-4">
+        <p className="px-3 pb-1 text-[11px] font-medium uppercase tracking-wide text-ink-faint">
           Future modules
         </p>
         {futureNavItems.map((item) => (

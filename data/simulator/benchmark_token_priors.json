@@ -1,0 +1,58 @@
+{
+  "_schema": {
+    "version": "0.1-draft",
+    "purpose": "Phase 1 spec §7 item 2. Editorial tokens-per-transaction priors per use-case archetype, low/mid/high. Multiplied by price-sheet rates and monthly volume to produce Layer-1 inference cost. ALL ranged and illustrative — the tool exposes these as defaults the user overrides (D4).",
+    "units": "tokens per transaction (a 'transaction' = one user-meaningful interaction; defined per archetype)",
+    "note": "Input:output skews input-heavy for RAG/agentic (3:1–5:1 per multi-model-token-estimates-2026-04-04.md). All tier 3C editorial unless sourced.",
+    "as_of": "2026-06-18",
+    "SUPERSEDED_BY": "token_estimate_library_v1.json (2026-07-04) — this file is retained for the 18 Jun worked examples only and is no longer maintained. Do not dual-source."
+  },
+  "archetypes": {
+    "contact_centre_summarisation": {
+      "transaction_def": "one inbound contact summarised/drafted",
+      "input_tokens":  {"low": 1500, "mid": 3000, "high": 6000},
+      "output_tokens": {"low": 300,  "mid": 500,  "high": 1000},
+      "default_model": "claude_haiku_4_5",
+      "tier": "3C"
+    },
+    "code_assistant": {
+      "transaction_def": "one completion/chat interaction in-IDE (context-heavy)",
+      "input_tokens":  {"low": 3000, "mid": 6000, "high": 12000},
+      "output_tokens": {"low": 500,  "mid": 1000, "high": 2000},
+      "default_model": "claude_sonnet_4_6",
+      "tier": "3C",
+      "note": "Context-heavy: repo/file context inflates input. Interactions/dev/day is the bigger driver — set in the volume model, not here."
+    },
+    "enterprise_rag_search": {
+      "transaction_def": "one knowledge query answered over retrieved docs",
+      "input_tokens":  {"low": 4000, "mid": 9000, "high": 20000},
+      "output_tokens": {"low": 400,  "mid": 800,  "high": 1500},
+      "default_model": "gemini_2_5_pro",
+      "tier": "3C",
+      "note": "Most input-heavy archetype — retrieval stuffs context. RAG is where the 3:1–5:1 input skew bites hardest."
+    },
+    "document_claims_processing": {
+      "transaction_def": "one document/claim processed end-to-end (may be multi-call agentic)",
+      "input_tokens":  {"low": 5000, "mid": 12000, "high": 30000},
+      "output_tokens": {"low": 800,  "mid": 1800,  "high": 4000},
+      "default_model": "claude_sonnet_4_6",
+      "tier": "3C",
+      "note": "Agentic: a single 'transaction' can fan out to several model calls. Apply a call-fan-out multiplier (1.5–4x) in the volume model."
+    },
+    "back_office_reconciliation": {
+      "transaction_def": "one reconciliation run/exception handled",
+      "input_tokens":  {"low": 3000, "mid": 7000, "high": 15000},
+      "output_tokens": {"low": 500,  "mid": 1200, "high": 2500},
+      "default_model": "claude_sonnet_4_6",
+      "tier": "3C"
+    },
+    "marketing_content": {
+      "transaction_def": "one content asset drafted",
+      "input_tokens":  {"low": 800,  "mid": 1500, "high": 3000},
+      "output_tokens": {"low": 600,  "mid": 1200, "high": 2500},
+      "default_model": "gemini_2_5_flash",
+      "tier": "3C",
+      "note": "Stretch archetype #6. Cheapest inference of the set — sharpest illustration of how low the true floor is vs SKU pricing."
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "_schema": {
+    "version": "1.0",
+    "as_of": "2026-07-10",
+    "purpose": "Public per-seat list prices for vendor seat products — the 'buy the seat vs build on the API' comparison (CTO review 2026-07-10 item 4). PUBLIC pricing only; no TAIL data, no provider financials. Rendered only on the seat-shaped use cases named in applies_to.",
+    "units": "USD per seat per month",
+    "verification": "Gathered 2026-07-10. status on each entry records HOW it was verified: 'official' = read directly from the vendor's own page that day; 'official-indirect' = official source confirmed via search index / vendor blog but the live page could not be fetched directly; 'reported' = no published list price exists — a commonly cited market figure, clearly flagged, never dressed as a list price."
+  },
+  "products": {
+    "copilot_business": {
+      "label": "GitHub Copilot Business",
+      "vendor": "GitHub",
+      "usd_per_seat_month": 19,
+      "billing": "per seat, billed monthly",
+      "status": "official",
+      "source": "docs.github.com/en/copilot/get-started/plans (fetched 2026-07-10)",
+      "tier": "1B",
+      "applies_to": ["code_assistant"]
+    },
+    "copilot_enterprise": {
+      "label": "GitHub Copilot Enterprise",
+      "vendor": "GitHub",
+      "usd_per_seat_month": 39,
+      "billing": "per seat, billed monthly",
+      "status": "official",
+      "source": "docs.github.com/en/copilot/get-started/plans (fetched 2026-07-10)",
+      "tier": "1B",
+      "applies_to": ["code_assistant"]
+    },
+    "chatgpt_business": {
+      "label": "ChatGPT Business",
+      "vendor": "OpenAI",
+      "usd_per_seat_month": 25,
+      "billing": "billed monthly (US$20/seat on an annual plan; 2+ seats)",
+      "status": "official-indirect",
+      "source": "help.openai.com / chatgpt.com/pricing via search index (vendor pages blocked direct fetch, 2026-07-10; reflects the 2026-04-02 price cut)",
+      "tier": "2A",
+      "applies_to": ["rag_search"]
+    },
+    "chatgpt_enterprise": {
+      "label": "ChatGPT Enterprise",
+      "vendor": "OpenAI",
+      "usd_per_seat_month": 60,
+      "billing": "no published price — negotiated; commonly reported ~US$60/seat at ~150-seat minimum, annual contract",
+      "status": "reported",
+      "source": "third-party reporting (inference.net, spendhound.com, 2026-07-10); OpenAI's official position is 'contact sales'",
+      "tier": "3C",
+      "applies_to": ["rag_search"]
+    },
+    "claude_team": {
+      "label": "Claude Team (standard seat)",
+      "vendor": "Anthropic",
+      "usd_per_seat_month": 25,
+      "billing": "billed monthly (US$20/seat on an annual plan; teams of 5–150)",
+      "status": "official",
+      "source": "claude.com/pricing (fetched 2026-07-10)",
+      "tier": "1B",
+      "applies_to": ["rag_search"]
+    },
+    "gemini_workspace_standard": {
+      "label": "Google Workspace Business Standard (Gemini included)",
+      "vendor": "Google",
+      "usd_per_seat_month": 14,
+      "billing": "per seat, annual commitment (Gemini bundled since Jan 2025 — no separate Gemini seat price exists)",
+      "status": "official-indirect",
+      "source": "workspace.google.com Jan-2025 announcement (US$14 figure is official; the live pricing page geolocates to AUD, 2026-07-10)",
+      "tier": "2B",
+      "applies_to": ["rag_search"]
+    }
+  }
+}

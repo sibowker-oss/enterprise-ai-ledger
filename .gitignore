@@ -26,3 +26,6 @@ next-env.d.ts
 
 # test
 /coverage
+
+# strategy bundle — internal only, must never be committed to the public repo
+/investment-case-simulator-build copy/
