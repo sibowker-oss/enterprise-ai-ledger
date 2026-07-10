@@ -5,6 +5,24 @@ The prototype is a **static site** published to **GitHub Pages** from the
 deployment from the TAIL site (`ai-index.hepburnadvisory.com.au`) and shares no
 infrastructure with it.
 
+## Reproducible deploys (the only supported path)
+
+Deploys ship **committed source only** — `./deploy.sh` refuses to run on a
+dirty working tree, stamps the short commit hash into the bundle
+(`NEXT_PUBLIC_GIT_SHA`, shown in the simulator footer as `app <hash>`), and
+runs two release gates before building:
+
+1. `npm run validate:library` — the token-estimate-library guard;
+2. `npm run validate:assumptions` — the assumptions-registry gate: fails if
+   any archetype-default or floor-eligible model price is unverified or past
+   its `review_by` date, if any editorial band is undated, or if the band
+   files' use-case keys drift apart.
+
+Both gates also run automatically before every `next build` (npm `prebuild`).
+**Never hand-edit the `gh-pages` branch** — the acceptance rule is that a
+clean checkout of the commit named in the live footer rebuilds the deployed
+output exactly (`git checkout <hash> && ./deploy.sh`).
+
 ## Current live URL (no DNS required)
 
 ```

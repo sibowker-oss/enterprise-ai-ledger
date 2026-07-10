@@ -64,14 +64,14 @@ describe("code-assistant default budget line (snapshot)", () => {
     }
   });
 
-  it("the AI slice ramps with adoption; the run cost is carried in full", () => {
+  it("the per-use buckets ramp with adoption; the fixed floor is carried in full (0.3)", () => {
     const m1 = line.months[0];
-    expect(m1.cost).toBeCloseTo(s.band.todayAiUsage * 0.5 + s.band.buildAndRun, 6);
+    expect(m1.cost).toBeCloseTo((s.band.todayAiUsage + s.band.perUseRun) * 0.5 + s.band.monthlyFixed, 6);
   });
 
-  it("pays back in month 1 on the default numbers (value dwarfs cost at 17× coverage)", () => {
+  it("pays back in month 1 on the default numbers (value dwarfs cost at 13× coverage)", () => {
     expect(line.paybackMonth).toBe(1);
-    expect(Math.round(line.firstYearCost)).toBe(71266);
+    expect(Math.round(line.firstYearCost)).toBe(83738);
     expect(Math.round(line.firstYearValue)).toBe(1544400);
   });
 });

@@ -10,7 +10,19 @@
  *                          by env so the subdomain cutover is a one-line change.
  *  - images.unoptimized  → required; the Next image optimizer needs a server.
  */
+import { execSync } from "node:child_process";
+
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+/** Bake the commit hash into the bundle (update v2, 0.4): the footer and every
+ *  exported scenario carry the exact commit the build came from. */
+function gitSha() {
+  try {
+    return execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim();
+  } catch {
+    return "unknown";
+  }
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -19,6 +31,9 @@ const nextConfig = {
   basePath,
   images: { unoptimized: true },
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_GIT_SHA: process.env.NEXT_PUBLIC_GIT_SHA || gitSha(),
+  },
 };
 
 export default nextConfig;

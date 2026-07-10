@@ -5,16 +5,21 @@
  * stays under the hood. "Tokens" is kept (the spec's own volume-band decision
  * and the prototype use it) but ALWAYS with a plain gloss.
  *
+ * Money-bearing sentences take an optional currency (the A$ toggle) — the
+ * figures are already converted in derive.ts; only the symbol changes here.
+ *
  * Centralising the dynamic phrases here lets __tests__/simulator/voice.test.ts
  * scan every generated string for banned terms.
  */
-import type { CostBand, ForwardSignal, ValueRange } from "./types";
+import type { CostBand, ForwardSignal, ProvenanceTier } from "./types";
 import type { Archetype } from "./archetypes";
-import { isPerSeat, unitWord, WORKING_DAYS } from "./archetypes";
+import { isPerSeat, txWord, unitWord, WORKING_DAYS } from "./archetypes";
 import {
   aiSharePct,
   AI_LED_THRESHOLD,
+  CLOSE_THRESHOLD,
   coverageRatio,
+  NO_THRESHOLD,
   spreadMultiple,
   WIDE_MARGIN,
   type BreakEvenHuman,
@@ -22,7 +27,18 @@ import {
   type UsageBreakdown,
 } from "./engine";
 import type { BudgetLine } from "./budget";
-import { grouped, multipleLabel, rangeLabel, requestCount, tokenCount, usd, usdK, usdUnit } from "./format";
+import {
+  grouped,
+  multipleLabel,
+  plainNum,
+  rangeLabel,
+  requestCount,
+  tokenCount,
+  usd,
+  usdK,
+  usdUnit,
+  type Cur,
+} from "./format";
 import { model as resolveModel } from "./models";
 import {
   isReasoningSensitive,
@@ -44,18 +60,29 @@ export function risePhrase(headroom: number): string {
 }
 
 /** Provenance in the buyer's words. */
-export function tierLabel(tier: ForwardSignal["tier"]): string {
+export function tierLabel(tier: ProvenanceTier): string {
   return { audited: "from audited accounts", derived: "our estimate", illustrative: "example only" }[tier];
 }
 
-/** The chip on the Q2 panel header. */
+/** The chip on the Q2 panel header — three states (update v2, 0.2). */
 export function provChipText(signal: ForwardSignal): string {
-  return signal.tracked ? `The AI Ledger · ${tierLabel(signal.tier)}` : "Example only — not tracked";
+  if (signal.state === "tracked") return `The AI Ledger · ${tierLabel(signal.tier)}`;
+  if (signal.state === "open") return "Example only — open weights, not tracked";
+  return "Not tracked — no forecast available";
+}
+
+/** "200 developers" / "1 developer" / "1 claim a month" — plural-safe. */
+export function unitsPhrase(a: Archetype, units: number): string {
+  if (units === 1) {
+    const word = unitWord(a);
+    return a.unitLabel.includes("/") ? `1 ${word} a month` : `1 ${word}`;
+  }
+  return `${grouped(units)} ${a.unitLabel.toLowerCase()}`;
 }
 
 /** Q1 — sizing sentence from business volume. */
 export function q1SizingSentence(a: Archetype, units: number, u: UsageBreakdown): string {
-  return `You have ${grouped(units)} ${a.unitLabel.toLowerCase()}. Based on how they'd normally use it, that's about ${requestCount(u.monthlyTx)} requests a month.`;
+  return `You have ${unitsPhrase(a, units)}. Based on how they'd normally use it, that's about ${requestCount(u.monthlyTx)} requests a month.`;
 }
 
 /** Q1 — the honest usage BAND, rendered at the three named setups (never a bare
@@ -84,9 +111,7 @@ export function maturityMeaning(maturity: number): string {
 
 /**
  * Q1 — the corrected volume guidance, from the library's volume_hints band
- * (rule #3). Where the illustrative default sits above the typical rate (the
- * code-assistant 60/day case), it is flagged as the heavy end — the 18 Jun
- * worked example, re-captioned, not silently kept as the midpoint.
+ * (rule #3), for use cases without an intensity slider.
  */
 export function volumeHintSentence(a: Archetype): string {
   const vh = volumeHint(a.priorKey);
@@ -116,10 +141,7 @@ const VOLUME_UNIT_PHRASE: Record<string, string> = {
 
 /**
  * The model-change advisory (rule #4). A model swap is a CONSUMPTION event, not
- * a price-sheet swap: it changes how much the AI reads and writes, not just the
- * per-token price. The public tool surfaces the sensitivity band + the
- * re-baseline warning (the point re-measure is a gated-diagnostic job —
- * methodology §6). Returns null when the chosen model is the use case's default.
+ * a price-sheet swap. Returns null when the chosen model is the use case's default.
  */
 export interface ModelChangeAdvisory {
   rebaseline: string;
@@ -178,11 +200,11 @@ export const Q2_COUNTER_SENTENCE =
   "The other way: cheaper models are getting better fast — the same work already runs for a fraction on a budget model. So the honest answer is a range, and the biggest thing you control is which model you use.";
 
 /** Cost box — the "same workload, N× gap" line, with the per-seat range where it applies. */
-export function spreadSentence(a: Archetype, band: CostBand, units: number): string {
+export function spreadSentence(a: Archetype, band: CostBand, units: number, cur: Cur = "usd"): string {
   const gap = multipleLabel(spreadMultiple(band));
   const seats = Math.max(1, units);
   const perSeat = isPerSeat(a)
-    ? `, about ${usd(band.floor / seats)}–${usd(band.repriced / seats)} per ${unitWord(a)} a month`
+    ? `, about ${usd(band.floor / seats, cur)}–${usd(band.repriced / seats, cur)} per ${unitWord(a)} a month`
     : "";
   return `That's a ${gap} gap on the exact same use case${perSeat}, which is why a vendor's price tag alone can't tell you if it's worth it.`;
 }
@@ -193,20 +215,20 @@ export function costMixSentence(band: CostBand): string {
   if (share >= AI_LED_THRESHOLD) {
     return `About ${share}% of this is the AI itself — so which model you pick, and whether its price holds, matter most here.`;
   }
-  return `Only about ${share}% of this is the AI itself. The rest is building it, running it, and the people checking its work. Here the AI price barely matters — it's the running cost to watch. Most online calculators only show that small slice.`;
+  return `Only about ${share}% of this is the AI itself. The rest is the fixed cost of running it — the platform, the monitoring, the people checking its work — plus a little per use. Here the AI price barely matters — it's the running cost to watch. Most online calculators only show that small slice.`;
 }
 
-/** Verdict — the "weighing X against Y" line. */
-export function verdictWeighingSentence(valueBase: number, band: CostBand): string {
-  return `You're weighing about ${usd(valueBase)}/mo of value against ${usd(band.floor)}–${usd(
+/** Verdict — the "weighing X against Y" line (counted value vs the cost band). */
+export function verdictWeighingSentence(valueBase: number, band: CostBand, cur: Cur = "usd"): string {
+  return `You're weighing about ${usd(valueBase, cur)}/mo of counted value against ${usd(band.floor, cur)}–${usd(
     band.repriced,
+    cur,
   )}/mo to run it.`;
 }
 
 /**
  * "N×" in plain words — no "multiple" (banned). Whole numbers past 10×, and
- * capped at "30×+" (beyond that the exact ratio is meaningless — it just means
- * the value overwhelms the cost, and a 3-figure ratio reads as unserious).
+ * capped at "30×+" (beyond that the exact ratio is meaningless).
  */
 export function timesLabel(n: number): string {
   if (n >= 30) return "30×+";
@@ -215,29 +237,41 @@ export function timesLabel(n: number): string {
 }
 
 /**
- * Verdict — the margin-of-safety line. This is the answer to "why does every use
- * case say yes?": on labour-saving maths most genuinely do, so the useful signal
- * isn't yes/no, it's HOW MUCH ROOM there is and what you're actually betting on.
+ * Verdict — the margin-of-safety line, aligned with the four verdict states
+ * (the copy can never say "it pays" while the label says "too close to call").
  */
-export function verdictMarginSentence(valueBase: number, band: CostBand): string {
+export function verdictMarginSentence(valueBase: number, band: CostBand, cur: Cur = "usd"): string {
   const worst = coverageRatio(valueBase, band);
+  const todayCoverage = valueBase / Math.max(band.today, 1);
   if (valueBase >= band.repriced) {
     if (worst >= WIDE_MARGIN) {
-      return `Even if prices double, the value you entered still covers the running cost about ${timesLabel(
+      return `Even if prices rise that far, the value you counted still covers the running cost about ${timesLabel(
         worst,
       )} over. At that margin the AI bill isn't what decides this — whether the value you've assumed is real is. That's the number to pressure-test, not the price.`;
     }
-    return `If prices rise as far as they might, the value covers the running cost about ${timesLabel(
+    return `In the price-rise case the counted value covers the running cost about ${timesLabel(
       worst,
     )} over — a real margin, but a slim one. It holds only while you keep usage tight and the value stands up.`;
   }
-  if (valueBase >= band.today) {
-    const today = valueBase / Math.max(band.today, 1);
-    return `It pays at today's price — the value covers about ${timesLabel(
-      today,
+  if (todayCoverage >= CLOSE_THRESHOLD) {
+    return `It pays at today's price — the counted value covers about ${timesLabel(
+      todayCoverage,
     )} of today's cost — but a price rise would eat that gap. This one turns on holding the value up and keeping usage down.`;
   }
-  return `On the numbers entered it doesn't cover its cost yet — the value would have to rise, or the cost come down, before it pays.`;
+  if (todayCoverage >= 1) {
+    return `The counted value only just covers today's cost — about ${timesLabel(
+      todayCoverage,
+    )} — which is inside the wobble on estimates like these. Too close to treat as a yes without proof.`;
+  }
+  if (todayCoverage >= NO_THRESHOLD) {
+    return `On these numbers the counted value doesn't quite cover today's cost — it would have to rise, or the cost come down, before this pays.`;
+  }
+  return `The counted value covers less than half of today's cost. That's not close — the case only changes if the value is far bigger than entered.`;
+}
+
+/** The stress read (A2): your LOW value against the price-rise case. */
+export function stressSentence(stressCoverage: number): string {
+  return `Stress check: on your low value and the price-rise case, coverage is ${timesLabel(stressCoverage)}.`;
 }
 
 /** Verdict — where the risk actually sits, tying the answer back to the cost mix. */
@@ -245,7 +279,7 @@ export function verdictRiskSentence(band: CostBand): string {
   if (aiSharePct(band) >= AI_LED_THRESHOLD) {
     return `Most of the cost here is the AI itself, so the thing to watch is where AI prices go — which is exactly the price-inflation risk in step 2.`;
   }
-  return `Most of the cost here isn't the AI — it's building it, running it and checking its work. So the thing to watch is that running cost, not the headline model price.`;
+  return `Most of the cost here isn't the AI — it's the fixed cost of running it and checking its work. So the thing to watch is that running cost, not the headline model price.`;
 }
 
 /* ------------------------------------------------------------------ *
@@ -269,7 +303,7 @@ export function intensityHint(band: IntensityBand): string {
 
 /** "Typical: 200" hint for an editable input. */
 export function typicalHint(rail: InputRail): string {
-  return `Typical: ${grouped(rail.typical)}`;
+  return `Typical: ${plainNum(rail.typical)}`;
 }
 
 /**
@@ -279,7 +313,7 @@ export function typicalHint(rail: InputRail): string {
 export function railWarning(value: number, rail: InputRail): string | null {
   if (value >= rail.min && value <= rail.max) return null;
   const side = value < rail.min ? "below" : "above";
-  return `That's well ${side} the usual range for this use case (roughly ${grouped(rail.min)}–${grouped(
+  return `That's well ${side} the usual range for this use case (roughly ${plainNum(rail.min)}–${plainNum(
     rail.max,
   )}). The maths still runs — just check the number is real before anyone quotes it.`;
 }
@@ -288,51 +322,57 @@ export function railWarning(value: number, rail: InputRail): string | null {
  * Per-unit economics — cost AND value per seat/ticket/claim/call-minute.
  * ------------------------------------------------------------------ */
 
-/** "Per developer, about $31–$97 a month to run, against about $140 of value." */
+/** "Per developer, about $31–$97 a month to run…" / "Per claim, about $0.50–$0.62 to run…". */
 export function unitEconSentence(
   a: Archetype,
   band: CostBand,
   countedValueBase: number,
   units: number,
+  cur: Cur = "usd",
 ): string {
   const n = Math.max(units, 1);
   const word = unitWord(a);
-  return `Per ${word}, that's about ${usdUnit(band.floor / n)}–${usdUnit(
+  const period = isPerSeat(a) ? " a month" : "";
+  return `Per ${word}, that's about ${usdUnit(band.floor / n, cur)}–${usdUnit(
     band.repriced / n,
-  )} a month to run, against about ${usdUnit(countedValueBase / n)} a month of counted value.`;
+    cur,
+  )}${period} to run, against about ${usdUnit(countedValueBase / n, cur)}${period} of counted value.`;
 }
 
-/** Short per-unit cost tag under a cost segment: "$52 / developer / mo". */
-export function perUnitTag(a: Archetype, monthly: number, units: number): string {
-  return `${usdUnit(monthly / Math.max(units, 1))} / ${unitWord(a)} / mo`;
+/** Short per-unit cost tag under a cost segment: "$52 / developer / mo" or "$0.62 / claim". */
+export function perUnitTag(a: Archetype, monthly: number, units: number, cur: Cur = "usd"): string {
+  const base = `${usdUnit(monthly / Math.max(units, 1), cur)} / ${unitWord(a)}`;
+  return isPerSeat(a) ? `${base} / mo` : base;
 }
 
 /* ------------------------------------------------------------------ *
  * Value realism — the counted share of the entered value.
  * ------------------------------------------------------------------ */
 
-export function haircutSentence(entered: number, counted: number, pct: number): string {
-  return `You entered ${usd(entered)}/mo. The verdict counts ${usd(counted)}/mo — ${pct}% of it — because not everyone uses it, and not all saved time turns into output.`;
+export function haircutSentence(entered: number, counted: number, pct: number, cur: Cur = "usd"): string {
+  return `You entered ${usd(entered, cur)}/mo. The verdict counts ${usd(counted, cur)}/mo — ${pct}% of it — because not everyone uses it, and not all saved time turns into output.`;
 }
 
 /** The break-even, restated in units an executive can sanity-check in their head. */
-export function breakEvenSentence(be: BreakEvenHuman, haircutPct: number): string {
+export function breakEvenSentence(be: BreakEvenHuman, haircutPct: number, cur: Cur = "usd"): string {
   const counting = `counting only ${haircutPct}% of it as real`;
   if (be.kind === "minutesPerWeek") {
     const time =
       be.minutes >= 90
         ? `${(be.minutes / 60).toFixed(1).replace(/\.0$/, "")} hours`
         : `${Math.max(1, Math.round(be.minutes))} minutes`;
-    return `In plain terms: each ${be.unit} needs to save about ${time} a week for this to break even in the worst case (${counting}).`;
+    return `In plain terms: each ${be.unit} needs to save about ${time} a week for this to break even in the price-rise case (${counting}).`;
   }
   if (be.kind === "perTx") {
     return `In plain terms: each ${be.unit} needs to be worth about ${usdUnit(
       be.usd,
-    )} for this to break even in the worst case (${counting}).`;
+      cur,
+    )} for this to break even in the price-rise case (${counting}).`;
   }
   return `In plain terms: each ${be.unit} needs to get about ${usdUnit(
     be.usd,
-  )} of value a month for this to break even in the worst case (${counting}).`;
+    cur,
+  )} of value a month for this to break even in the price-rise case (${counting}).`;
 }
 
 /* ------------------------------------------------------------------ *
@@ -340,15 +380,19 @@ export function breakEvenSentence(be: BreakEvenHuman, haircutPct: number): strin
  * ------------------------------------------------------------------ */
 
 /** "Building it is a one-off $50k–$300k (typically about $120k)…" */
-export function buildRangeSentence(build: { low: number; mid: number; high: number }): string {
-  return `Building it is a one-off ${usdK(build.low)}–${usdK(build.high)} (typically about ${usdK(
+export function buildRangeSentence(
+  build: { low: number; mid: number; high: number },
+  cur: Cur = "usd",
+): string {
+  return `Building it is a one-off ${usdK(build.low, cur)}–${usdK(build.high, cur)} (typically about ${usdK(
     build.mid,
+    cur,
   )}), before the monthly bill starts. That's the number to hold apart from the running cost — they land in different parts of a budget.`;
 }
 
 export function paybackSentence(line: BudgetLine): string {
   if (line.paybackMonth == null) {
-    return `On these numbers it doesn't pay back inside the first year — the one-off build and the monthly bill stay ahead of the value through month 12.`;
+    return `On these numbers it doesn't pay back inside the first year — the one-off build and the monthly bills stay ahead of the value through month 12.`;
   }
   if (line.paybackMonth <= 1) {
     return `On these numbers it pays back in the first month — the value covers the one-off build almost immediately.`;
@@ -357,10 +401,33 @@ export function paybackSentence(line: BudgetLine): string {
 }
 
 /** First-year totals — the line a budget paper actually quotes. */
-export function firstYearSentence(line: BudgetLine): string {
-  return `First year all-in: about ${usdK(line.firstYearCost)} out (build plus 12 months of running it, as people come on board), against about ${usdK(
+export function firstYearSentence(line: BudgetLine, cur: Cur = "usd"): string {
+  return `First year all-in: about ${usdK(line.firstYearCost, cur)} out (build plus 12 months of running it, as people come on board), against about ${usdK(
     line.firstYearValue,
+    cur,
   )} of counted value in.`;
+}
+
+/* ------------------------------------------------------------------ *
+ * Levers — now vs planned (A3).
+ * ------------------------------------------------------------------ */
+
+/** One lever's own monthly saving at the planned setting: "would take off about $940/mo". */
+export function leverSavingSentence(saving: number, cur: Cur = "usd"): string {
+  if (saving < 1) return "no saving at this setting";
+  return `would take off about ${usdK(saving, cur)}/mo`;
+}
+
+/** The combined planned line under the levers. */
+export function plannedTotalSentence(planned: number, current: number, cur: Cur = "usd"): string {
+  const saving = Math.max(0, current - planned);
+  if (saving < 1) {
+    return `Your planned settings match what you're doing now — no further saving counted.`;
+  }
+  return `With everything you're planning in place, the bill above drops by about ${usdK(saving, cur)}/mo, to about ${usdK(
+    planned,
+    cur,
+  )}/mo. Provable savings — but don't bank them until they're set up.`;
 }
 
 /* ------------------------------------------------------------------ *
@@ -379,12 +446,26 @@ export function seatStatusLabel(status: SeatProduct["status"]): string {
 export function seatIntroSentence(a: Archetype): string {
   return `The other way to buy this: a ready-made seat product, priced per ${unitWord(
     a,
-  )} a month. Public prices, for comparison — a seat bundles the build & run for you, so compare it against the whole bar, not just the AI slice.`;
+  )} a month. Public US$ prices, for comparison — a seat bundles the build & run for you, so compare it against the whole bar, not just the AI slice.`;
 }
 
-/** "GitHub Copilot Business: $19/seat → about $3.8k/mo for 200 developers." */
+/** "GitHub Copilot Business: $19/seat → about $3.8k/mo for 200 developers." (Always US$ — list prices.) */
 export function seatProductLine(p: SeatProduct, a: Archetype, units: number): string {
-  return `${p.label}: ${usdUnit(p.perSeatUsd)}/seat → about ${usdK(p.perSeatUsd * units)}/mo for ${grouped(
+  return `${p.label}: ${usdUnit(p.perSeatUsd)}/seat → about ${usdK(p.perSeatUsd * units)}/mo for ${unitsPhrase(
+    a,
     units,
-  )} ${a.unitLabel.toLowerCase()}.`;
+  )}.`;
+}
+
+/* ------------------------------------------------------------------ *
+ * The cheapest-you'd-consider floor (A4).
+ * ------------------------------------------------------------------ */
+
+/** The floor column's model note: which model the floor was computed from. */
+export function floorModelSentence(floorModelKey: string | null): string {
+  if (!floorModelKey) {
+    return "No models left to consider with the boxes unticked — the cheapest column is showing your chosen model instead.";
+  }
+  const m = resolveModel(floorModelKey);
+  return `Cheapest here: ${m.label} (${m.providerLabel}) — checked prices only, over the providers you'd consider.`;
 }

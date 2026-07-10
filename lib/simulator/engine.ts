@@ -15,14 +15,14 @@ import {
   cacheHitBand,
   declaredCacheShare,
   isBatchable,
-  layer4Fixed,
   layer4PerUnit,
   layer5PerUnit,
   modelPrice,
+  monthlyFixedFloor,
   repricingMultiple,
   volumeHint,
 } from "./data";
-import { FLOOR_MODEL_KEY } from "./models";
+import { VERIFIED_MODEL_KEYS } from "./models";
 
 /** Fraction off the cached input share (library prompt_caching: 0.1× read ⇒ 0.9 off). */
 const CACHE_SAVING = 1 - CACHE_READ_MULTIPLIER;
@@ -41,6 +41,14 @@ export interface Levers {
 
 export const NO_LEVERS: Levers = { cache: 0, batch: 0, route: 0 };
 export const DEFAULT_LEVERS: Levers = { cache: 30, batch: 20, route: 0 };
+
+/** Two lever settings per case (A3): what you do NOW (defaults to zero —
+ *  "not doing this yet") and what you PLAN to do. The cost band runs on now;
+ *  the planned settings render as separate, per-lever savings. */
+export interface LeverPlan {
+  now: Levers;
+  planned: Levers;
+}
 
 /** The library's cache hit-rate class for an archetype's workload. */
 function cacheClassFor(a: Archetype): string {
@@ -82,10 +90,30 @@ export function leverCaps(a: Archetype): Levers {
   };
 }
 
-/** User overrides for the Q4 value driver(s). */
+/**
+ * User overrides for the Q4 value driver(s). low/likely/high are individually
+ * editable (A2): lowDriver/highDriver are absolute driver values — when unset
+ * they prefill at ×0.6 / ×1.4 of the likely driver, but the buyer owns all
+ * three points, not a fixed spread.
+ */
 export interface ValueOverrides {
   driver?: number;
   rate?: number;
+  lowDriver?: number;
+  highDriver?: number;
+}
+
+/** The three driver points (low / likely / high) a value range is built from. */
+export function driverPoints(
+  a: Archetype,
+  overrides: ValueOverrides,
+): { low: number; likely: number; high: number } {
+  const likely = overrides.driver ?? a.value.driver;
+  return {
+    low: overrides.lowDriver ?? likely * 0.6,
+    likely,
+    high: overrides.highDriver ?? likely * 1.4,
+  };
 }
 
 /* ------------------------------------------------------------------ *
@@ -182,15 +210,42 @@ export function usage(
 }
 
 /**
+ * The cheapest model you'd consider (A4): the lowest-cost VERIFIED model at
+ * this workload's input/output mix, over the providers the user hasn't
+ * excluded. Returns null when nothing qualifies — the UI renders an honest
+ * empty state rather than inventing a floor. Facts + user choice only.
+ */
+export function consideredFloorKey(
+  inputM: number,
+  outputM: number,
+  excludedProviders: string[] = [],
+): string | null {
+  let best: string | null = null;
+  let bestCost = Infinity;
+  for (const key of VERIFIED_MODEL_KEYS) {
+    const m = modelPrice(key);
+    if (excludedProviders.includes(m.provider)) continue;
+    const cost = inputM * m.inputPerM + outputM * m.outputPerM;
+    if (cost < bestCost) {
+      bestCost = cost;
+      best = key;
+    }
+  }
+  return best;
+}
+
+/**
  * Layer-1 inference cost (monthly USD). With levers: caching (~90% off the
- * cached input share), routing (blend toward the cheapest model), batching
- * (~50% off the batched share). Faithful to the prototype's inferenceCost().
+ * cached input share), routing (blend toward the cheapest considered model),
+ * batching (~50% off the batched share). Faithful to the prototype's
+ * inferenceCost(); routing is a no-op when no floor model qualifies.
  */
 export function inferenceCost(
   modelKey: string,
   inputM: number,
   outputM: number,
   levers: Levers | null,
+  floorKey: string | null = null,
 ): number {
   const m = modelPrice(modelKey);
   let costIn = inputM * m.inputPerM;
@@ -202,8 +257,8 @@ export function inferenceCost(
   // stack on top of it). caching → cached input share; routing → blend price;
   // batching → all tokens. cache × batch is multiplicative (stacking_rules).
   costIn *= 1 - (levers.cache / 100) * CACHE_SAVING;
-  if (levers.route > 0) {
-    const cheap = modelPrice(FLOOR_MODEL_KEY);
+  if (levers.route > 0 && floorKey) {
+    const cheap = modelPrice(floorKey);
     const blendIn = (1 - levers.route / 100) * m.inputPerM + (levers.route / 100) * cheap.inputPerM;
     const blendOut = (1 - levers.route / 100) * m.outputPerM + (levers.route / 100) * cheap.outputPerM;
     costIn = inputM * blendIn * (1 - (levers.cache / 100) * CACHE_SAVING);
@@ -212,6 +267,27 @@ export function inferenceCost(
   let total = costIn + costOut;
   total *= 1 - (levers.batch / 100) * BATCH_SAVING;
   return total;
+}
+
+/**
+ * One lever's saving on its own (A3: show each lever's saving separately) —
+ * the monthly dollars off the unoptimised bill if ONLY this lever ran at the
+ * given setting, envelope-clamped like everything else.
+ */
+export function leverSaving(
+  modelKey: string,
+  inputM: number,
+  outputM: number,
+  lever: keyof Levers,
+  pct: number,
+  workloadClass: string,
+  floorKey: string | null,
+): number {
+  const base = inferenceCost(modelKey, inputM, outputM, NO_LEVERS);
+  const solo: Levers = { ...NO_LEVERS, [lever]: pct };
+  const raw = inferenceCost(modelKey, inputM, outputM, solo, floorKey);
+  const { cost } = clampToEnvelope(base, raw, workloadClass);
+  return Math.max(0, base - cost);
 }
 
 /**
@@ -234,31 +310,30 @@ export function clampToEnvelope(
   return { cost: optimisedCost, clamped: false };
 }
 
-/** Layer 4 (integration & run) — build & run part 1. */
-export function integrationCost(a: Archetype, units: number): number {
-  const cm = a.costModel;
-  if (cm.kind === "per_unit") {
-    return layer4PerUnit(cm.l4Complexity, cm.l4Tier) * units;
-  }
-  const fixed = layer4Fixed(cm.l4FixedBand, cm.l4FixedTier);
-  const marginal = cm.l4MarginalOn ? layer4PerUnit(cm.l4MarginalComplexity, cm.l4MarginalTier) * units : 0;
-  return fixed + marginal;
+/**
+ * The MONTHLY FIXED floor — platform, monitoring, the people checking its
+ * work. Carried in full whether one person uses it or a thousand (0.3: a
+ * 1-unit deployment must show a sane fixed-floor cost, not $13/mo).
+ */
+export function fixedFloorCost(a: Archetype): number {
+  return monthlyFixedFloor(a.key, a.costModel.floorTier);
 }
 
-/** Layer 5 (risk / governance carry) — build & run part 2. */
-export function riskCost(a: Archetype, units: number): number {
+/** PER-USE run cost beyond the AI itself: per-unit marginals × units. */
+export function perUseRunCost(a: Archetype, units: number): number {
   const cm = a.costModel;
-  if (cm.kind === "per_unit") {
-    return layer5PerUnit(cm.l5Governance, cm.l5Tier) * units;
-  }
-  return cm.l5FixedUsd;
+  let perUnit = 0;
+  if (cm.l4Marginal) perUnit += layer4PerUnit(cm.l4Marginal.complexity, cm.l4Marginal.tier);
+  if (cm.l5Marginal) perUnit += layer5PerUnit(cm.l5Marginal.governance, cm.l5Marginal.tier);
+  return perUnit * units;
 }
 
+/** Everything that isn't the AI usage itself (the old "build & run" figure). */
 export function buildAndRunCost(a: Archetype, units: number): number {
-  return integrationCost(a, units) + riskCost(a, units);
+  return fixedFloorCost(a) + perUseRunCost(a, units);
 }
 
-/** The three-segment cost band: cheapest today / your model today / your model if prices rise. */
+/** The three-segment cost band: cheapest considered / your model today / your model if prices rise. */
 export function costBand(
   a: Archetype,
   modelKey: string,
@@ -266,25 +341,38 @@ export function costBand(
   inputM: number,
   outputM: number,
   levers: Levers,
+  excludedProviders: string[] = [],
 ): CostBand {
-  const buildAndRun = buildAndRunCost(a, units);
+  const monthlyFixed = fixedFloorCost(a);
+  const perUseRun = perUseRunCost(a, units);
+  const buildAndRun = monthlyFixed + perUseRun;
+  const floorKey = consideredFloorKey(inputM, outputM, excludedProviders);
   // Clamp the chosen-model lever saving to the workload's evidenced envelope so
   // the sliders can't claim more than the library supports (no double-counting).
   const baseL1 = inferenceCost(modelKey, inputM, outputM, NO_LEVERS);
-  const rawOptL1 = inferenceCost(modelKey, inputM, outputM, levers);
+  const rawOptL1 = inferenceCost(modelKey, inputM, outputM, levers, floorKey);
   const { cost: optL1, clamped } = clampToEnvelope(baseL1, rawOptL1, a.workloadClass);
-  // "Cheapest model, today" = the efficiency-floor reference, OR your own model
-  // if you've already picked something cheaper (a budget model can undercut the
-  // reference on input-heavy work) — the floor can never sit above today.
-  const floorL1 = Math.min(inferenceCost(FLOOR_MODEL_KEY, inputM, outputM, levers), optL1);
+  // "Cheapest model you'd consider" = the verified floor over the considered
+  // providers, OR your own model if you've already picked something cheaper —
+  // the floor can never sit above today. The floor's lever saving is clamped
+  // to the same envelope as the chosen model (no over-claiming on either bar).
+  let floorL1 = optL1;
+  if (floorKey) {
+    const floorBase = inferenceCost(floorKey, inputM, outputM, NO_LEVERS);
+    const floorRaw = inferenceCost(floorKey, inputM, outputM, levers, floorKey);
+    floorL1 = Math.min(clampToEnvelope(floorBase, floorRaw, a.workloadClass).cost, optL1);
+  }
   const multiple = repricingMultiple(modelPrice(modelKey).provider);
   return {
     floorAiUsage: floorL1,
     floor: floorL1 + buildAndRun,
+    floorModelKey: floorKey,
     todayAiUsage: optL1,
     today: optL1 + buildAndRun,
     repricedAiUsage: optL1 * multiple,
     repriced: optL1 * multiple + buildAndRun,
+    monthlyFixed,
+    perUseRun,
     buildAndRun,
     leverClamped: clamped,
   };
@@ -305,7 +393,8 @@ export function spreadMultiple(band: CostBand): number {
 }
 
 /**
- * Q4 — value as a bear/base/bull range (×0.6 / ×1.0 / ×1.4). Never a single number.
+ * Q4 — value as a low/likely/high range, each point individually editable
+ * (A2 replaced the fixed ×0.6/×1.4 multipliers). Never a single number.
  *
  * `businessTx` is BUSINESS transactions a month (units × per-unit rate), NOT
  * model calls: the "$ saved per call/claim" driver prices the business event,
@@ -319,17 +408,16 @@ export function valueRange(
   overrides: ValueOverrides,
 ): ValueRange {
   const v = a.value;
-  let base = 0;
-  if (v.kind === "hours") {
-    const h = overrides.driver ?? v.driver;
-    const r = overrides.rate ?? v.rate;
-    base = (units * h * r * 52) / 12;
-  } else if (v.kind === "perTx") {
-    base = businessTx * (overrides.driver ?? v.driver);
-  } else {
-    base = units * (overrides.driver ?? v.driver);
-  }
-  return { low: base * 0.6, base, high: base * 1.4 };
+  const d = driverPoints(a, overrides);
+  const monthly = (driver: number): number => {
+    if (v.kind === "hours") {
+      const r = overrides.rate ?? v.rate;
+      return (units * driver * r * 52) / 12;
+    }
+    if (v.kind === "perTx") return businessTx * driver;
+    return units * driver;
+  };
+  return { low: monthly(d.low), base: monthly(d.likely), high: monthly(d.high) };
 }
 
 /**
@@ -439,8 +527,10 @@ export function verdict(valueBase: number, band: CostBand, a: Archetype): Verdic
     return {
       klass: "marginal",
       label: "Too close to call",
-      headline: "At today's cost it's close. It only works if you get usage down and the value up first.",
-      condition: "To make it stack up, get usage down and the value up before you commit.",
+      headline:
+        "On these numbers it's genuinely close — close enough that the value assumption decides it, not the maths.",
+      condition:
+        "Prove the value first — run a small pilot and measure what actually gets saved before committing.",
     };
   }
   return {

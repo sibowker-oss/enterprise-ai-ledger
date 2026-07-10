@@ -1,0 +1,96 @@
+{
+  "_schema": {
+    "version": "1.0",
+    "dataVersion": "2026-07-11",
+    "as_of": "2026-07-11",
+    "purpose": "Factual per-provider fields for the Q2 untracked-provider states and the 'cheapest model you'd consider' exclusion UI (CTO update v2, 0.2 + A4). FACTS ONLY — open_weights, hosted_api, hq_jurisdiction — no suitability opinions, no eval scores. The 'can be run in-house / low price-jump risk' reading renders ONLY when open_weights is true; every other untracked provider gets the neutral 'not tracked — no forecast' state with no risk rating implied either way.",
+    "review_by": "2026-10-11",
+    "verification": "open_weights = the provider's current surfaced model(s) have publicly downloadable weights (source_url). Grok 3 verified hosted/API-only on 2026-07-10 (only Grok-1 weights were ever released)."
+  },
+  "providers": {
+    "anthropic": {
+      "label": "Anthropic",
+      "open_weights": false,
+      "hosted_api": true,
+      "hq_jurisdiction": "United States",
+      "source_url": "https://www.anthropic.com/company",
+      "confidence": "high"
+    },
+    "openai": {
+      "label": "OpenAI",
+      "open_weights": false,
+      "hosted_api": true,
+      "hq_jurisdiction": "United States",
+      "source_url": "https://openai.com/about",
+      "confidence": "high"
+    },
+    "google": {
+      "label": "Google",
+      "open_weights": false,
+      "hosted_api": true,
+      "hq_jurisdiction": "United States",
+      "source_url": "https://about.google",
+      "confidence": "high",
+      "note": "Gemini API models are hosted; the separate Gemma family is open-weights but is not in this price sheet."
+    },
+    "xai": {
+      "label": "xAI",
+      "open_weights": false,
+      "hosted_api": true,
+      "hq_jurisdiction": "United States",
+      "source_url": "https://x.ai",
+      "confidence": "high",
+      "note": "Grok 3 is hosted/API-only — only Grok-1 weights were released (2024). Verified 2026-07-10; this is the fact that fixes the 'open-source, run in-house' misread."
+    },
+    "deepseek": {
+      "label": "DeepSeek",
+      "open_weights": true,
+      "hosted_api": true,
+      "hq_jurisdiction": "China",
+      "source_url": "https://huggingface.co/deepseek-ai",
+      "confidence": "high"
+    },
+    "mistral": {
+      "label": "Mistral",
+      "open_weights": true,
+      "hosted_api": true,
+      "hq_jurisdiction": "France",
+      "source_url": "https://mistral.ai/news/mistral-3/",
+      "confidence": "high",
+      "note": "Mistral 3 family (incl. Large 3) released under Apache 2.0 — confirmed 2026-07-11."
+    },
+    "together": {
+      "label": "Together",
+      "open_weights": true,
+      "hosted_api": true,
+      "hq_jurisdiction": "United States",
+      "source_url": "https://huggingface.co/LiquidAI",
+      "confidence": "high",
+      "note": "Hosting provider; the surfaced model (LFM2 24B, by Liquid AI, US) is open-weights."
+    },
+    "zhipu": {
+      "label": "Zhipu (Z.ai)",
+      "open_weights": true,
+      "hosted_api": true,
+      "hq_jurisdiction": "China",
+      "source_url": "https://huggingface.co/zai-org",
+      "confidence": "high"
+    },
+    "moonshot": {
+      "label": "Moonshot",
+      "open_weights": true,
+      "hosted_api": true,
+      "hq_jurisdiction": "China",
+      "source_url": "https://huggingface.co/moonshotai",
+      "confidence": "high"
+    },
+    "minimax": {
+      "label": "MiniMax",
+      "open_weights": true,
+      "hosted_api": true,
+      "hq_jurisdiction": "China",
+      "source_url": "https://huggingface.co/MiniMaxAI",
+      "confidence": "high"
+    }
+  }
+}

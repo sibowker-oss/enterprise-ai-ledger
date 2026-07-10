@@ -38,7 +38,8 @@ export interface BudgetMonth {
   month: number;
   /** Adoption share this month, 0–1. */
   adoption: number;
-  /** Cost this month: AI usage scales with adoption; the run cost doesn't. */
+  /** Cost this month: the per-use buckets (AI + per-unit run) scale with
+   *  adoption; the monthly fixed floor is carried in full from month 1. */
   cost: number;
   /** Counted value this month (haircut value × adoption). */
   value: number;
@@ -62,10 +63,11 @@ export interface BudgetLine {
 
 /**
  * The 12-month line. Costs use TODAY'S price (the band's middle segment):
- * the AI-usage part scales with adoption, the build & run part is carried in
- * full from month 1 (the pipeline runs whether or not everyone has moved
- * over). Value is the COUNTED (realisation-discounted) base, scaled by the
- * same adoption share. Payback is computed against the mid one-off build.
+ * the PER-USE buckets (AI usage + per-unit run) scale with adoption, the
+ * MONTHLY FIXED floor is carried in full from month 1 (the platform runs
+ * whether or not everyone has moved over — 0.3's bucket split). Value is the
+ * COUNTED (realisation-discounted) base, scaled by the same adoption share.
+ * Payback is computed against the mid one-off build.
  */
 export function budgetLine(
   archetypeKey: string,
@@ -80,7 +82,7 @@ export function budgetLine(
   let paybackMonth: number | null = null;
   for (let m = 1; m <= 12; m++) {
     const adoption = adoptionAt(m, ramp);
-    const cost = band.todayAiUsage * adoption + band.buildAndRun;
+    const cost = (band.todayAiUsage + band.perUseRun) * adoption + band.monthlyFixed;
     const value = countedValue.base * adoption;
     cumCost += cost;
     cumValue += value;

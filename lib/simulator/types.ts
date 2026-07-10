@@ -29,6 +29,8 @@ export interface ModelPrice {
 export interface Model extends ModelPrice {
   label: string;
   providerLabel: string;
+  /** Price verified against the vendor's own page — floor/routing eligible. */
+  verified: boolean;
 }
 
 /** Low/mid/high token prior for one direction (input or output). */
@@ -38,8 +40,14 @@ export interface TokenPrior {
   high: number;
 }
 
+/** Which forward-pricing read applies (CTO update v2, 0.2): a tracked-provider
+ *  read, the open-weights read, or the neutral "not tracked — no forecast"
+ *  state. "In-house / low jump risk" copy renders ONLY on the open state. */
+export type ForwardState = "tracked" | "open" | "neutral";
+
 /** The forward-pricing read for one provider (Q2). Numbers all originate in the data file. */
 export interface ForwardSignal {
+  state: ForwardState;
   tracked: boolean;
   tier: ProvenanceTier;
   /** Cents-on-the-dollar customers cover, e.g. 38 → "you pay about 38%". Null if untracked. */
@@ -55,18 +63,29 @@ export interface ForwardSignal {
   reason: string;
 }
 
-/** The three-segment cost band (monthly USD), each split into AI usage + build & run. */
+/**
+ * The three-segment cost band (monthly, display currency = US$ unless the A$
+ * toggle scales it). Beyond AI usage the cost is two plain buckets (CTO update
+ * v2, 0.3): a MONTHLY FIXED floor plus PER-USE run cost — they must reconcile:
+ * today = todayAiUsage + perUseRun + monthlyFixed.
+ */
 export interface CostBand {
-  /** Cheapest model today, levers applied. */
+  /** Cheapest model you'd consider, today, levers applied. */
   floor: number;
   floorAiUsage: number;
+  /** The model the floor was computed from — null when no verified model is left to consider. */
+  floorModelKey: string | null;
   /** Chosen model today, levers applied. */
   today: number;
   todayAiUsage: number;
   /** Chosen model if prices rise (AI usage × provider multiple), levers applied. */
   repriced: number;
   repricedAiUsage: number;
-  /** Build & run cost — identical across all three segments (integration + risk carry). */
+  /** The monthly FIXED floor — platform, monitoring, checking. Same in every segment. */
+  monthlyFixed: number;
+  /** Per-use run cost beyond the AI itself (per-unit marginals × units). */
+  perUseRun: number;
+  /** monthlyFixed + perUseRun — everything that isn't the AI usage itself. */
   buildAndRun: number;
   /** True when the billing-lever saving was capped to the library's evidenced
    *  envelope (stacking_rules) — i.e. the sliders tried to over-claim. */

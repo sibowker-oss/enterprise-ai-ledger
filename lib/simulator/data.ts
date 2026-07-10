@@ -7,31 +7,49 @@
  * can confirm the moat hasn't leaked by reading this import list — it is the
  * entire data surface of the public tool.
  *
- * DEMAND SIDE (token bands, fan-out, band meaning, freshness, levers, model
- * factors) now reads ONE source of truth via ./library:
- *   data/reference/token_estimate_library_v1.json
- * which SUPERSEDES benchmark_token_priors.json v0.1 (Token Estimate Library
- * handoff rule #1 — never dual-source). The v0.1 file is retained in the repo
- * for the 18 Jun worked examples only and is no longer imported.
+ * ASSUMPTIONS REGISTRY (CTO update v2, 0.1): the price sheet is now a
+ * verification registry — every record carries source_url, effective_date,
+ * review_by, verification_status and confidence. Unverified models are
+ * excluded from floor/routing/default calculations (still selectable,
+ * labelled). scripts/validate_assumptions.mjs gates the production build.
+ * Every rendered "as of" date is generated from these files, never hard-coded.
  *
- * SUPPLY SIDE (prices, repricing/forward signal, integration & risk bands)
- * stays on the simulator's committed copies below.
+ * DEMAND SIDE (token bands, fan-out, band meaning, freshness, levers, model
+ * factors) reads ONE source of truth via ./library:
+ *   data/reference/token_estimate_library_v1.json
+ * which SUPERSEDES benchmark_token_priors.json v0.1 (never dual-source).
  */
 import priceSheetJson from "@/data/simulator/benchmark_price_sheet.json";
 import repricingJson from "@/data/simulator/benchmark_repricing_multiples.json";
 import integrationJson from "@/data/simulator/benchmark_integration_risk_bands.json";
 import railsJson from "@/data/simulator/simulator_input_rails.json";
 import seatPricesJson from "@/data/simulator/vendor_seat_prices.json";
+import providerFactsJson from "@/data/simulator/provider_facts.json";
+import fxJson from "@/data/simulator/fx_rates.json";
 
-import { libraryPrior } from "./library";
-import type { ForwardSignal, ModelPrice, ProvenanceTier, TokenPrior } from "./types";
+import { libraryAsOf, libraryPrior, libraryVersion } from "./library";
+import type { ForwardSignal, ForwardState, ModelPrice, ProvenanceTier, TokenPrior } from "./types";
 
 /* ------------------------------------------------------------------ *
  * Raw JSON shapes (what the files actually contain).
  * ------------------------------------------------------------------ */
+export type VerificationStatus = "verified" | "unverified" | "historical";
+
+interface RawModelRecord {
+  provider: string;
+  input: number;
+  output: number;
+  tier: string;
+  verification_status: VerificationStatus;
+  confidence: string;
+  source_url: string;
+  effective_date: string;
+  review_by: string;
+  note?: string;
+}
 interface RawPriceSheet {
-  _schema: { as_of: string };
-  models: Record<string, { provider: string; input: number; output: number }>;
+  _schema: { as_of: string; dataVersion: string; version: string };
+  models: Record<string, RawModelRecord>;
 }
 interface RawForwardProvider {
   tracked: boolean;
@@ -50,20 +68,24 @@ interface RawRepricing {
     as_of: string;
     providers: Record<string, RawForwardProvider>;
     untracked_default: RawForwardProvider;
+    untracked_hosted_default: RawForwardProvider;
   };
+}
+interface Band {
+  low: number;
+  mid: number;
+  high: number;
 }
 interface RawIntegration {
   layer4_integration_run: {
-    bands_per_unit_month: Record<string, { low: number; mid: number; high: number }>;
-    fixed_run_bands_per_month: Record<string, { low: number; mid: number; high: number }>;
+    bands_per_unit_month: Record<string, Band>;
+    fixed_run_bands_per_month: Record<string, Band>;
   };
-  one_off_build: {
-    as_of: string;
-    usd_bands: Record<string, { low: number; mid: number; high: number }>;
-  };
+  one_off_build: { as_of: string; usd_bands: Record<string, Band> };
+  monthly_fixed_floor: { as_of: string; usd_bands_per_month: Record<string, Band> };
   adoption_ramp_default: { as_of: string; start_pct: number; full_month: number };
   layer5_risk_carry: {
-    dollar_band_per_unit_month: Record<string, { low: number; mid: number; high: number }>;
+    dollar_band_per_unit_month: Record<string, Band>;
   };
 }
 interface RawRail {
@@ -91,12 +113,31 @@ interface RawSeatPrices {
   _schema: { as_of: string };
   products: Record<string, RawSeatProduct>;
 }
+interface RawProviderFact {
+  label: string;
+  open_weights: boolean;
+  hosted_api: boolean;
+  hq_jurisdiction: string;
+  source_url: string;
+  confidence: string;
+  note?: string;
+}
+interface RawProviderFacts {
+  _schema: { as_of: string };
+  providers: Record<string, RawProviderFact>;
+}
+interface RawFx {
+  _schema: { as_of: string; source_url: string; review_by: string };
+  aud_usd: number;
+}
 
 const priceSheet = priceSheetJson as unknown as RawPriceSheet;
 const repricing = repricingJson as unknown as RawRepricing;
 const integration = integrationJson as unknown as RawIntegration;
 const rails = railsJson as unknown as RawRails;
 const seatPrices = seatPricesJson as unknown as RawSeatPrices;
+const providerFactsFile = providerFactsJson as unknown as RawProviderFacts;
+const fx = fxJson as unknown as RawFx;
 
 /** Tier of a band selection: which end of the low/mid/high range to read. */
 export type BandTier = "low" | "mid" | "high";
@@ -104,8 +145,15 @@ export type BandTier = "low" | "mid" | "high";
 /** Providers with a tracked, provenance-graded forward-pricing read. */
 const TRACKED_PROVIDERS = new Set(["openai", "anthropic", "google"]);
 
+/**
+ * The composite data version shown in the footer and stamped on exports —
+ * the price sheet (the fastest-moving file) carries it for the whole set.
+ */
+export const DATA_VERSION = priceSheet._schema.dataVersion;
+
 /* ------------------------------------------------------------------ *
- * Model price sheet (Layer 1 input — USD per million tokens).
+ * Model price sheet (Layer 1 input — USD per million tokens) + the
+ * verification registry around it.
  * ------------------------------------------------------------------ */
 export function modelPrice(key: string): ModelPrice {
   const m = priceSheet.models[key];
@@ -117,15 +165,67 @@ export function hasModel(key: string): boolean {
   return key in priceSheet.models;
 }
 
+export interface ModelMeta {
+  verificationStatus: VerificationStatus;
+  confidence: string;
+  sourceUrl: string;
+  effectiveDate: string;
+  reviewBy: string;
+}
+
+export function modelMeta(key: string): ModelMeta {
+  const m = priceSheet.models[key];
+  if (!m) throw new Error(`Unknown model key: ${key}`);
+  return {
+    verificationStatus: m.verification_status,
+    confidence: m.confidence,
+    sourceUrl: m.source_url,
+    effectiveDate: m.effective_date,
+    reviewBy: m.review_by,
+  };
+}
+
+/** Verified against the vendor's own page — eligible for floor/routing/defaults. */
+export function isModelVerified(key: string): boolean {
+  return priceSheet.models[key]?.verification_status === "verified";
+}
+
 export const priceSheetAsOf = priceSheet._schema.as_of;
 
+/** Raw model records — exposed for the data-integrity tests only. */
+export const rawModelRecords = priceSheet.models;
+
 /* ------------------------------------------------------------------ *
- * Token bands (the maturity band source) — now from the Token Estimate
- * Library via ./library. Bands carry their meaning (band_semantics), fan-out,
- * default model and freshness (as_of / review_by). Rendered figures must show
- * as_of (rule #2). For the five simulator use cases the input/output bands are
- * identical to v0.1, so the switch is numerically inert on the bands; the gain
- * is provenance, fan-out, volume correction and the lever/model machinery.
+ * Provider facts (CTO update v2, 0.2 + A4) — FACTS ONLY: open weights,
+ * hosted API, HQ jurisdiction. No suitability opinions, no scores.
+ * ------------------------------------------------------------------ */
+export interface ProviderFacts {
+  key: string;
+  label: string;
+  openWeights: boolean;
+  hostedApi: boolean;
+  hqJurisdiction: string;
+}
+
+export function providerFacts(provider: string): ProviderFacts | null {
+  const p = providerFactsFile.providers[provider];
+  if (!p) return null;
+  return {
+    key: provider,
+    label: p.label,
+    openWeights: p.open_weights,
+    hostedApi: p.hosted_api,
+    hqJurisdiction: p.hq_jurisdiction,
+  };
+}
+
+export const providerFactsAsOf = providerFactsFile._schema.as_of;
+
+/** Raw provider facts — exposed for the data-integrity tests only. */
+export const rawProviderFacts = providerFactsFile.providers;
+
+/* ------------------------------------------------------------------ *
+ * Token bands — from the Token Estimate Library via ./library.
  * ------------------------------------------------------------------ */
 export function tokenPrior(libraryKey: string): {
   input: TokenPrior;
@@ -167,28 +267,37 @@ export {
 
 /* ------------------------------------------------------------------ *
  * Repricing multiple + forward-pricing signal (the Q2 / TAIL-unique layer).
+ * THREE states (CTO update v2, 0.2): tracked-provider read / open-weights
+ * read / neutral "not tracked". The old two-state fallback rendered hosted
+ * models (Grok 3) as "open-source, run in-house" — fixed at the class level.
  * ------------------------------------------------------------------ */
 
-/** Map a price-sheet provider (lower-case) to its repricing/forward key. */
-export function forwardKeyForProvider(provider: string): string {
-  return TRACKED_PROVIDERS.has(provider) ? provider : "untracked";
+export type { ForwardState } from "./types";
+
+/** Which forward-pricing state a provider resolves to. */
+export function forwardStateForProvider(provider: string): ForwardState {
+  if (TRACKED_PROVIDERS.has(provider)) return "tracked";
+  return providerFacts(provider)?.openWeights ? "open" : "neutral";
 }
 
 /** The "if prices rise" multiplier for a provider, from the multiples block. */
 export function repricingMultiple(provider: string): number {
-  const key = forwardKeyForProvider(provider);
+  const key = TRACKED_PROVIDERS.has(provider) ? provider : "untracked";
   const entry = repricing.multiples[key] ?? repricing.multiples.untracked;
   return entry.repricing_multiple;
 }
 
 /** The full forward-pricing read for a provider (Q2 panel). */
 export function forwardSignal(provider: string): ForwardSignal {
-  const key = forwardKeyForProvider(provider);
+  const state = forwardStateForProvider(provider);
   const raw =
-    key !== "untracked"
-      ? repricing.forward_signal.providers[key] ?? repricing.forward_signal.untracked_default
-      : repricing.forward_signal.untracked_default;
+    state === "tracked"
+      ? repricing.forward_signal.providers[provider] ?? repricing.forward_signal.untracked_hosted_default
+      : state === "open"
+        ? repricing.forward_signal.untracked_default
+        : repricing.forward_signal.untracked_hosted_default;
   return {
+    state,
     tracked: raw.tracked,
     tier: raw.tier,
     costRecoveryPct: raw.cost_recovery_pct,
@@ -208,20 +317,14 @@ export const rawMultiples = repricing.multiples;
 export const rawForwardProviders = repricing.forward_signal.providers;
 
 /* ------------------------------------------------------------------ *
- * Integration & risk-carry bands (Layers 4 & 5 — build & run cost).
+ * Cost buckets beyond AI usage (CTO update v2, 0.3): ONE-OFF BUILD +
+ * MONTHLY FIXED floor + PER-USE marginals. Totals must reconcile.
  * ------------------------------------------------------------------ */
 
 /** Per-unit Layer-4 band (e.g. "light"/"medium"/"heavy") in USD per unit per month. */
 export function layer4PerUnit(complexity: string, tier: BandTier): number {
   const band = integration.layer4_integration_run.bands_per_unit_month[complexity];
   if (!band) throw new Error(`Unknown Layer-4 complexity band: ${complexity}`);
-  return band[tier];
-}
-
-/** Fixed Layer-4 build/run band (e.g. "rag_retrieval"/"agentic_orchestration") in USD/month. */
-export function layer4Fixed(bandKey: string, tier: BandTier): number {
-  const band = integration.layer4_integration_run.fixed_run_bands_per_month[bandKey];
-  if (!band) throw new Error(`Unknown Layer-4 fixed band: ${bandKey}`);
   return band[tier];
 }
 
@@ -232,9 +335,18 @@ export function layer5PerUnit(governance: string, tier: BandTier): number {
   return band[tier];
 }
 
-/* ------------------------------------------------------------------ *
- * One-off build band + default adoption ramp (the first-year budget line).
- * ------------------------------------------------------------------ */
+/** The monthly FIXED floor for a use case — platform, monitoring, the people
+ *  checking its work. Carried whether one person uses it or a thousand. */
+export function monthlyFixedFloor(archetypeKey: string, tier: BandTier): number {
+  const band = integration.monthly_fixed_floor.usd_bands_per_month[archetypeKey];
+  if (!band) throw new Error(`No monthly fixed floor for archetype: ${archetypeKey}`);
+  return band[tier];
+}
+
+export const monthlyFixedFloorAsOf = integration.monthly_fixed_floor.as_of;
+
+/** Raw floor bands — exposed for the data-integrity test only. */
+export const rawMonthlyFixedFloorBands = integration.monthly_fixed_floor.usd_bands_per_month;
 
 export interface OneOffBuildBand {
   low: number;
@@ -293,8 +405,7 @@ export const HAIRCUT_DEFAULT_PCT = rails.value_realisation_default_pct;
 export const rawRails = { units: rails.units, driver: rails.value_driver, rate: rails.value_rate };
 
 /* ------------------------------------------------------------------ *
- * Vendor seat prices — the public buy-the-seat comparison (seat-shaped
- * use cases only; public list prices, each with its verification status).
+ * Vendor seat prices — the public buy-the-seat comparison.
  * ------------------------------------------------------------------ */
 
 export interface SeatProduct {
@@ -327,3 +438,138 @@ export const seatPricesAsOf = seatPrices._schema.as_of;
 
 /** Raw seat products — exposed for the data-integrity test only. */
 export const rawSeatProducts = seatPrices.products;
+
+/* ------------------------------------------------------------------ *
+ * FX — one dated, sourced rate for the A$ display toggle.
+ * ------------------------------------------------------------------ */
+
+/** RBA AUD/USD reference rate (1 A$ buys this many US$). */
+export const AUD_USD = fx.aud_usd;
+/** US$ → A$ conversion factor, derived (never stored twice). */
+export const USD_TO_AUD = 1 / fx.aud_usd;
+export const fxAsOf = fx._schema.as_of;
+export const fxSourceUrl = fx._schema.source_url;
+
+/* ------------------------------------------------------------------ *
+ * Assumptions & sources index (CTO update v2, 0.1) — every decision-
+ * driving figure, its source, date and status, for the drawer and the
+ * print one-pager. Unknown displays as unknown.
+ * ------------------------------------------------------------------ */
+
+export interface AssumptionRow {
+  group: string;
+  label: string;
+  value: string;
+  source: string;
+  date: string;
+  status: string;
+}
+
+const host = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "unknown";
+  }
+};
+
+export function assumptionsIndex(): AssumptionRow[] {
+  const rows: AssumptionRow[] = [];
+  for (const [key, m] of Object.entries(priceSheet.models)) {
+    if (m.verification_status === "historical") continue;
+    rows.push({
+      group: "Model prices (US$ per million tokens)",
+      label: key,
+      value: `$${m.input} in / $${m.output} out`,
+      source: host(m.source_url),
+      date: m.effective_date,
+      status: m.verification_status === "verified" ? "checked against the source" : "price unverified",
+    });
+  }
+  for (const [key, p] of Object.entries(providerFactsFile.providers)) {
+    rows.push({
+      group: "Provider facts",
+      label: p.label,
+      value: `${p.open_weights ? "open weights" : "hosted only"} · based in ${p.hq_jurisdiction}`,
+      source: host(p.source_url),
+      date: providerFactsFile._schema.as_of,
+      status: p.confidence === "high" ? "checked against the source" : p.confidence,
+    });
+    void key;
+  }
+  rows.push({
+    group: "Price-hold figures",
+    label: "Provider cost recovery, losses, room to rise",
+    value: "shown on step 2, per provider",
+    source: "The AI Ledger",
+    date: repricing.forward_signal.as_of,
+    status: "dated snapshot — the maintained read is part of the full version",
+  });
+  rows.push({
+    group: "Usage estimates",
+    label: `Token estimate library v${libraryVersion}`,
+    value: "per-use-case reading/writing bands",
+    source: "editorial, anchored to named public evidence",
+    date: libraryAsOf,
+    status: "editorial",
+  });
+  rows.push(
+    {
+      group: "Running-cost bands",
+      label: "One-off build",
+      value: "ranged, per use case",
+      source: "editorial",
+      date: integration.one_off_build.as_of,
+      status: "editorial — replace with your own quote",
+    },
+    {
+      group: "Running-cost bands",
+      label: "Monthly fixed floor",
+      value: "ranged, per use case",
+      source: "editorial",
+      date: integration.monthly_fixed_floor.as_of,
+      status: "editorial — replace with your own figure",
+    },
+    {
+      group: "Running-cost bands",
+      label: "Rollout plan default",
+      value: `${integration.adoption_ramp_default.start_pct}% month 1 → everyone on by month ${integration.adoption_ramp_default.full_month}`,
+      source: "editorial",
+      date: integration.adoption_ramp_default.as_of,
+      status: "a planning assumption — editable",
+    },
+  );
+  rows.push({
+    group: "Value realism",
+    label: "Share of entered value counted",
+    value: `${rails.value_realisation_default_pct}% by default`,
+    source: "editorial",
+    date: rails._schema.as_of,
+    status: "editorial — the slider is yours",
+  });
+  for (const [key, p] of Object.entries(seatPrices.products)) {
+    rows.push({
+      group: "Vendor seat prices (US$)",
+      label: p.label,
+      value: `$${p.usd_per_seat_month}/seat/mo`,
+      source: host(`https://${p.source.split(" ")[0]}`) === "unknown" ? p.source : p.source.split(" ")[0],
+      date: seatPrices._schema.as_of,
+      status:
+        p.status === "official"
+          ? "checked against the source"
+          : p.status === "official-indirect"
+            ? "official source, checked indirectly"
+            : "reported — no published price",
+    });
+    void key;
+  }
+  rows.push({
+    group: "Currency",
+    label: "A$ conversion rate",
+    value: `AUD/USD ${fx.aud_usd}`,
+    source: host(fx._schema.source_url),
+    date: fx._schema.as_of,
+    status: "checked against the source",
+  });
+  return rows;
+}

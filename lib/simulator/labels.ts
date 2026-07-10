@@ -50,22 +50,28 @@ export const Q2 = {
   tileHeadroom: "Room to rise",
   tileHeadroomSub: "before they cover costs",
   lowRisk: "Low risk of a price jump",
+  neutralChip: "Not tracked — no forecast available",
   figuresAsOfPrefix: "Figures as of",
   footnote:
     "In the full version we keep this up to date for each provider. Here it's the latest published figures.",
+  footnoteUntracked:
+    "We only forecast prices for the providers we track. For everything else the cost figures still work — there's just no read on where the price goes, in either direction.",
 } as const;
 
 export const COST = {
   title: "What it really costs to run",
   intro:
-    "What that usage actually costs each month, shown three ways. Each bar adds two parts: the AI itself, plus the fixed cost to build, run and check it. Only the AI part moves — with the model you pick, and with where prices go.",
-  segFloor: "Cheapest model, today",
+    "What that usage actually costs each month, shown three ways. Each bar is the AI itself, plus the cost of running it — a fixed monthly floor (the platform, the monitoring, the people checking its work) and a small per-use part. Only the AI part moves — with the model you pick, and with where prices go.",
+  segFloor: "Cheapest you'd consider",
   segToday: "Your model, today",
   segRepriced: "Your model, if prices rise",
   aiUsage: "AI usage",
-  buildRun: "build & run",
+  buildRun: "running it",
+  bucketFixed: "monthly fixed",
+  bucketPerUse: "per use",
   legendAi: "AI usage — moves with the model you pick and where prices go",
-  legendBuild: "Build & run — the same in every column",
+  legendBuild: "Running it — a fixed monthly floor (platform, monitoring, checking) plus a per-use part",
+  floorHint: "Untick providers below the model picker and this column recalculates.",
 } as const;
 
 export const Q3 = {
@@ -87,6 +93,10 @@ export const Q3 = {
   routeDetail:
     "A quick check sends easy requests to a cheaper, smaller model and keeps the top model only for the hard ones — cutting cost while holding quality where it matters.",
   infoOpen: "What's involved",
+  nowLabel: "Doing now",
+  plannedLabel: "Planning to",
+  nowHint:
+    "Set each to what you already do today — the cost above runs on that, starting from nothing. What you're planning shows as a separate saving, never quietly baked in.",
   /** Shown on a lever that doesn't apply to the selected use case (kept visible, greyed). */
   unavailableHere: "Not available for this use case",
   batchUnavailable: "Not available for live, interactive work — answers here can't wait for a batch.",
@@ -104,6 +114,8 @@ export const Q4 = {
   low: "Low",
   likely: "Likely",
   high: "High",
+  rangeGuide:
+    "All three points are yours. Low and high start at a sensible spread around likely — set them to your own view.",
   haircutLabel: "How much of that value should count?",
   haircutHint:
     "Not everyone uses it, and not all saved time turns into output. The verdict below only counts this share of the value you entered — a discount we apply against ourselves.",
@@ -115,7 +127,7 @@ export const Q5 = {
   marginLabel: "Margin of safety",
   marginSub: "counted value ÷ cost, if prices rise",
   breakEvenLabel: "Break-even value",
-  breakEvenSub: "needed to cover the worst case",
+  breakEvenSub: "needed to cover the price-rise case",
   paybackLabel: "Pays back",
   paybackSub: "first year, on the rollout plan",
   paybackNone: "not in year 1",
@@ -145,19 +157,37 @@ export const RAILS = {
   checkTag: "Worth a check",
 } as const;
 
-export const PINS = {
-  pin: "Pin this case",
-  pinned: "Pinned ✓",
-  limitNote: "Up to five cases — unpin one to add another.",
-  trayTitle: "Pinned cases, side by side",
-  trayIntro:
-    "The question is rarely one use case on its own — it's which few to fund first. Pin the candidates as you go and weigh them here.",
-  remove: "Unpin",
-  colCase: "Use case",
-  colCost: "Cost / mo, today → if prices rise",
-  colValue: "Counted value / mo",
-  colMargin: "Margin of safety",
-  colVerdict: "Verdict",
+export const CONSIDER = {
+  heading: "Which providers would you consider?",
+  hint:
+    "Untick any you wouldn't use and the 'cheapest you'd consider' column recalculates. Facts only — where each is based, and whether the model's weights are open (can be run in-house).",
+  openTag: "open weights",
+  hostedTag: "hosted only",
+  unverifiedTag: "price unverified",
+  emptyNote: "None left to consider — the cheapest column falls back to your chosen model.",
+} as const;
+
+export const DRAWER = {
+  title: "Assumptions and sources",
+  intro:
+    "Every figure that drives a result here: what it is, where it comes from, when it was checked, and how sure we are. Anything unknown says unknown.",
+  colFigure: "Figure",
+  colValue: "Value",
+  colSource: "Source",
+  colDate: "As of",
+  colStatus: "Status",
+  close: "Close",
+} as const;
+
+export const CURRENCY = {
+  usd: "US$",
+  aud: "A$",
+  label: "Show figures in",
+  note: "A$ figures use the RBA rate — model and vendor seat prices stay quoted in US$.",
+} as const;
+
+export const A11Y = {
+  skipToVerdict: "Skip to the bottom line",
 } as const;
 
 export const SEAT = {
@@ -170,8 +200,12 @@ export const SEAT = {
 export const TOOLBAR = {
   copyLink: "Copy link to this case",
   copied: "Link copied ✓",
+  linkNote: "This link contains the numbers you typed.",
   print: "Print board summary",
   printHint: "One page — the case, the costs, the value and the verdict, ready for a board pack.",
+  save: "Save this case",
+  saveHint: "Downloads a small file with everything you set and everything it worked out — the record to bring to us.",
+  importLabel: "Open a saved case",
 } as const;
 
 export const PRINT = {

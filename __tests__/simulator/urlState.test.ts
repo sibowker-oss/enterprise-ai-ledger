@@ -1,7 +1,8 @@
 /**
- * URL-state persistence (CTO review item 5): the full configuration —
- * current case, pins, ramp — round-trips through query params, and hostile
- * or stale links degrade to safe defaults instead of breaking the page.
+ * URL-state persistence (kept by update v2 decision 2): the full configuration
+ * — case, now/planned levers, three-point value, exclusions, ramp, currency —
+ * round-trips through query params, and hostile or stale links degrade to
+ * safe defaults instead of breaking the page.
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -9,7 +10,6 @@ import {
   defaultState,
   parseState,
   serializeState,
-  PIN_LIMIT,
   type SimState,
 } from "@/lib/simulator/urlState";
 import { HAIRCUT_DEFAULT_PCT } from "@/lib/simulator/data";
@@ -20,7 +20,7 @@ describe("round-trips", () => {
     expect(parseState(serializeState(s))).toEqual(s);
   });
 
-  it("a fully-customised state with pins survives the round trip", () => {
+  it("a fully-customised state survives the round trip", () => {
     const s: SimState = {
       current: {
         archetypeKey: "voice_agents",
@@ -28,21 +28,17 @@ describe("round-trips", () => {
         intensity: null,
         maturity: 4,
         modelKey: "claude_haiku_4_5",
-        levers: { cache: 45, batch: 0, route: 20 }, // voice work isn't batchable — cap is 0
-        overrides: { driver: 0.12 },
-        haircut: 75,
-      },
-      pins: [
-        defaultConfig("code_assistant"),
-        {
-          ...defaultConfig("legal_review"),
-          units: 55,
-          intensity: 25,
-          overrides: { driver: 4.5, rate: 150 },
-          haircut: 40,
+        // voice work isn't batchable — its cap is 0 in both settings.
+        levers: {
+          now: { cache: 20, batch: 0, route: 10 },
+          planned: { cache: 45, batch: 0, route: 20 },
         },
-      ],
+        overrides: { driver: 0.12, lowDriver: 0.05, highDriver: 0.3 },
+        haircut: 75,
+        excludedProviders: ["deepseek", "zhipu"],
+      },
       ramp: { startPct: 30, fullMonth: 6 },
+      currency: "aud",
     };
     expect(parseState(serializeState(s))).toEqual(s);
   });
@@ -68,25 +64,25 @@ describe("defensive parsing — a bad link still renders a working page", () => 
   });
 
   it("out-of-range numbers clamp instead of breaking", () => {
-    const s = parseState("?uc=code_assistant&s=99&ca=400&i=9999&h=-5&rs=250&rf=99");
+    const s = parseState("?uc=code_assistant&s=99&ca=400&pc=400&i=9999&h=-5&rs=250&rf=99&u=0.01");
     expect(s.current.maturity).toBe(4);
-    expect(s.current.levers.cache).toBe(70); // clamped to the chat_support evidence cap
+    expect(s.current.levers.now.cache).toBe(70); // clamped to the chat_support evidence cap
+    expect(s.current.levers.planned.cache).toBe(70);
     expect(s.current.intensity).toBe(80); // clamped to the library band's heavy end
-    expect(s.current.haircut).toBe(1);
+    expect(s.current.haircut).toBe(10); // the Q4 slider floor
+    expect(s.current.units).toBe(1); // units are counts — no 0.01-unit deployments
     expect(s.ramp).toEqual({ startPct: 100, fullMonth: 12 });
   });
 
   it("a crafted link can't switch batching on for interactive work", () => {
-    const s = parseState("?uc=voice_agents&ba=80");
-    expect(s.current.levers.batch).toBe(0);
+    const s = parseState("?uc=voice_agents&ba=80&pb=80");
+    expect(s.current.levers.now.batch).toBe(0);
+    expect(s.current.levers.planned.batch).toBe(0);
   });
 
-  it("junk pins are dropped, valid ones kept, and the pin limit holds", () => {
-    const good = "code_assistant,200,30,2,claude_sonnet_4_6,30,20,0,,,60";
-    const junk = "not_a_case,1,1,1,fake,0,0,0,,,50";
-    const many = Array(8).fill(good).join("~");
-    expect(parseState(`?pin=${encodeURIComponent(`${good}~${junk}`)}`).pins).toHaveLength(1);
-    expect(parseState(`?pin=${encodeURIComponent(many)}`).pins).toHaveLength(PIN_LIMIT);
+  it("unknown excluded providers are dropped; known ones kept", () => {
+    const s = parseState("?uc=code_assistant&x=deepseek.notaprovider.zhipu");
+    expect(s.current.excludedProviders).toEqual(["deepseek", "zhipu"]);
   });
 
   it("missing params inherit the archetype's defaults (short links stay valid)", () => {
@@ -94,5 +90,7 @@ describe("defensive parsing — a bad link still renders a working page", () => 
     const d = defaultConfig("summarisation");
     expect(s.current).toEqual(d);
     expect(s.current.haircut).toBe(HAIRCUT_DEFAULT_PCT);
+    expect(s.current.levers.now).toEqual({ cache: 0, batch: 0, route: 0 }); // A3: not doing this yet
+    expect(s.currency).toBe("usd");
   });
 });

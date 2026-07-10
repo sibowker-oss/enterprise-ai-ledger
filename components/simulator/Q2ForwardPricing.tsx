@@ -124,8 +124,10 @@ export function Q2ForwardPricing({
             ▼ {Q2_COUNTER_SENTENCE}
           </p>
         </>
-      ) : (
+      ) : signal.state === "open" ? (
         <>
+          {/* Open weights — the ONLY untracked state that carries a risk read
+              (can run in-house → low jump risk). Update v2, 0.2. */}
           <div className="mt-4 flex flex-wrap items-center gap-2.5">
             <span className="rounded-chip bg-status-green-soft px-3 py-1 text-[12.5px] font-bold text-status-green-fg">
               ● {Q2.lowRisk}
@@ -133,11 +135,28 @@ export function Q2ForwardPricing({
             <span className="text-[12.5px] font-semibold text-ink-faint">{providerLabel}</span>
           </div>
           <p className="mt-3 text-[14.5px] leading-relaxed text-ink-muted">{signal.reason}</p>
+          <p className="mt-2 text-[11px] text-ink-faint">
+            {Q2.figuresAsOfPrefix} {asOfLabel(asOf)}.
+          </p>
+        </>
+      ) : (
+        <>
+          {/* Neutral — hosted, untracked: no forecast, NO risk rating either way. */}
+          <div className="mt-4 flex flex-wrap items-center gap-2.5">
+            <span className="rounded-chip bg-surface-muted px-3 py-1 text-[12.5px] font-bold text-ink-muted">
+              {Q2.neutralChip}
+            </span>
+            <span className="text-[12.5px] font-semibold text-ink-faint">{providerLabel}</span>
+          </div>
+          <p className="mt-3 text-[14.5px] leading-relaxed text-ink-muted">{signal.reason}</p>
+          <p className="mt-2 text-[11px] text-ink-faint">
+            {Q2.figuresAsOfPrefix} {asOfLabel(asOf)}.
+          </p>
         </>
       )}
 
       <p className="mt-4 border-t border-border pt-3 text-[12px] leading-relaxed text-ink-faint">
-        {Q2.footnote}
+        {signal.state === "tracked" ? Q2.footnote : Q2.footnoteUntracked}
       </p>
     </QCard>
   );

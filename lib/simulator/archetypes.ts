@@ -25,35 +25,23 @@ export type ValueConfig =
   | { kind: "perTx"; driverLabel: string; driver: number; driverStep: number }
   | { kind: "perUnitMonth"; driverLabel: string; driver: number; driverStep: number };
 
-/** How the build & run cost (Layers 4 + 5) is shaped for this archetype. */
-export type CostModel =
-  | {
-      /** Light/embedded archetypes: pure per-seat (code assistant, summaries). */
-      kind: "per_unit";
-      l4Complexity: string;
-      l4Tier: BandTier;
-      l5Governance: string;
-      l5Tier: BandTier;
-    }
-  | {
-      /**
-       * Retrieval/agentic archetypes: a FIXED build/run cost plus a small
-       * per-seat marginal, so per-seat amortisation falls with scale (the RAG
-       * worked-example refinement). Governance carry is a flat illustrative
-       * figure — Layer-5 bands are per-unit and "often qualitative in v1"
-       * (benchmark_integration_risk_bands.json:layer5_risk_carry), so a fixed
-       * carry is the honest shape for agentic archetypes at volume.
-       */
-      kind: "fixed";
-      l4FixedBand: string;
-      l4FixedTier: BandTier;
-      /** Small per-seat marginal on top of the fixed build (0 when off). */
-      l4MarginalComplexity: string;
-      l4MarginalTier: BandTier;
-      l4MarginalOn: boolean;
-      /** Illustrative fixed governance carry (USD/month). */
-      l5FixedUsd: number;
-    };
+/**
+ * How the running cost beyond AI usage is shaped (CTO update v2, 0.3). Every
+ * archetype carries a MONTHLY FIXED floor (platform, monitoring, the people
+ * checking its work — from monthly_fixed_floor in the reference data, carried
+ * whether one person uses it or a thousand) plus optional PER-USE marginals
+ * (Layer-4 complexity / Layer-5 governance bands × units). The old pure
+ * per-unit shape inverted scale economics ($13/mo at 1 agent); the old pure
+ * fixed shape is the floor with the marginal off.
+ */
+export interface CostModel {
+  /** Which end of the archetype's monthly_fixed_floor band the demo uses. */
+  floorTier: BandTier;
+  /** Per-unit marginal run cost (Layer-4 complexity band), if any. */
+  l4Marginal?: { complexity: string; tier: BandTier };
+  /** Per-unit governance carry (Layer-5 band) — only where checking genuinely scales per unit. */
+  l5Marginal?: { governance: string; tier: BandTier };
+}
 
 export interface Archetype {
   /** Stable UI key. */
@@ -106,7 +94,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 30 * WORKING_DAYS, // library volume: ~30 uses/dev/day (mid — the typical rate, not the heavy end)
     intensityPeriod: "day",
     workloadClass: "chat_support",
-    costModel: { kind: "per_unit", l4Complexity: "light", l4Tier: "mid", l5Governance: "med_governance", l5Tier: "mid" },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "mid" } },
     value: {
       kind: "hours",
       driverLabel: "Hours saved per developer each week",
@@ -128,7 +116,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 40 * WORKING_DAYS,
     intensityPeriod: "day",
     workloadClass: "chat_support",
-    costModel: { kind: "per_unit", l4Complexity: "light", l4Tier: "mid", l5Governance: "high_governance", l5Tier: "low" },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "mid" } },
     value: { kind: "perTx", driverLabel: "$ saved per call", driver: 0.25, driverStep: 0.05 },
   },
   {
@@ -142,15 +130,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 8 * WORKING_DAYS,
     intensityPeriod: "day",
     workloadClass: "rag_interactive",
-    costModel: {
-      kind: "fixed",
-      l4FixedBand: "rag_retrieval",
-      l4FixedTier: "mid",
-      l4MarginalComplexity: "light",
-      l4MarginalTier: "low",
-      l4MarginalOn: true,
-      l5FixedUsd: 2000,
-    },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "low" } },
     value: { kind: "perUnitMonth", driverLabel: "$ value per person each month", driver: 22, driverStep: 1 },
   },
   {
@@ -163,15 +143,7 @@ export const ARCHETYPES: Archetype[] = [
     volHint: "Each claim can take several AI steps to process.",
     txPerUnitMonth: 1,
     workloadClass: "rag_offline_batch",
-    costModel: {
-      kind: "fixed",
-      l4FixedBand: "agentic_orchestration",
-      l4FixedTier: "mid",
-      l4MarginalComplexity: "light",
-      l4MarginalTier: "low",
-      l4MarginalOn: false,
-      l5FixedUsd: 5000,
-    },
+    costModel: { floorTier: "mid" },
     value: { kind: "perTx", driverLabel: "$ saved per claim", driver: 4, driverStep: 1 },
   },
   {
@@ -184,15 +156,7 @@ export const ARCHETYPES: Archetype[] = [
     volHint: "Each run takes a few AI steps.",
     txPerUnitMonth: 1,
     workloadClass: "rag_offline_batch",
-    costModel: {
-      kind: "fixed",
-      l4FixedBand: "agentic_orchestration",
-      l4FixedTier: "low",
-      l4MarginalComplexity: "light",
-      l4MarginalTier: "low",
-      l4MarginalOn: false,
-      l5FixedUsd: 3000,
-    },
+    costModel: { floorTier: "mid" },
     value: { kind: "perTx", driverLabel: "$ saved per reconciliation", driver: 3, driverStep: 1 },
   },
   {
@@ -206,15 +170,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 8 * WORKING_DAYS, // library volume: ~8 tasks/dev/active-day (mid)
     intensityPeriod: "day",
     workloadClass: "agentic",
-    costModel: {
-      kind: "fixed",
-      l4FixedBand: "agentic_orchestration",
-      l4FixedTier: "mid",
-      l4MarginalComplexity: "light",
-      l4MarginalTier: "low",
-      l4MarginalOn: true,
-      l5FixedUsd: 8000,
-    },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "low" } },
     value: {
       kind: "hours",
       driverLabel: "Hours saved per developer each week",
@@ -236,15 +192,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 8 * 4, // library volume: ~8 reports/analyst/week (mid)
     intensityPeriod: "week",
     workloadClass: "agentic",
-    costModel: {
-      kind: "fixed",
-      l4FixedBand: "agentic_orchestration",
-      l4FixedTier: "mid",
-      l4MarginalComplexity: "light",
-      l4MarginalTier: "low",
-      l4MarginalOn: true,
-      l5FixedUsd: 5000,
-    },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "low" } },
     value: { kind: "perTx", driverLabel: "$ saved per report (analyst time)", driver: 70, driverStep: 10 },
   },
   {
@@ -257,18 +205,7 @@ export const ARCHETYPES: Archetype[] = [
     volHint: "Count only the conversations the bot handles end-to-end (deflected).",
     txPerUnitMonth: 1,
     workloadClass: "chat_support",
-    costModel: {
-      kind: "fixed",
-      l4FixedBand: "rag_retrieval",
-      l4FixedTier: "mid",
-      // Per-transaction archetype (units = conversations, not seats): the L4
-      // marginal is a per-seat rate, so it must stay off — the build/run is the
-      // fixed retrieval pipeline (as with claims / reconciliation).
-      l4MarginalComplexity: "light",
-      l4MarginalTier: "low",
-      l4MarginalOn: false,
-      l5FixedUsd: 3000,
-    },
+    costModel: { floorTier: "mid" },
     value: { kind: "perTx", driverLabel: "$ saved per contained conversation", driver: 2.5, driverStep: 0.5 },
   },
   {
@@ -282,7 +219,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 15 * WORKING_DAYS, // library volume: ~15 docs/reviewer/day (mid)
     intensityPeriod: "day",
     workloadClass: "rag_offline_batch",
-    costModel: { kind: "per_unit", l4Complexity: "heavy", l4Tier: "mid", l5Governance: "high_governance", l5Tier: "mid" },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "heavy", tier: "mid" } },
     value: {
       kind: "hours",
       driverLabel: "Hours saved per reviewer each week",
@@ -304,7 +241,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 15 * WORKING_DAYS, // library volume: ~15 questions/analyst/day (mid)
     intensityPeriod: "day",
     workloadClass: "chat_support",
-    costModel: { kind: "per_unit", l4Complexity: "medium", l4Tier: "mid", l5Governance: "med_governance", l5Tier: "mid" },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "medium", tier: "mid" } },
     value: {
       kind: "hours",
       driverLabel: "Hours saved per analyst each week",
@@ -326,7 +263,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 10 * 4, // library volume: ~10 assets/marketer/week (mid)
     intensityPeriod: "week",
     workloadClass: "chat_support",
-    costModel: { kind: "per_unit", l4Complexity: "light", l4Tier: "mid", l5Governance: "low_governance", l5Tier: "mid" },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "mid" } },
     value: {
       kind: "hours",
       driverLabel: "Hours saved per marketer each week",
@@ -348,7 +285,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 5 * 4, // library volume: ~5 meeting-hours/employee/week (mid)
     intensityPeriod: "week",
     workloadClass: "rag_offline_batch",
-    costModel: { kind: "per_unit", l4Complexity: "light", l4Tier: "mid", l5Governance: "low_governance", l5Tier: "mid" },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "mid" } },
     value: { kind: "perTx", driverLabel: "$ saved per meeting-hour", driver: 3, driverStep: 0.5 },
   },
   {
@@ -362,7 +299,7 @@ export const ARCHETYPES: Archetype[] = [
     txPerUnitMonth: 50 * WORKING_DAYS, // library volume: ~50 emails/rep/day (mid)
     intensityPeriod: "day",
     workloadClass: "rag_offline_batch",
-    costModel: { kind: "per_unit", l4Complexity: "light", l4Tier: "low", l5Governance: "low_governance", l5Tier: "low" },
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "low" } },
     value: {
       kind: "hours",
       driverLabel: "Hours saved per rep each week",
@@ -383,15 +320,7 @@ export const ARCHETYPES: Archetype[] = [
     volHint: "Count your source text in thousands of words per month.",
     txPerUnitMonth: 1,
     workloadClass: "rag_offline_batch",
-    costModel: {
-      kind: "fixed",
-      l4FixedBand: "rag_retrieval",
-      l4FixedTier: "low",
-      l4MarginalComplexity: "light",
-      l4MarginalTier: "low",
-      l4MarginalOn: false, // per-transaction: no per-seat marginal
-      l5FixedUsd: 1500,
-    },
+    costModel: { floorTier: "mid" },
     value: { kind: "perTx", driverLabel: "$ saved per 1,000 words", driver: 12, driverStep: 2 },
   },
   {
@@ -404,15 +333,7 @@ export const ARCHETYPES: Archetype[] = [
     volHint: "One minute of live conversation — the AI's thinking only (voice-to-text and the spoken reply are separate costs).",
     txPerUnitMonth: 1,
     workloadClass: "chat_support",
-    costModel: {
-      kind: "fixed",
-      l4FixedBand: "agentic_orchestration",
-      l4FixedTier: "low",
-      l4MarginalComplexity: "light",
-      l4MarginalTier: "low",
-      l4MarginalOn: false, // per-transaction: no per-seat marginal
-      l5FixedUsd: 3000,
-    },
+    costModel: { floorTier: "mid" },
     value: { kind: "perTx", driverLabel: "$ saved per call-minute", driver: 0.08, driverStep: 0.02 },
   },
 ];

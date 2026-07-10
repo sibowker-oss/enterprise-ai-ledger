@@ -158,6 +158,42 @@ describe("break-even in human units (CTO review item 3)", () => {
   });
 });
 
+describe("three-point value (A2: low/likely/high individually editable)", () => {
+  const a = ARCHETYPE_BY_KEY.code_assistant;
+
+  it("defaults prefill at ×0.6 / ×1.4 around likely", () => {
+    const v = valueRange(a, 200, 126_000, {});
+    expect(v.low).toBeCloseTo(v.base * 0.6, 6);
+    expect(v.high).toBeCloseTo(v.base * 1.4, 6);
+  });
+
+  it("each point is independently editable — no fixed spread", () => {
+    // 3 h/wk likely, but the buyer's own low is 1 h/wk and high is 4 h/wk.
+    const v = valueRange(a, 200, 126_000, { lowDriver: 1, highDriver: 4 });
+    const perHour = (200 * 90 * 52) / 12;
+    expect(v.low).toBeCloseTo(perHour * 1, 6);
+    expect(v.base).toBeCloseTo(perHour * 3, 6);
+    expect(v.high).toBeCloseTo(perHour * 4, 6);
+  });
+
+  it("the stress read uses the LOW counted value against the price-rise case", () => {
+    const s = deriveCase(defaultConfig(a.key));
+    expect(s.stressCoverage).toBeCloseTo(s.counted.low / s.band.repriced, 6);
+    expect(s.stressCoverage).toBeLessThan(s.coverage);
+  });
+});
+
+describe("A2 verdict wording", () => {
+  it("the middle band says prove-it-with-a-pilot, not 'get usage down'", () => {
+    const a = ARCHETYPE_BY_KEY.code_assistant;
+    const u = usage(a, 200, 2, priorsFor(a.priorKey));
+    const band = costBand(a, "claude_sonnet_4_6", 200, u.inputM, u.outputM, NO_LEVERS);
+    const v = verdict(band.today * 0.8, band, a);
+    expect(v.klass).toBe("marginal");
+    expect(v.condition).toMatch(/pilot/i);
+  });
+});
+
 describe("the default-state portfolio story holds", () => {
   it("run-cost-dominated cases surface as borderline; nothing defaults to a hard no", () => {
     const spread: Record<string, string[]> = { good: [], conditional: [], marginal: [], no: [] };

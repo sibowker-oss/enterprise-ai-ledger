@@ -1,48 +1,14 @@
 import type { Archetype } from "@/lib/simulator/archetypes";
 import { unitWord } from "@/lib/simulator/archetypes";
-import type { ValueOverrides } from "@/lib/simulator/engine";
+import { driverPoints, type ValueOverrides } from "@/lib/simulator/engine";
 import type { ValueRange } from "@/lib/simulator/types";
 import { QCard } from "./QCard";
 import { RailWarning } from "./ConfigPanel";
+import { NumberField } from "./NumberField";
 import { Q4 } from "@/lib/simulator/labels";
 import { haircutSentence, railWarning, typicalHint } from "@/lib/simulator/copy";
-import { driverRail, rateRail, type InputRail } from "@/lib/simulator/data";
-import { usdK, usdUnit } from "@/lib/simulator/format";
-
-function ValueInput({
-  id,
-  label,
-  value,
-  step,
-  rail,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  value: number;
-  step: number;
-  rail: InputRail | null;
-  onChange: (v: number) => void;
-}) {
-  return (
-    <div className="min-w-[130px] flex-1">
-      <label htmlFor={id} className="mb-1.5 block text-[11.5px] font-semibold text-ink-muted">
-        {label}
-      </label>
-      <input
-        id={id}
-        type="number"
-        min={0}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
-        className="w-full rounded-control border border-border bg-surface-muted px-2.5 py-1.5 text-[13.5px] text-ink tabular"
-      />
-      {rail && <p className="mt-1 text-[10.5px] text-ink-faint">{typicalHint(rail)}</p>}
-      {rail && <RailWarning text={railWarning(value, rail)} />}
-    </div>
-  );
-}
+import { driverRail, rateRail } from "@/lib/simulator/data";
+import { usdK, usdUnit, type Cur } from "@/lib/simulator/format";
 
 function Stat({ label, value, tone }: { label: string; value: string; tone: string }) {
   return (
@@ -54,10 +20,11 @@ function Stat({ label, value, tone }: { label: string; value: string; tone: stri
 }
 
 /**
- * Q4 — what is it worth. The buyer supplies the driver; we structure it as a
- * Low/Likely/High range and visibly refuse to emit a single ROI number (D4).
- * The realisation slider then discounts the entered value BEFORE the verdict —
- * a haircut the tool applies against itself (CTO review item 3).
+ * Q4 — what is it worth. The buyer supplies all THREE points of the range —
+ * low / likely / high are individually editable (A2 replaced the fixed
+ * ×0.6/×1.4 spread) — and we still visibly refuse a single ROI number. The
+ * realisation slider then discounts the entered value BEFORE the verdict — a
+ * discount the tool applies against itself.
  */
 export function Q4Value({
   a,
@@ -68,17 +35,21 @@ export function Q4Value({
   haircut,
   onHaircut,
   units,
+  cur,
 }: {
   a: Archetype;
   overrides: ValueOverrides;
-  onChange: (key: "driver" | "rate", value: number) => void;
+  onChange: (key: keyof ValueOverrides, value: number) => void;
   value: ValueRange;
   counted: ValueRange;
   haircut: number;
   onHaircut: (pct: number) => void;
   units: number;
+  cur: Cur;
 }) {
   const v = a.value;
+  const points = driverPoints(a, overrides);
+  const dRail = driverRail(a.key);
   return (
     <QCard num="4" title={Q4.title}>
       <p className="mb-3 text-[15px] leading-relaxed text-ink-muted">{Q4.intro}</p>
@@ -88,58 +59,103 @@ export function Q4Value({
       <p className="mb-2 inline-block rounded-chip bg-accent-soft px-2.5 py-1 text-[11px] font-semibold text-accent-text">
         ✎ {Q4.inputGuide}
       </p>
-      <div className="flex flex-wrap items-start gap-3">
-        <ValueInput
-          id="val-driver"
-          label={v.driverLabel}
-          value={overrides.driver ?? v.driver}
-          step={v.driverStep}
-          rail={driverRail(a.key)}
-          onChange={(n) => onChange("driver", n)}
-        />
-        {v.kind === "hours" && (
-          <ValueInput
+
+      <fieldset className="rounded-tile border border-border p-3">
+        <legend className="px-1 text-[11.5px] font-semibold text-ink-muted">{v.driverLabel}</legend>
+        <div className="flex flex-wrap items-start gap-3">
+          <NumberField
+            id="val-driver-low"
+            label={Q4.low}
+            value={Math.round(points.low * 100) / 100}
+            step={v.driverStep}
+            min={0}
+            onChange={(n) => onChange("lowDriver", n)}
+          />
+          <NumberField
+            id="val-driver"
+            label={Q4.likely}
+            value={points.likely}
+            step={v.driverStep}
+            min={0}
+            onChange={(n) => onChange("driver", n)}
+          />
+          <NumberField
+            id="val-driver-high"
+            label={Q4.high}
+            value={Math.round(points.high * 100) / 100}
+            step={v.driverStep}
+            min={0}
+            onChange={(n) => onChange("highDriver", n)}
+          />
+        </div>
+        <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
+          {Q4.rangeGuide}
+          {dRail ? ` ${typicalHint(dRail)} (likely).` : ""}
+        </p>
+        <RailWarning text={dRail ? railWarning(points.likely, dRail) : null} />
+      </fieldset>
+
+      {v.kind === "hours" && (
+        <div className="mt-3 max-w-[240px]">
+          <NumberField
             id="val-rate"
             label={v.rateLabel}
             value={overrides.rate ?? v.rate}
             step={v.rateStep}
-            rail={rateRail(a.key)}
+            min={0}
             onChange={(n) => onChange("rate", n)}
           />
-        )}
-      </div>
+          {rateRail(a.key) && (
+            <p className="mt-1 text-[10.5px] text-ink-faint">{typicalHint(rateRail(a.key)!)}</p>
+          )}
+          <RailWarning text={rateRail(a.key) ? railWarning(overrides.rate ?? v.rate, rateRail(a.key)!) : null} />
+        </div>
+      )}
 
-      <div className="mt-4 grid grid-cols-3 gap-2.5">
-        <Stat label={Q4.low} value={`${usdK(value.low)}/mo`} tone="text-status-amber-fg" />
-        <Stat label={Q4.likely} value={`${usdK(value.base)}/mo`} tone="text-ink" />
-        <Stat label={Q4.high} value={`${usdK(value.high)}/mo`} tone="text-status-green-fg" />
+      <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+        <Stat label={Q4.low} value={`${usdK(value.low, cur)}/mo`} tone="text-status-amber-fg" />
+        <Stat label={Q4.likely} value={`${usdK(value.base, cur)}/mo`} tone="text-ink" />
+        <Stat label={Q4.high} value={`${usdK(value.high, cur)}/mo`} tone="text-status-green-fg" />
       </div>
       {/* Unit economics on the value side too — per-seat/-claim value travels; totals don't. */}
       <p className="mt-2 text-[11.5px] tabular text-ink-faint">
-        ≈ {usdUnit(value.base / Math.max(units, 1))} / {unitWord(a)} / mo entered
+        ≈ {usdUnit(value.base / Math.max(units, 1), cur)} / {unitWord(a)} / mo entered
       </p>
 
-      {/* The realisation slider — the discount we apply against ourselves. */}
+      {/* The realisation slider — the discount we apply against ourselves. Paired
+          with a numeric field (A6). */}
       <div className="mt-4 rounded-tile border border-border bg-surface-muted p-3.5">
         <label htmlFor="val-haircut" className="block text-[13px] font-semibold text-ink">
           {Q4.haircutLabel}{" "}
           <span className="tabular font-semibold text-accent-text">({haircut}%)</span>
         </label>
-        <input
-          id="val-haircut"
-          type="range"
-          min={10}
-          max={100}
-          step={5}
-          value={haircut}
-          onChange={(e) => onHaircut(Number(e.target.value))}
-          className="mt-1.5 w-full accent-accent"
-          aria-valuetext={`${haircut}% of the entered value is counted`}
-        />
+        <div className="mt-1.5 flex items-center gap-3">
+          <input
+            id="val-haircut"
+            type="range"
+            min={10}
+            max={100}
+            step={5}
+            value={haircut}
+            onChange={(e) => onHaircut(Number(e.target.value))}
+            className="w-full accent-accent"
+            aria-valuetext={`${haircut}% of the entered value is counted`}
+          />
+          <NumberField
+            id="val-haircut-num"
+            label={Q4.haircutLabel}
+            value={haircut}
+            min={10}
+            max={100}
+            step={5}
+            compact
+            onChange={onHaircut}
+          />
+        </div>
         <p className="mt-1 text-[11.5px] leading-snug text-ink-faint">{Q4.haircutHint}</p>
         <p className="mt-2 text-[13px] leading-relaxed text-ink">
           <b className="font-semibold">{Q4.countedLabel}:</b>{" "}
-          {haircutSentence(value.base, counted.base, haircut)}
+          {haircutSentence(value.base, counted.base, haircut, cur)}
         </p>
       </div>
     </QCard>

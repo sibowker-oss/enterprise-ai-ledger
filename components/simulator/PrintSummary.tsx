@@ -1,24 +1,26 @@
 import type { CaseSummary } from "@/lib/simulator/derive";
 import type { BudgetLine } from "@/lib/simulator/budget";
-import type { SimConfig } from "@/lib/simulator/urlState";
-import { deriveCase } from "@/lib/simulator/derive";
-import { MATURITY_WORDS } from "@/lib/simulator/engine";
-import { intensityBand } from "@/lib/simulator/engine";
+import { MATURITY_WORDS, intensityBand } from "@/lib/simulator/engine";
 import {
   breakEvenSentence,
   intensityLabel,
+  stressSentence,
   timesLabel,
   verdictWeighingSentence,
 } from "@/lib/simulator/copy";
 import { model as resolveModel } from "@/lib/simulator/models";
 import {
   forwardSignalAsOf,
+  fxAsOf,
   libraryAsOf,
+  modelMeta,
+  monthlyFixedFloorAsOf,
   oneOffBuildAsOf,
   priceSheetAsOf,
 } from "@/lib/simulator/data";
-import { asOfLabel, grouped, usd, usdK } from "@/lib/simulator/format";
+import { asOfLabel, grouped, usd, usdK, type Cur } from "@/lib/simulator/format";
 import { BRAND, FOOTER, PRINT } from "@/lib/simulator/labels";
+import { APP_COMMIT, DATA_VERSION, ENGINE_VERSION } from "@/lib/simulator/versions";
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
@@ -30,23 +32,16 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 /**
- * The one-page board summary (CTO review item 5). Hidden on screen; @media
- * print hides the interactive walk and shows this instead — the global print
- * stylesheet flips the dark surface to ink-on-white. Everything here derives
- * from the same engine as the page; nothing is restated by hand.
+ * The one-page board summary. Hidden on screen; @media print hides the
+ * interactive walk and shows this instead. Everything derives from the same
+ * engine as the page — and it now carries the assumptions, sources and data
+ * version (A5), so the page can stand alone in a board pack.
  */
-export function PrintSummary({
-  s,
-  line,
-  pins,
-}: {
-  s: CaseSummary;
-  line: BudgetLine;
-  pins: SimConfig[];
-}) {
+export function PrintSummary({ s, line }: { s: CaseSummary; line: BudgetLine }) {
   const m = resolveModel(s.config.modelKey);
+  const meta = modelMeta(s.config.modelKey);
   const band = intensityBand(s.a);
-  const pinRows = pins.map((p) => deriveCase(p));
+  const cur: Cur = s.currency;
   return (
     <div className="hidden print:block">
       {/* Header */}
@@ -69,12 +64,20 @@ export function PrintSummary({
           {band && s.config.intensity != null && (
             <Row k={intensityLabel(band)} v={`${s.config.intensity} (typical ${band.mid})`} />
           )}
-          <Row k="Model" v={`${m.label} (${m.providerLabel})`} />
+          <Row k="Model" v={`${m.label} (${m.providerLabel})${m.verified ? "" : " — price unverified"}`} />
           <Row k="Setup" v={MATURITY_WORDS[s.config.maturity]} />
           <Row
-            k="Savings applied"
-            v={`caching ${s.config.levers.cache}% · batching ${s.config.levers.batch}% · routing ${s.config.levers.route}%`}
+            k="Savings running now"
+            v={`caching ${s.config.levers.now.cache}% · batching ${s.config.levers.now.batch}% · routing ${s.config.levers.now.route}%`}
           />
+          <Row
+            k="Savings planned"
+            v={`caching ${s.config.levers.planned.cache}% · batching ${s.config.levers.planned.batch}% · routing ${s.config.levers.planned.route}%`}
+          />
+          {s.config.excludedProviders.length > 0 && (
+            <Row k="Providers not considered" v={s.config.excludedProviders.join(", ")} />
+          )}
+          <Row k="Figures shown in" v={cur === "aud" ? `A$ (RBA rate, ${fxAsOf})` : "US$"} />
         </tbody>
       </table>
 
@@ -84,14 +87,21 @@ export function PrintSummary({
         <tbody>
           <Row
             k="Monthly running cost"
-            v={`${usd(s.band.floor)} (cheapest model) · ${usd(s.band.today)} (your model, today) · ${usd(
+            v={`${usd(s.band.floor, cur)} (cheapest you'd consider) · ${usd(s.band.today, cur)} (your model, today) · ${usd(
               s.band.repriced,
+              cur,
             )} (if prices rise)`}
           />
-          <Row k="Of which build & run" v={`${usd(s.band.buildAndRun)}/mo — the same in all three`} />
+          <Row
+            k="Of which"
+            v={`AI usage ${usd(s.band.todayAiUsage, cur)} + per use ${usd(s.band.perUseRun, cur)} + monthly fixed ${usd(
+              s.band.monthlyFixed,
+              cur,
+            )}`}
+          />
           <Row
             k="One-off build (planning band)"
-            v={`${usdK(line.build.low)}–${usdK(line.build.high)}, typically ${usdK(line.build.mid)}`}
+            v={`${usdK(line.build.low, cur)}–${usdK(line.build.high, cur)}, typically ${usdK(line.build.mid, cur)}`}
           />
           <Row
             k="Pays back"
@@ -99,7 +109,7 @@ export function PrintSummary({
           />
           <Row
             k="First year all-in"
-            v={`${usdK(line.firstYearCost)} out · ${usdK(line.firstYearValue)} of counted value in`}
+            v={`${usdK(line.firstYearCost, cur)} out · ${usdK(line.firstYearValue, cur)} of counted value in`}
           />
         </tbody>
       </table>
@@ -110,11 +120,11 @@ export function PrintSummary({
         <tbody>
           <Row
             k="Value entered (low · likely · high)"
-            v={`${usd(s.value.low)} · ${usd(s.value.base)} · ${usd(s.value.high)} per month`}
+            v={`${usd(s.value.low, cur)} · ${usd(s.value.base, cur)} · ${usd(s.value.high, cur)} per month`}
           />
           <Row
             k={`Counted for the verdict (${s.config.haircut}%)`}
-            v={`${usd(s.counted.base)}/mo — not everyone uses it; not all saved time turns into output`}
+            v={`${usd(s.counted.base, cur)}/mo — not everyone uses it; not all saved time turns into output`}
           />
         </tbody>
       </table>
@@ -127,55 +137,26 @@ export function PrintSummary({
         <p className="text-[13px] font-bold uppercase tracking-wide text-ink">{s.verdict.label}</p>
         <p className="mt-1 text-[12.5px] leading-snug text-ink">{s.verdict.headline}</p>
         <p className="mt-1.5 text-[11.5px] leading-snug text-ink-muted">
-          Margin of safety {timesLabel(s.coverage)}. {verdictWeighingSentence(s.counted.base, s.band)}{" "}
-          {breakEvenSentence(s.breakEven, s.config.haircut)}
+          Margin of safety {timesLabel(s.coverage)}. {verdictWeighingSentence(s.counted.base, s.band, cur)}{" "}
+          {stressSentence(s.stressCoverage)} {breakEvenSentence(s.breakEven, s.config.haircut, cur)}
         </p>
         <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
           What keeps it true: {s.verdict.condition}
         </p>
       </div>
 
-      {/* Pinned cases */}
-      {pinRows.length > 0 && (
-        <>
-          <h2 className="mt-4 text-[13px] font-bold uppercase tracking-wide text-ink">
-            {PRINT.pinsHeading}
-          </h2>
-          <table className="mt-1.5 w-full border-collapse text-[11px]">
-            <thead>
-              <tr className="border-b border-border text-left text-[9.5px] uppercase tracking-wide text-ink-faint">
-                <th className="py-1 pr-3 font-semibold">Use case</th>
-                <th className="py-1 pr-3 font-semibold">Cost /mo (today → risen)</th>
-                <th className="py-1 pr-3 font-semibold">Counted value /mo</th>
-                <th className="py-1 pr-3 font-semibold">Margin</th>
-                <th className="py-1 font-semibold">Verdict</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pinRows.map((r, i) => (
-                <tr key={i} className="border-b border-border/60">
-                  <td className="py-1 pr-3 font-semibold text-ink">{r.a.label}</td>
-                  <td className="py-1 pr-3 tabular text-ink-muted">
-                    {usdK(r.band.today)} → {usdK(r.band.repriced)}
-                  </td>
-                  <td className="py-1 pr-3 tabular text-ink-muted">{usdK(r.counted.base)}</td>
-                  <td className="py-1 pr-3 tabular font-semibold text-ink">{timesLabel(r.coverage)}</td>
-                  <td className="py-1 text-ink-muted">{r.verdict.label}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
-
-      {/* Provenance + attribution */}
+      {/* Assumptions, sources, versions (A5) */}
       <h2 className="mt-4 text-[13px] font-bold uppercase tracking-wide text-ink">{PRINT.asOfHeading}</h2>
       <p className="mt-1 text-[10.5px] leading-snug text-ink-faint">
-        Price-hold figures: The AI Ledger, as of {asOfLabel(forwardSignalAsOf)}. Usage estimates as of{" "}
-        {asOfLabel(libraryAsOf)}. Model list prices as of {asOfLabel(priceSheetAsOf)}. One-off build
-        planning bands as of {asOfLabel(oneOffBuildAsOf)}. {FOOTER.attribution}
+        Model price: {m.label} — {meta.verificationStatus === "verified" ? "checked against" : "unverified;"}{" "}
+        {meta.sourceUrl.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]}, {meta.effectiveDate}. Price-hold
+        figures: The AI Ledger, as of {asOfLabel(forwardSignalAsOf)}. Usage estimates as of{" "}
+        {asOfLabel(libraryAsOf)}. Model list prices as of {asOfLabel(priceSheetAsOf)}. One-off build and
+        monthly-fixed planning bands as of {asOfLabel(oneOffBuildAsOf)} / {asOfLabel(monthlyFixedFloorAsOf)}{" "}
+        (editorial — replace with your own quotes). {FOOTER.attribution}
       </p>
-      <p className="mt-1.5 text-[10.5px] leading-snug text-ink-faint">
+      <p className="mt-1.5 text-[10.5px] leading-snug tabular text-ink-faint">
+        Data version {DATA_VERSION} · calculations v{ENGINE_VERSION} · app {APP_COMMIT} ·{" "}
         {PRINT.preparedBy} · hepburnadvisory.com.au
       </p>
     </div>

@@ -2,7 +2,7 @@
   "name": "enterprise-ai-ledger",
   "version": "0.1.0",
   "private": true,
-  "description": "Enterprise AI Ledger — interactive prototype for Hepburn Advisory (fictional company: Meridian Financial Group). Static client-side demo; no backend.",
+  "description": "Enterprise AI Ledger \u2014 interactive prototype for Hepburn Advisory (fictional company: Meridian Financial Group). Static client-side demo; no backend.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,7 +10,9 @@
     "lint": "next lint",
     "validate:library": "python3 scripts/validate_token_estimate_library.py",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "validate:assumptions": "node scripts/validate_assumptions.mjs",
+    "prebuild": "npm run validate:library && npm run validate:assumptions"
   },
   "dependencies": {
     "next": "^14.2.35",

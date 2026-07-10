@@ -1,14 +1,15 @@
 import type { CostBand, Verdict } from "@/lib/simulator/types";
-import { PINS, Q5 } from "@/lib/simulator/labels";
-import { coverageRatio, type BreakEvenHuman } from "@/lib/simulator/engine";
+import { Q5 } from "@/lib/simulator/labels";
+import type { BreakEvenHuman } from "@/lib/simulator/engine";
 import {
   breakEvenSentence,
+  stressSentence,
   timesLabel,
   verdictMarginSentence,
   verdictRiskSentence,
   verdictWeighingSentence,
 } from "@/lib/simulator/copy";
-import { usdK } from "@/lib/simulator/format";
+import { usdK, type Cur } from "@/lib/simulator/format";
 
 function Tile({ label, value, sub, tone }: { label: string; value: string; sub: string; tone: string }) {
   return (
@@ -21,11 +22,12 @@ function Tile({ label, value, sub, tone }: { label: string; value: string; sub: 
 }
 
 /**
- * Q5 — the conditional verdict. Four states (a clear no is a no, not "close" —
- * CTO review item 6), never a single ROI number; the status is carried by label
- * text + icon, not colour alone (a11y). Beyond the yes/no: the margin of
- * safety, the break-even (in dollars AND in human units anyone can sanity-
- * check), and the first-year payback month from the budget line.
+ * Q5 — the conditional verdict. Four states (a clear no is a no; the middle
+ * band says "prove the value first — run a small pilot"), never a single ROI
+ * number; the status is carried by label text + icon, not colour alone.
+ * Beyond the yes/no: the margin of safety, the break-even (in dollars AND in
+ * human units), the first-year payback month, and the stress line — your low
+ * value against the price-rise case.
  */
 export function Q5Verdict({
   verdict,
@@ -34,9 +36,9 @@ export function Q5Verdict({
   breakEven,
   haircut,
   paybackMonth,
-  onPin,
-  pinDisabled,
-  isPinned,
+  coverage,
+  stressCoverage,
+  cur,
 }: {
   verdict: Verdict;
   band: CostBand;
@@ -45,9 +47,9 @@ export function Q5Verdict({
   breakEven: BreakEvenHuman;
   haircut: number;
   paybackMonth: number | null;
-  onPin: () => void;
-  pinDisabled: boolean;
-  isPinned: boolean;
+  coverage: number;
+  stressCoverage: number;
+  cur: Cur;
 }) {
   const tone = {
     good: { box: "border-status-green-fg/40 bg-status-green-soft", label: "text-status-green-fg", icon: "✓" },
@@ -56,43 +58,30 @@ export function Q5Verdict({
     no: { box: "border-status-red-fg/40 bg-status-red-soft", label: "text-status-red-fg", icon: "✕" },
   }[verdict.klass];
 
-  const coverage = coverageRatio(valueBase, band);
   const marginTone =
     coverage >= 3 ? "text-status-green-fg" : coverage >= 1 ? "text-status-amber-fg" : "text-status-red-fg";
 
   return (
-    <div>
+    <section id="bottom-line" aria-label={Q5.title}>
       <p className="eyebrow mb-2 mt-2 text-xs font-semibold text-ink-faint">Question 5 — {Q5.title}</p>
       <div className={`rounded-card border p-5 sm:p-6 ${tone.box}`}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${tone.label}`}>
-            <span
-              aria-hidden="true"
-              className={`flex h-5 w-5 items-center justify-center rounded-chip border ${tone.label}`}
-            >
-              {tone.icon}
-            </span>
-            {verdict.label}
-          </div>
-          {/* Pin this case — feeds the side-by-side compare tray below. */}
-          <button
-            type="button"
-            onClick={onPin}
-            disabled={pinDisabled || isPinned}
-            title={pinDisabled ? PINS.limitNote : undefined}
-            className="rounded-control border border-border bg-surface px-3 py-1.5 text-[12px] font-semibold text-ink-muted transition-colors hover:border-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
+        <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${tone.label}`}>
+          <span
+            aria-hidden="true"
+            className={`flex h-5 w-5 items-center justify-center rounded-chip border ${tone.label}`}
           >
-            {isPinned ? PINS.pinned : `⊕ ${PINS.pin}`}
-          </button>
+            {tone.icon}
+          </span>
+          {verdict.label}
         </div>
-        <p className="mt-2 text-xl font-bold tracking-tight text-ink">{verdict.headline}</p>
+        <h2 className="mt-2 text-xl font-bold tracking-tight text-ink">{verdict.headline}</h2>
 
         {/* Margin of safety + break-even + payback — a lopsided "yes" made informative. */}
         <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
           <Tile label={Q5.marginLabel} value={timesLabel(coverage)} sub={Q5.marginSub} tone={marginTone} />
           <Tile
             label={Q5.breakEvenLabel}
-            value={`${usdK(band.repriced)}/mo`}
+            value={`${usdK(band.repriced, cur)}/mo`}
             sub={Q5.breakEvenSub}
             tone="text-ink"
           />
@@ -105,17 +94,21 @@ export function Q5Verdict({
         </div>
 
         <p className="mt-4 text-[14.5px] leading-relaxed text-ink-muted">
-          {verdictWeighingSentence(valueBase, band)} {verdictMarginSentence(valueBase, band)}
+          {verdictWeighingSentence(valueBase, band, cur)} {verdictMarginSentence(valueBase, band, cur)}
+        </p>
+        {/* The stress read (A2): your LOW value against the price-rise case. */}
+        <p className="mt-2 text-[13.5px] font-medium leading-relaxed text-ink">
+          {stressSentence(stressCoverage)}
         </p>
         {/* The break-even in units an executive can sanity-check in their head. */}
         <p className="mt-2.5 text-[14px] leading-relaxed text-ink">
-          {breakEvenSentence(breakEven, haircut)}
+          {breakEvenSentence(breakEven, haircut, cur)}
         </p>
         <p className="mt-2.5 text-[14px] leading-relaxed text-ink-muted">{verdictRiskSentence(band)}</p>
         <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-faint">
           <b className="font-semibold text-ink-muted">What keeps it true:</b> {verdict.condition}
         </p>
       </div>
-    </div>
+    </section>
   );
 }

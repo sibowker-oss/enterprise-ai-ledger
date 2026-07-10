@@ -1,0 +1,14 @@
+{
+  "_schema": {
+    "version": "1.0",
+    "dataVersion": "2026-07-11",
+    "as_of": "2026-07-10",
+    "purpose": "Dated FX rate for the A$ display toggle (original brief item 9, retained by CTO update v2). One published rate, one source, one date — display conversion only; model prices stay quoted in US$. The A$ figure is derived in code as 1 / aud_usd (no second number to drift).",
+    "source_url": "https://www.rba.gov.au/statistics/frequency/exchange-rates.html",
+    "verification_status": "verified",
+    "confidence": "high",
+    "review_by": "2026-08-11",
+    "note": "RBA 4:00 pm AUD/USD reference rate, 2026-07-10."
+  },
+  "aud_usd": 0.6949
+}

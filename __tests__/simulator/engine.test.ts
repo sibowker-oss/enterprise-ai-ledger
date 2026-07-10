@@ -65,14 +65,22 @@ describe("code-assistant worked example (before levers)", () => {
     expect(inferenceCost("claude_sonnet_4_6", u.inputM, u.outputM, NO_LEVERS)).toBeCloseTo(8316, 6);
   });
 
-  it("reproduces the full band: $10,316 today, $19,464 repriced, $282 floor inference", () => {
+  it("reproduces the full band: $10,316 today, $19,464 repriced, $282 DeepSeek anchor", () => {
     const band = costBand(a, "claude_sonnet_4_6", units, u.inputM, u.outputM, NO_LEVERS);
     expect(band.todayAiUsage).toBeCloseTo(8316, 6);
     expect(band.today).toBeCloseTo(10316, 6);
     expect(Math.round(band.today / units)).toBe(52); // $52 per seat
     expect(Math.round(band.repriced)).toBe(19464);
     expect(Math.round(band.repriced / units)).toBe(97); // $97 per seat repriced
-    expect(Math.round(band.floorAiUsage)).toBe(282); // DeepSeek floor
+    // The worked example's $282 DeepSeek reference still reproduces exactly…
+    expect(Math.round(inferenceCost("deepseek_v4_flash", u.inputM, u.outputM, NO_LEVERS))).toBe(282);
+    // …but the FLOOR is now "cheapest you'd consider" over verified prices
+    // (A4) — LFM2's corrected output price makes it the floor at this mix.
+    expect(band.floorModelKey).toBe("lfm2_24b_together");
+    expect(band.floorAiUsage).toBeCloseTo(75.6, 1);
+    // The cost buckets reconcile (update v2, 0.3): fixed floor + per-use.
+    expect(band.monthlyFixed).toBe(1000);
+    expect(band.perUseRun).toBe(1000);
     expect(band.buildAndRun).toBe(2000);
   });
 

@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import repricing from "@/data/simulator/benchmark_repricing_multiples.json";
 import {
   forwardSignal,
-  forwardKeyForProvider,
+  forwardStateForProvider,
   rawForwardProviders,
   rawMultiples,
   repricingMultiple,
@@ -53,15 +53,27 @@ describe("forward signal ↔ multiples consistency", () => {
     }
   });
 
-  it("untracked providers fall back to the illustrative open-weight read", () => {
-    expect(forwardKeyForProvider("deepseek")).toBe("untracked");
+  it("untracked OPEN-WEIGHTS providers get the run-in-house read (update v2, 0.2)", () => {
+    expect(forwardStateForProvider("deepseek")).toBe("open");
     const signal = forwardSignal("deepseek");
+    expect(signal.state).toBe("open");
     expect(signal.tracked).toBe(false);
     expect(signal.tier).toBe("illustrative");
+    expect(signal.reason).toMatch(/run in-house/i);
     expect(repricingMultiple("deepseek")).toBeCloseTo(1.1, 6);
     // Untracked read exposes no provider financials.
     expect(signal.costRecoveryPct).toBeNull();
     expect(signal.underwaterPct).toBeNull();
+  });
+
+  it("untracked HOSTED providers get the neutral state — no risk rating either way (the Grok fix)", () => {
+    expect(forwardStateForProvider("xai")).toBe("neutral");
+    const signal = forwardSignal("xai");
+    expect(signal.state).toBe("neutral");
+    expect(signal.tracked).toBe(false);
+    expect(signal.direction).toBe("Not tracked");
+    expect(signal.reason).not.toMatch(/open.source|in-house|low risk/i);
+    expect(signal.costRecoveryPct).toBeNull();
   });
 
   it("tracked read exposes cost-recovery and headroom", () => {

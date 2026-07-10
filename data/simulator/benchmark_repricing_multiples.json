@@ -12,11 +12,46 @@
     ]
   },
   "multiples": {
-    "openai":    {"true_cost_usd_b": 33.98, "customer_revenue_usd_b": 13.07, "cost_recovery_pct": 38.5, "repricing_multiple": 2.60, "tier": "1B", "basis": "audited (wq-116): CoR 7.5 + R&D 19.18 + S&M 5.73 + G&A 1.57"},
-    "anthropic": {"true_cost_usd_b": 9.91,  "customer_revenue_usd_b": 4.71,  "cost_recovery_pct": 47.5, "repricing_multiple": 2.10, "tier": "2B", "basis": "derived: collected_revenue + operating_loss"},
-    "google":    {"true_cost_usd_b": 6.25,  "customer_revenue_usd_b": 2.25,  "cost_recovery_pct": 36.0, "repricing_multiple": 2.78, "tier": "2B", "basis": "derived: collected_revenue + operating_loss"},
-    "iaas":      {"true_cost_usd_b": 0.60,  "customer_revenue_usd_b": 0.30,  "cost_recovery_pct": 50.0, "repricing_multiple": 2.00, "tier": "2B", "basis": "IaaS/Open aggregation node"},
-    "untracked": {"true_cost_usd_b": null,  "customer_revenue_usd_b": null,  "cost_recovery_pct": null, "repricing_multiple": 1.10, "tier": "3C", "basis": "Open-weight / self-hostable models are not tied to a single provider's pricing; nominal upward drift only. NOT a tracked supply-side read — illustrative floor for the price-hold scenario."}
+    "openai": {
+      "true_cost_usd_b": 33.98,
+      "customer_revenue_usd_b": 13.07,
+      "cost_recovery_pct": 38.5,
+      "repricing_multiple": 2.6,
+      "tier": "1B",
+      "basis": "audited (wq-116): CoR 7.5 + R&D 19.18 + S&M 5.73 + G&A 1.57"
+    },
+    "anthropic": {
+      "true_cost_usd_b": 9.91,
+      "customer_revenue_usd_b": 4.71,
+      "cost_recovery_pct": 47.5,
+      "repricing_multiple": 2.1,
+      "tier": "2B",
+      "basis": "derived: collected_revenue + operating_loss"
+    },
+    "google": {
+      "true_cost_usd_b": 6.25,
+      "customer_revenue_usd_b": 2.25,
+      "cost_recovery_pct": 36.0,
+      "repricing_multiple": 2.78,
+      "tier": "2B",
+      "basis": "derived: collected_revenue + operating_loss"
+    },
+    "iaas": {
+      "true_cost_usd_b": 0.6,
+      "customer_revenue_usd_b": 0.3,
+      "cost_recovery_pct": 50.0,
+      "repricing_multiple": 2.0,
+      "tier": "2B",
+      "basis": "IaaS/Open aggregation node"
+    },
+    "untracked": {
+      "true_cost_usd_b": null,
+      "customer_revenue_usd_b": null,
+      "cost_recovery_pct": null,
+      "repricing_multiple": 1.1,
+      "tier": "3C",
+      "basis": "Open-weight / self-hostable models are not tied to a single provider's pricing; nominal upward drift only. NOT a tracked supply-side read — illustrative floor for the price-hold scenario."
+    }
   },
   "forward_signal": {
     "_doc": "Editorial forward-pricing narrative for the PUBLIC teaser Q2 ('Will the price hold?'). STATIC snapshot — the live, maintained per-provider signal stays gated (concept.md §5; that is the moat). Numbers transcribed from the Investment-Case work: cost_recovery_pct + repricing_multiple from validation_targets (above); underwater_pct (operating_loss / ARR), revenue_per_employee_usd_m (ARR / headcount) and valuation_to_arr from spec/five-questions-reframe.md; direction + reason prose from HA_EnterpriseAI_InvestmentCaseSimulator_Prototype. Shown WITH provenance, never presented as a live feed. The efficiency-offset counter-force is mandatory alongside this (honesty_constraints).",
@@ -31,7 +66,7 @@
         "underwater_pct": 56,
         "revenue_per_employee_usd_m": 3.1,
         "valuation_to_arr": 34,
-        "repricing_multiple": 2.60,
+        "repricing_multiple": 2.6,
         "direction": "Likely to rise sharply",
         "reason": "They get back only about 38 cents on every dollar it costs them, and they're deep in the red. They expect to break even around 2027 — but with roughly US$25bn a year going out and a US$50bn compute bill to pay off, that money has to come back somehow. Price is the easiest lever."
       },
@@ -42,7 +77,7 @@
         "underwater_pct": 37,
         "revenue_per_employee_usd_m": 12.0,
         "valuation_to_arr": 13,
-        "repricing_multiple": 2.10,
+        "repricing_multiple": 2.1,
         "direction": "Likely to rise",
         "reason": "They get back about 48 cents on the dollar. But they make around 4x OpenAI's sales per employee and hold most of the enterprise market — so they can grow into their costs a bit before raising prices."
       },
@@ -59,21 +94,40 @@
       }
     },
     "untracked_default": {
+      "_doc": "SPLIT 2026-07-11 (CTO update v2, 0.2): this block now applies ONLY to untracked providers whose surfaced models have open weights (provider_facts.json open_weights=true). Hosted-only untracked providers get untracked_hosted_default - the old single fallback wrongly rendered hosted models (Grok 3) as 'open-source, run in-house'.",
       "tracked": false,
       "tier": "illustrative",
       "cost_recovery_pct": null,
       "underwater_pct": null,
       "revenue_per_employee_usd_m": null,
       "valuation_to_arr": null,
-      "repricing_multiple": 1.10,
+      "repricing_multiple": 1.1,
       "direction": "Low risk of a price jump",
-      "reason": "This one is open-source and can be run in-house, so it isn't tied to a provider's pricing the same way. The risk of a sudden price jump is low. Shown as an example only — not from our own research."
+      "reason": "This model's weights are openly published, so it can be run in-house and isn't tied to one provider's pricing. The risk of a sudden price jump is low. Shown as an example only — not from our own research."
+    },
+    "untracked_hosted_default": {
+      "_doc": "Added 2026-07-11: neutral state for untracked HOSTED providers (e.g. xAI). No risk rating implied in either direction; the price-rise column uses the same nominal 1.10 drift allowance, labelled as an allowance, never a forecast.",
+      "tracked": false,
+      "tier": "illustrative",
+      "cost_recovery_pct": null,
+      "underwater_pct": null,
+      "revenue_per_employee_usd_m": null,
+      "valuation_to_arr": null,
+      "repricing_multiple": 1.1,
+      "direction": "Not tracked",
+      "reason": "We don't track this provider's finances, so there's no price forecast here — in either direction. The cost figures still work; the price-rise column carries a small nominal allowance rather than a forecast."
     }
   },
   "frontier_band": {
     "_doc": "Summary band across frontier providers for archetypes not pinned to one provider.",
-    "cost_recovery_pct_range": [36.0, 50.0],
-    "repricing_multiple_range": [2.0, 2.8],
+    "cost_recovery_pct_range": [
+      36.0,
+      50.0
+    ],
+    "repricing_multiple_range": [
+      2.0,
+      2.8
+    ],
     "corroboration": "GPT-5 line actually doubled (2.0x) on 2026-04-23 — see benchmark_price_sheet.json:repricing_note. Real prices moving toward this headroom, not away."
   }
 }

@@ -44,6 +44,28 @@
       "voice_agents":         {"low": 30000, "mid": 75000,  "high": 180000}
     }
   },
+  "monthly_fixed_floor": {
+    "_doc": "Monthly FIXED cost floor per use case (CTO update v2, 0.3): the platform, monitoring and the people checking its work — carried whether one person uses it or a thousand. Fixes the inverted scale economics of the pure per-unit model (contact-centre $13/mo at 1 agent). The public cost structure is three plain buckets that must reconcile: ONE-OFF BUILD (one_off_build above) + MONTHLY FIXED (this floor) + PER-USE VARIABLE (AI usage + the per-unit run bands in layer4/layer5). EDITORIAL (tier 3C), ranged, user-overridable. Derivation: for pipeline/agentic use cases = the former fixed Layer-4 run band + fixed governance carry; for per-seat SKU use cases = the governance/monitoring labour formerly modelled per-seat, valued at the illustrative volume and rounded.",
+    "as_of": "2026-07-11",
+    "tier": "3C",
+    "usd_bands_per_month": {
+      "code_assistant":       {"low": 300,   "mid": 1000,  "high": 2500},
+      "summarisation":        {"low": 2000,  "mid": 6000,  "high": 15000},
+      "rag_search":           {"low": 4000,  "mid": 10000, "high": 25000},
+      "claims":               {"low": 8000,  "mid": 20000, "high": 50000},
+      "reconciliation":       {"low": 3000,  "mid": 8000,  "high": 20000},
+      "agentic_coding":       {"low": 10000, "mid": 23000, "high": 50000},
+      "deep_research":        {"low": 8000,  "mid": 20000, "high": 45000},
+      "support_chatbot":      {"low": 5000,  "mid": 11000, "high": 25000},
+      "legal_review":         {"low": 300,   "mid": 800,   "high": 2500},
+      "text_to_sql":          {"low": 100,   "mid": 250,   "high": 800},
+      "marketing_content":    {"low": 20,    "mid": 100,   "high": 300},
+      "meeting_intelligence": {"low": 200,   "mid": 500,   "high": 1500},
+      "email_drafting":       {"low": 10,    "mid": 50,    "high": 150},
+      "translation":          {"low": 2000,  "mid": 4500,  "high": 10000},
+      "voice_agents":         {"low": 3000,  "mid": 8000,  "high": 20000}
+    }
+  },
   "adoption_ramp_default": {
     "_doc": "Default first-year adoption ramp for the budget line: adoption starts at start_pct in month 1 and climbs linearly to 100% by full_month, then holds. EDITORIAL planning assumption (CTO review item 2: 'simple ramp assumption is enough; label it editable') — the UI exposes both numbers.",
     "as_of": "2026-07-10",

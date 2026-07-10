@@ -43,8 +43,8 @@ function collectStrings(): string[] {
     else for (const v of Object.values(group)) if (typeof v === "string") out.push(v);
   }
 
-  // Dynamic copy — exercise across the full input space.
-  const providers = ["openai", "anthropic", "google", "deepseek"];
+  // Dynamic copy — exercise across the full input space (all three Q2 states).
+  const providers = ["openai", "anthropic", "google", "deepseek", "xai"];
   for (const p of providers) {
     const signal = forwardSignal(p);
     out.push(copy.provChipText(signal), copy.q2PlanSentence(signal.repricingMultiple));
@@ -121,6 +121,14 @@ function collectStrings(): string[] {
         out.push(copy.seatProductLine(s, a, a.units), copy.seatStatusLabel(s.status));
       }
     }
+
+    // ---- Update v2 additions: stress line, now/planned levers, floor note,
+    //      pluralisation — the whole new buyer-facing surface. ----
+    out.push(copy.stressSentence(0.4), copy.stressSentence(2.5));
+    out.push(copy.plannedTotalSentence(band.today * 0.7, band.today), copy.plannedTotalSentence(band.today, band.today));
+    out.push(copy.leverSavingSentence(0), copy.leverSavingSentence(940));
+    out.push(copy.floorModelSentence(band.floorModelKey), copy.floorModelSentence(null));
+    out.push(copy.unitsPhrase(a, 1), copy.unitsPhrase(a, a.units));
   }
   return out;
 }
