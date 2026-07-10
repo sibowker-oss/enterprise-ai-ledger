@@ -2,20 +2,22 @@ import Link from "next/link";
 import { BRAND } from "@/lib/simulator/labels";
 
 /**
- * Hepburn Advisory logo — a self-contained "H" monogram (no external asset, so
- * it survives static export + the CSP). Swap for the supplied brand artwork by
- * replacing this SVG.
+ * The Hepburn Advisory sparkle mark — the INVERSE rendition (white tile,
+ * ink sparkle) from the design system's canonical set (assets/
+ * logo-icon-inverse.svg), for the dark Ledger surface. Inlined so it
+ * survives static export + the CSP, per the system's copy-don't-reference
+ * rule. Geometry is verbatim from the asset — do not redraw it.
  */
 function HepburnLogo() {
   return (
     <span className="flex items-center gap-3">
-      <span className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-accent shadow-sm">
-        <svg viewBox="0 0 32 32" className="h-6 w-6" fill="none" aria-hidden="true">
-          <rect x="8" y="7" width="3.6" height="18" rx="1.4" fill="white" />
-          <rect x="20.4" y="7" width="3.6" height="18" rx="1.4" fill="white" />
-          <rect x="8" y="14.2" width="16" height="3.6" rx="1.4" fill="white" />
-        </svg>
-      </span>
+      <svg viewBox="0 0 100 100" className="h-11 w-11 shadow-sm" fill="none" aria-hidden="true">
+        <rect width="100" height="100" rx="18" fill="#FFFFFF" />
+        <path
+          d="M50 12 C52 38, 62 48, 88 50 C62 52, 52 62, 50 88 C48 62, 38 52, 12 50 C38 48, 48 38, 50 12Z"
+          fill="#0A0A0A"
+        />
+      </svg>
       <span className="flex flex-col leading-none">
         <span className="text-[19px] font-bold tracking-tight text-ink sm:text-[21px]">Hepburn</span>
         <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-ink-faint">
