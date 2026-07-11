@@ -1,20 +1,22 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { TOOLBAR } from "@/lib/simulator/labels";
 import { track } from "@/lib/simulator/analytics";
 import { serializeState, type SimState } from "@/lib/simulator/urlState";
 import { buildScenario, parseScenario, type ScenarioImport } from "@/lib/simulator/scenario";
+import { saveCase as shelfSave, savedCount } from "@/lib/simulator/caseShelf";
 import type { CaseSummary } from "@/lib/simulator/derive";
 import type { BudgetLine } from "@/lib/simulator/budget";
 
 /**
  * How a configured case leaves the browser: "Copy link" (URL — with the plain
- * note that the link contains the numbers you typed), "Save this case" (the
- * versioned scenario JSON — the future handoff record into the diagnostic),
- * "Open a saved case", and the print one-pager. The link is serialised from
- * LIVE state at click time — never read back from the address bar, which can
- * lag the debounced sync.
+ * note that the link contains the numbers you typed), "Save this case" (onto
+ * the session shelf, rolled up at /simulator/cases into one business case —
+ * file downloads live there), "Open a saved case", and the print one-pager.
+ * The link is serialised from LIVE state at click time — never read back from
+ * the address bar, which can lag the debounced sync.
  */
 export function SimToolbar({
   state,
@@ -29,7 +31,14 @@ export function SimToolbar({
 }) {
   const [copied, setCopied] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [saveNote, setSaveNote] = useState<string | null>(null);
+  const [shelfCount, setShelfCount] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // sessionStorage is browser-only — count after mount to stay hydration-safe.
+  useEffect(() => {
+    setShelfCount(savedCount());
+  }, []);
 
   function liveUrl(): string {
     return `${window.location.origin}${window.location.pathname}?${serializeState(state)}`;
@@ -50,12 +59,15 @@ export function SimToolbar({
 
   function saveCase() {
     const scenario = buildScenario(state, summary, line, new Date().toISOString());
-    const blob = new Blob([JSON.stringify(scenario, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `use-case-${state.current.archetypeKey}-${scenario.dataVersion}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    const result = shelfSave(scenario);
+    if (result.ok) {
+      setShelfCount(result.count);
+      setSaveNote(result.replaced ? TOOLBAR.savedUpdated : TOOLBAR.saved);
+      setImportError(null);
+      window.setTimeout(() => setSaveNote(null), 2500);
+    } else {
+      setImportError(result.error ?? null);
+    }
     track("sim_save_case", { use_case: state.current.archetypeKey });
   }
 
@@ -81,9 +93,14 @@ export function SimToolbar({
         <button type="button" onClick={copyLink} className={btn} aria-live="polite">
           {copied ? TOOLBAR.copied : `⎘ ${TOOLBAR.copyLink}`}
         </button>
-        <button type="button" onClick={saveCase} className={btn} title={TOOLBAR.saveHint}>
-          ⤓ {TOOLBAR.save}
+        <button type="button" onClick={saveCase} className={btn} title={TOOLBAR.saveHint} aria-live="polite">
+          {saveNote ?? `⤓ ${TOOLBAR.save}`}
         </button>
+        {shelfCount > 0 && (
+          <Link href="/simulator/cases" className={btn}>
+            {TOOLBAR.viewSavedPrefix} ({shelfCount}) →
+          </Link>
+        )}
         <button type="button" onClick={() => fileRef.current?.click()} className={btn}>
           ⤒ {TOOLBAR.importLabel}
         </button>

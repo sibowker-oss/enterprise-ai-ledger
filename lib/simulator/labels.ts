@@ -228,8 +228,54 @@ export const TOOLBAR = {
   print: "Print board summary",
   printHint: "One page — the case, the costs, the value and the verdict, ready for a board pack.",
   save: "Save this case",
-  saveHint: "Downloads a small file with everything you set and everything it worked out — the record to bring to us.",
+  saveHint:
+    "Keeps this case for the rest of your visit and adds it to your combined business case — file downloads live on that page.",
+  saved: "Saved ✓",
+  savedUpdated: "Updated ✓",
+  viewSavedPrefix: "View saved cases",
   importLabel: "Open a saved case",
+} as const;
+
+export const CASES = {
+  eyebrow: "Investment-Case Simulator",
+  title: "Your business case, across every saved case",
+  intro:
+    "Everything you've saved this visit, rolled into one set of figures a budget paper can carry — and each case listed underneath. Saved cases live in this browser tab only; when the tab closes, they're gone. Download the files if you want to keep them.",
+  emptyTitle: "Nothing saved yet",
+  emptyBody:
+    "Set up a use case in the calculator and press 'Save this case' — it lands here, and this page adds the cases together into one business case.",
+  backToCalculator: "← Back to the calculator",
+  totalsHeading: "The combined case",
+  tileCases: "Cases saved",
+  tileBuild: "One-off build & integration",
+  tileBuildSub: "all cases, before the monthly bills start",
+  tileMonthly: "Monthly run, today",
+  tileMonthlySub: "rising to the figure beside it if prices rise",
+  tileValue: "Counted value / mo",
+  tileValueSub: "after adoption, what turns into money, and rework",
+  tileMargin: "Margin of safety",
+  tileMarginSub: "combined counted value ÷ combined price-rise cost",
+  tilePayback: "Pays back",
+  tilePaybackSub: "all cases together, each on its own rollout",
+  tileFirstYear: "First year all-in",
+  tileFirstYearSub: "money out vs counted value in, months 1–12",
+  listHeading: "The cases, one by one",
+  colCase: "Use case",
+  colCost: "Cost / mo, today → if prices rise",
+  colValue: "Counted value / mo",
+  colMargin: "Margin",
+  colPayback: "Pays back",
+  colVerdict: "Verdict",
+  openInCalculator: "Open",
+  downloadOne: "File",
+  remove: "Remove",
+  downloadAll: "Download all as files",
+  clearAll: "Clear saved cases",
+  clearConfirm: "Remove all saved cases from this tab?",
+  printSummary: "Print this summary",
+  addFromFile: "Add a saved file",
+  sessionNote:
+    "Held in this tab's session only — closing the tab clears it. The files are the durable record.",
 } as const;
 
 export const PRINT = {
