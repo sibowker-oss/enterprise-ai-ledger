@@ -17,8 +17,8 @@ import { PICKER_PROVIDERS } from "./models";
 import {
   defaultLevers,
   intensityBand,
+  intrinsicCacheNow,
   leverCaps,
-  NO_LEVERS,
   type LeverPlan,
   type Levers,
   type ValueOverrides,
@@ -62,9 +62,15 @@ export function defaultConfig(archetypeKey: string): SimConfig {
     intensity: intensityBand(a)?.mid ?? null,
     maturity: 2,
     modelKey: a.defaultModelKey,
-    // NOW defaults to zero (A3: "not doing this yet"); the PLAN starts at the
+    // NOW starts at the INTRINSIC cache share (the caching that isn't optional —
+    // agentic/deep-research replay context every step and the platform caches it
+    // regardless; pricing those reads at full rate over-states the bill). Batch
+    // and routing stay at zero ("not doing this yet"). The PLAN starts at the
     // library-informed settings for this workload.
-    levers: { now: { ...NO_LEVERS }, planned: defaultLevers(a) },
+    levers: {
+      now: { cache: intrinsicCacheNow(a), batch: 0, route: 0 },
+      planned: defaultLevers(a),
+    },
     overrides: {},
     adoption: ADOPTION_DEFAULT_PCT,
     realisation: REALISATION_DEFAULT_PCT,

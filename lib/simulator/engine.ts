@@ -79,6 +79,20 @@ export function defaultLevers(a: Archetype): Levers {
   };
 }
 
+/**
+ * The INTRINSIC cache-read share — the caching that isn't optional. Where the
+ * library's token band already counts physical tokens INCLUDING cache reads
+ * (agentic coding, deep research: the context is replayed every step and the
+ * platform caches it whether or not you engineer anything), pricing those reads
+ * at full input rate over-states the real bill. So this share belongs in the
+ * "doing now" baseline, not in "planned savings". 0 where the library declares
+ * no intrinsic share — there, caching is a genuine opt-in lever starting at zero.
+ */
+export function intrinsicCacheNow(a: Archetype): number {
+  const declared = declaredCacheShare(a.priorKey);
+  return declared != null ? snap5(declared * 100) : 0;
+}
+
 /** Per-archetype slider ceilings — cache can't exceed the workload's realistic
  *  hit rate; batch is unavailable for interactive work. */
 export function leverCaps(a: Archetype): Levers {

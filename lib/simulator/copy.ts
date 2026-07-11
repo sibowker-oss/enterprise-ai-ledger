@@ -464,6 +464,35 @@ export function seatProductLine(p: SeatProduct, a: Archetype, units: number): st
  * The cheapest-you'd-consider floor (A4).
  * ------------------------------------------------------------------ */
 
+/**
+ * Subscription reality check — reconciles the tool's metered-API estimate to
+ * what a real seat/subscription costs, so a buyer's lived experience ("I pay
+ * $150 and max it out") lines up with the bars. This is where the subsidy
+ * becomes tangible: a flat seat priced at or below metered cost. Only the two
+ * coding archetypes carry a clean public anchor; null elsewhere.
+ */
+export function subscriptionReconcileSentence(
+  a: Archetype,
+  band: CostBand,
+  units: number,
+  cur: Cur = "usd",
+): string | null {
+  const perDev = band.today / Math.max(units, 1);
+  if (a.key === "agentic_coding") {
+    return `Reality check: this is usually bought as a flat monthly seat (Claude Code on Claude Max, Cursor's agent) that gets maxed out. Anthropic's own published figure for it is about US$150–250 per developer a month; metered at raw API — the bars above — this tool puts it near ${usdUnit(
+      perDev,
+      cur,
+    )}. That a flat seat sits at or below metered cost is the subsidy: you're not yet paying what it costs to serve.`;
+  }
+  if (a.key === "code_assistant") {
+    return `Reality check: metered at raw API this tool estimates about ${usdUnit(
+      perDev,
+      cur,
+    )} per developer a month — which lands on the seat prices below, because the vendors run it cached. The seat isn't cheaper by magic; it's the same underlying spend, packaged. (Agentic tools like Claude Code / Cursor cost several times more — pick that use case if that's what you mean.)`;
+  }
+  return null;
+}
+
 /** The floor column's model note: which model the floor was computed from. */
 export function floorModelSentence(floorModelKey: string | null): string {
   if (!floorModelKey) {

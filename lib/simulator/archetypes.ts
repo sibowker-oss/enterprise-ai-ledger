@@ -74,6 +74,10 @@ export interface Archetype {
   workloadClass: string;
   costModel: CostModel;
   value: ValueConfig;
+  /** Optional "you may mean the other one" note — points between near-neighbour
+   *  use cases whose token scale differs by orders of magnitude (IDE chat vs
+   *  agentic coding), so a buyer doesn't cost the wrong product. */
+  pairNote?: string;
 }
 
 /** Working days per month baked into the illustrative volumes (21). */
@@ -85,7 +89,7 @@ export const WEEKS_PER_MONTH = 4;
 export const ARCHETYPES: Archetype[] = [
   {
     key: "code_assistant",
-    label: "Code assistant",
+    label: "Code assistant (IDE chat & autocomplete)",
     priorKey: "code_assistant",
     defaultModelKey: "claude_sonnet_4_6",
     units: 200,
@@ -95,6 +99,8 @@ export const ARCHETYPES: Archetype[] = [
     intensityPeriod: "day",
     workloadClass: "chat_support",
     costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "mid" } },
+    pairNote:
+      "This is in-editor chat & autocomplete — short prompts, Copilot-style, priced per interaction. If you mean Claude Code, Cursor's agent or Devin — where you hand over a whole task and it runs many steps on its own — switch to “Agentic coding”, which uses far more per task (and costs multiples more per developer).",
     value: {
       kind: "hours",
       driverLabel: "Hours saved per developer each week",
@@ -161,7 +167,7 @@ export const ARCHETYPES: Archetype[] = [
   },
   {
     key: "agentic_coding",
-    label: "Agentic coding (delegated tasks)",
+    label: "Agentic coding (Claude Code / Cursor)",
     priorKey: "agentic_coding",
     defaultModelKey: "claude_sonnet_4_6",
     units: 200,
@@ -171,6 +177,8 @@ export const ARCHETYPES: Archetype[] = [
     intensityPeriod: "day",
     workloadClass: "agentic",
     costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "low" } },
+    pairNote:
+      "This is delegated agentic work — Claude Code, Cursor's agent or Devin: many steps, the whole context replayed on every call, so it burns roughly 50–100× the tokens of in-editor chat. Anthropic's own figure for this is about US$150–250 per developer a month. For lighter autocomplete & chat, see “Code assistant”.",
     value: {
       kind: "hours",
       driverLabel: "Hours saved per developer each week",

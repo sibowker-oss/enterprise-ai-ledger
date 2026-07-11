@@ -201,13 +201,14 @@ describe("the default-state portfolio story holds", () => {
       const s = deriveCase(defaultConfig(a.key));
       spread[s.verdict.klass].push(a.key);
     }
-    // With the counted value at ~31% (adoption×realisation×reliability), the two
-    // run-cost-heavy, low-value-density cases don't clear their cost at all, the
-    // most expensive-to-run case is too close to call, and the rest still pay —
-    // many at thin margins. The field-realistic distribution (MIT GenAI Divide).
+    // With the counted value at ~31% (adoption×realisation×reliability) and the
+    // intrinsic cache baked into agentic/deep-research "doing now", the two
+    // run-cost-heavy, low-value-density cases don't clear their cost at all; the
+    // rest pay, but MANY at thin 1.1–1.5× margins (agentic coding lands ~1.4×
+    // once its intrinsic caching is priced correctly). Field-realistic (MIT 2025).
     expect(spread.no).toEqual(["rag_search", "voice_agents"]);
-    expect(spread.marginal).toEqual(["agentic_coding"]);
+    expect(spread.marginal).toEqual([]);
     expect(spread.conditional).toEqual([]);
-    expect(spread.good).toHaveLength(12);
+    expect(spread.good).toHaveLength(13);
   });
 });

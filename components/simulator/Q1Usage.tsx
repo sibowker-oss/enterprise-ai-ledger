@@ -15,6 +15,13 @@ import { libraryAsOf } from "@/lib/simulator/data";
 export function Q1Usage({ a, units, u }: { a: Archetype; units: number; u: UsageBreakdown }) {
   return (
     <QCard num="1" title={Q1.title}>
+      {/* "You may mean the other one" signpost — IDE chat vs agentic coding differ
+          by 50–100× in tokens, so a buyer must not cost the wrong product. */}
+      {a.pairNote && (
+        <p className="mb-3 rounded-tile border border-accent/30 bg-accent-soft px-3 py-2 text-[12.5px] leading-relaxed text-accent-text">
+          {a.pairNote}
+        </p>
+      )}
       <p className="text-[15px] leading-relaxed text-ink-muted">{q1SizingSentence(a, units, u)}</p>
 
       {/* The usage band — this is the answer to the question, shown as a range. */}

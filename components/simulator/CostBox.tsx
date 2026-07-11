@@ -10,6 +10,7 @@ import {
   seatProductLine,
   seatStatusLabel,
   spreadSentence,
+  subscriptionReconcileSentence,
   unitEconSentence,
 } from "@/lib/simulator/copy";
 import { seatPricesAsOf, seatProductsFor } from "@/lib/simulator/data";
@@ -205,6 +206,14 @@ export function CostBox({
       <p className="mt-2.5 text-[13px] leading-relaxed text-ink-muted">
         {unitEconSentence(a, band, countedValueBase, units, cur)}
       </p>
+
+      {/* Subscription reality check — reconciles the metered-API estimate to what a
+          real seat/subscription costs (Fix 3: makes the subsidy tangible). */}
+      {subscriptionReconcileSentence(a, band, units, cur) && (
+        <p className="mt-2.5 rounded-tile border border-border bg-surface-muted px-3 py-2 text-[13px] leading-relaxed text-ink">
+          {subscriptionReconcileSentence(a, band, units, cur)}
+        </p>
+      )}
 
       <SeatComparison a={a} units={units} />
     </QCard>
