@@ -14,6 +14,7 @@
   },
   "units": {
     "code_assistant": { "min": 10, "typical": 200, "max": 5000 },
+    "knowledge_work": { "min": 50, "typical": 1000, "max": 100000 },
     "summarisation": { "min": 20, "typical": 800, "max": 10000 },
     "rag_search": { "min": 50, "typical": 500, "max": 20000 },
     "claims": { "min": 1000, "typical": 40000, "max": 1000000 },
@@ -31,6 +32,7 @@
   },
   "value_driver": {
     "code_assistant": { "min": 0.5, "typical": 3, "max": 10 },
+    "knowledge_work": { "min": 0.1, "typical": 0.5, "max": 4 },
     "summarisation": { "min": 0.05, "typical": 0.25, "max": 2 },
     "rag_search": { "min": 2, "typical": 22, "max": 150 },
     "claims": { "min": 0.5, "typical": 4, "max": 30 },
@@ -48,6 +50,7 @@
   },
   "value_rate": {
     "code_assistant": { "min": 40, "typical": 90, "max": 250 },
+    "knowledge_work": { "min": 30, "typical": 65, "max": 200 },
     "agentic_coding": { "min": 40, "typical": 90, "max": 250 },
     "legal_review": { "min": 50, "typical": 120, "max": 350 },
     "text_to_sql": { "min": 40, "typical": 100, "max": 250 },

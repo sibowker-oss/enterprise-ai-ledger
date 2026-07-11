@@ -47,6 +47,10 @@ export interface Archetype {
   /** Stable UI key. */
   key: string;
   label: string;
+  /** Business area the use case is grouped under in the picker (one of CATEGORY_ORDER). */
+  category: string;
+  /** One-line plain description shown under the use-case picker. */
+  blurb: string;
   /** Key into the Token Estimate Library use_cases (token_estimate_library_v1.json). */
   priorKey: string;
   /** Default model key into the price sheet. */
@@ -80,6 +84,17 @@ export interface Archetype {
   pairNote?: string;
 }
 
+/** Business areas, in the order the picker groups them. */
+export const CATEGORY_ORDER = [
+  "Software engineering",
+  "Everyday knowledge work",
+  "Customer service",
+  "Sales & marketing",
+  "Data & analytics",
+  "Back office & operations",
+  "Legal & compliance",
+] as const;
+
 /** Working days per month baked into the illustrative volumes (21). */
 export const WORKING_DAYS = 21;
 
@@ -90,6 +105,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "code_assistant",
     label: "Code assistant (IDE chat & autocomplete)",
+    category: "Software engineering",
+    blurb: "In-editor chat & autocomplete (Copilot-style) — short prompts as developers work.",
     priorKey: "code_assistant",
     defaultModelKey: "claude_sonnet_4_6",
     units: 200,
@@ -112,8 +129,36 @@ export const ARCHETYPES: Archetype[] = [
     },
   },
   {
+    key: "knowledge_work",
+    label: "Everyday AI assistant (M365 Copilot / ChatGPT)",
+    category: "Everyday knowledge work",
+    blurb: "The everyday assistant most staff share — drafting, summarising, Q&A (M365 Copilot / ChatGPT).",
+    priorKey: "enterprise_rag_search",
+    defaultModelKey: "claude_sonnet_4_6",
+    units: 1000,
+    unitLabel: "Employees",
+    volHint: "About 8 AI uses per employee a day.",
+    txPerUnitMonth: 8 * WORKING_DAYS, // library volume: ~8 uses/knowledge-worker/day (mid)
+    intensityPeriod: "day",
+    workloadClass: "chat_support",
+    costModel: { floorTier: "mid", l4Marginal: { complexity: "light", tier: "low" } },
+    pairNote:
+      "The broad everyday assistant most staff share — drafting, summarising, answering questions: the Microsoft 365 Copilot / ChatGPT Enterprise pattern, not a dedicated search tool (that's “Company knowledge search”). It's also the case where ROI is hardest to pin down — the value lives almost entirely in the realism sliders in step 4. Set adoption to your REAL active-usage rate; licences bought is usually far more than licences used.",
+    value: {
+      kind: "hours",
+      driverLabel: "Hours saved per employee each week",
+      driver: 0.5,
+      driverStep: 0.25,
+      rateLabel: "Cost per hour (incl. on-costs)",
+      rate: 65,
+      rateStep: 5,
+    },
+  },
+  {
     key: "summarisation",
     label: "Contact-centre summaries",
+    category: "Customer service",
+    blurb: "Auto-write the call summary and wrap-up after each contact.",
     priorKey: "contact_centre_summarisation",
     defaultModelKey: "claude_haiku_4_5",
     units: 800,
@@ -128,6 +173,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "rag_search",
     label: "Company knowledge search",
+    category: "Everyday knowledge work",
+    blurb: "Ask questions across your own documents and get a sourced answer.",
     priorKey: "enterprise_rag_search",
     defaultModelKey: "gemini_2_5_pro",
     units: 500,
@@ -142,6 +189,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "claims",
     label: "Claims / document processing",
+    category: "Back office & operations",
+    blurb: "Read, extract and process claims or documents at scale.",
     priorKey: "document_claims_processing",
     defaultModelKey: "claude_sonnet_4_6",
     units: 40000,
@@ -155,6 +204,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "reconciliation",
     label: "Back-office reconciliation",
+    category: "Back office & operations",
+    blurb: "Match and reconcile records across systems.",
     priorKey: "back_office_reconciliation",
     defaultModelKey: "claude_sonnet_4_6",
     units: 30000,
@@ -168,6 +219,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "agentic_coding",
     label: "Agentic coding (Claude Code / Cursor)",
+    category: "Software engineering",
+    blurb: "Delegated tasks a coding agent runs end-to-end (Claude Code, Cursor, Devin).",
     priorKey: "agentic_coding",
     defaultModelKey: "claude_sonnet_4_6",
     units: 200,
@@ -192,6 +245,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "deep_research",
     label: "Deep research reports",
+    category: "Data & analytics",
+    blurb: "Long multi-step research write-ups (search, read, synthesise).",
     priorKey: "deep_research",
     defaultModelKey: "gemini_2_5_pro",
     units: 40,
@@ -206,6 +261,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "support_chatbot",
     label: "Customer support chatbot",
+    category: "Customer service",
+    blurb: "A bot that resolves customer conversations end-to-end.",
     priorKey: "customer_support_chatbot",
     defaultModelKey: "claude_sonnet_4_6",
     units: 50000,
@@ -219,6 +276,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "legal_review",
     label: "Contract / policy review",
+    category: "Legal & compliance",
+    blurb: "Review contracts and policies, flagging risks and clauses.",
     priorKey: "hr_legal_document_review",
     defaultModelKey: "claude_sonnet_4_6",
     units: 40,
@@ -241,6 +300,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "text_to_sql",
     label: "Ask-your-data analytics",
+    category: "Data & analytics",
+    blurb: "Ask a question in plain English, get the query and the answer from your data.",
     priorKey: "text_to_sql_analytics",
     defaultModelKey: "claude_sonnet_4_6",
     units: 50,
@@ -263,6 +324,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "marketing_content",
     label: "Marketing content",
+    category: "Sales & marketing",
+    blurb: "Draft and refine marketing copy and assets.",
     priorKey: "marketing_content",
     defaultModelKey: "gemini_2_5_flash",
     units: 20,
@@ -285,6 +348,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "meeting_intelligence",
     label: "Meeting notes & actions",
+    category: "Everyday knowledge work",
+    blurb: "Turn a meeting into notes, decisions and action items.",
     priorKey: "meeting_intelligence",
     defaultModelKey: "claude_haiku_4_5",
     units: 500,
@@ -299,6 +364,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "email_drafting",
     label: "Sales email drafting",
+    category: "Sales & marketing",
+    blurb: "Draft and personalise outbound sales emails at volume.",
     priorKey: "email_crm_drafting",
     defaultModelKey: "claude_haiku_4_5",
     units: 30,
@@ -321,6 +388,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "translation",
     label: "Translation / localisation",
+    category: "Back office & operations",
+    blurb: "Translate and localise content at volume.",
     priorKey: "translation_localisation",
     defaultModelKey: "mistral_small_3_2",
     units: 5000,
@@ -334,6 +403,8 @@ export const ARCHETYPES: Archetype[] = [
   {
     key: "voice_agents",
     label: "Voice agents",
+    category: "Customer service",
+    blurb: "An AI that handles live phone calls.",
     priorKey: "voice_agents",
     defaultModelKey: "claude_sonnet_4_6",
     units: 200000,

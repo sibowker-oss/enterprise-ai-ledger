@@ -206,9 +206,9 @@ describe("the default-state portfolio story holds", () => {
     // run-cost-heavy, low-value-density cases don't clear their cost at all; the
     // rest pay, but MANY at thin 1.1–1.5× margins (agentic coding lands ~1.4×
     // once its intrinsic caching is priced correctly). Field-realistic (MIT 2025).
-    expect(spread.no).toEqual(["rag_search", "voice_agents"]);
+    expect([...spread.no].sort()).toEqual(["rag_search", "voice_agents"]);
     expect(spread.marginal).toEqual([]);
     expect(spread.conditional).toEqual([]);
-    expect(spread.good).toHaveLength(13);
+    expect(spread.good).toHaveLength(14);
   });
 });

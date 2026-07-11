@@ -28,6 +28,7 @@
     "tier": "3C",
     "usd_bands": {
       "code_assistant":       {"low": 5000,  "mid": 15000,  "high": 40000},
+      "knowledge_work":       {"low": 5000,  "mid": 15000,  "high": 40000},
       "summarisation":        {"low": 10000, "mid": 25000,  "high": 60000},
       "rag_search":           {"low": 25000, "mid": 60000,  "high": 150000},
       "claims":               {"low": 50000, "mid": 120000, "high": 300000},
@@ -50,6 +51,7 @@
     "tier": "3C",
     "usd_bands_per_month": {
       "code_assistant":       {"low": 300,   "mid": 1000,  "high": 2500},
+      "knowledge_work":       {"low": 200,   "mid": 800,   "high": 2500},
       "summarisation":        {"low": 2000,  "mid": 6000,  "high": 15000},
       "rag_search":           {"low": 4000,  "mid": 10000, "high": 25000},
       "claims":               {"low": 8000,  "mid": 20000, "high": 50000},

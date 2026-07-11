@@ -27,6 +27,16 @@
       "tier": "1B",
       "applies_to": ["code_assistant"]
     },
+    "copilot_m365": {
+      "label": "Microsoft 365 Copilot",
+      "vendor": "Microsoft",
+      "usd_per_seat_month": 30,
+      "billing": "per seat, annual commitment (add-on to a qualifying M365 plan)",
+      "status": "official-indirect",
+      "source": "Microsoft 365 Copilot general-availability pricing, publicly announced US$30/seat/mo (microsoft.com; live page geolocates/paywalls, confirmed via search index 2026-07-11)",
+      "tier": "2B",
+      "applies_to": ["knowledge_work"]
+    },
     "chatgpt_business": {
       "label": "ChatGPT Business",
       "vendor": "OpenAI",
@@ -35,7 +45,7 @@
       "status": "official-indirect",
       "source": "help.openai.com / chatgpt.com/pricing via search index (vendor pages blocked direct fetch, 2026-07-10; reflects the 2026-04-02 price cut)",
       "tier": "2A",
-      "applies_to": ["rag_search"]
+      "applies_to": ["rag_search", "knowledge_work"]
     },
     "chatgpt_enterprise": {
       "label": "ChatGPT Enterprise",
@@ -55,7 +65,7 @@
       "status": "official",
       "source": "claude.com/pricing (fetched 2026-07-10)",
       "tier": "1B",
-      "applies_to": ["rag_search"]
+      "applies_to": ["rag_search", "knowledge_work"]
     },
     "gemini_workspace_standard": {
       "label": "Google Workspace Business Standard (Gemini included)",
@@ -65,7 +75,7 @@
       "status": "official-indirect",
       "source": "workspace.google.com Jan-2025 announcement (US$14 figure is official; the live pricing page geolocates to AUD, 2026-07-10)",
       "tier": "2B",
-      "applies_to": ["rag_search"]
+      "applies_to": ["rag_search", "knowledge_work"]
     }
   }
 }
