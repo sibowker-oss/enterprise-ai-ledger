@@ -141,7 +141,14 @@ export default function InvestmentCaseSimulator() {
     const m = resolveModel(config.modelKey);
     const signal = forwardSignal(m.provider);
     const advisory = modelChangeAdvisory(s.a, config.modelKey, priors.defaultModel);
-    const line = budgetLine(s.a.key, s.band, s.counted, state.ramp);
+    const line = budgetLine(
+      s.a.key,
+      s.band,
+      s.counted,
+      state.ramp,
+      config.buildOverride,
+      currencyFactor(state.currency),
+    );
     // Per-lever savings + the combined planned figure (A3), in display currency.
     const f = currencyFactor(state.currency);
     const savings = {
@@ -254,6 +261,7 @@ export default function InvestmentCaseSimulator() {
                 onRamp={(ramp: AdoptionRamp) =>
                   setState((prev) => ({ ...prev, ramp: clampRamp(ramp) }))
                 }
+                onBuildOverride={(n) => patchConfig({ buildOverride: n })}
               />
               <Q5Verdict
                 verdict={derived.s.verdict}

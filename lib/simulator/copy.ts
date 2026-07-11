@@ -382,15 +382,27 @@ export function breakEvenSentence(be: BreakEvenHuman, haircutPct: number, cur: C
  * The first-year budget line.
  * ------------------------------------------------------------------ */
 
-/** "Building it is a one-off $50k–$300k (typically about $120k)…" */
-export function buildRangeSentence(
-  build: { low: number; mid: number; high: number },
-  cur: Cur = "usd",
-): string {
-  return `Building it is a one-off ${usdK(build.low, cur)}–${usdK(build.high, cur)} (typically about ${usdK(
-    build.mid,
+/**
+ * The one-off build & integration line. Names what it actually covers — the
+ * setup no price list shows and the tool can't size for a given org — and
+ * reflects the buyer's own figure once they set it.
+ */
+export function buildRangeSentence(line: BudgetLine, cur: Cur = "usd"): string {
+  const covers =
+    "getting your data in, wiring up context, connecting the other systems it needs, plus the security and change work";
+  if (line.buildIsOverride) {
+    return `You've set the one-off build & integration at ${usdK(
+      line.buildUsed,
+      cur,
+    )} — ${covers}. It's held apart from the monthly running cost; the two land in different parts of a budget.`;
+  }
+  return `Build & integration is a one-off ${usdK(line.build.low, cur)}–${usdK(
+    line.build.high,
     cur,
-  )}), before the monthly bill starts. That's the number to hold apart from the running cost — they land in different parts of a budget.`;
+  )} (illustrative — typically about ${usdK(
+    line.build.mid,
+    cur,
+  )}): ${covers}. No price list shows this and the tool can't size it for you — put your own estimate or a real quote in the field above. It's held apart from the monthly running cost.`;
 }
 
 export function paybackSentence(line: BudgetLine): string {

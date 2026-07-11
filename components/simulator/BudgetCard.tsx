@@ -28,11 +28,13 @@ export function BudgetCard({
   ramp,
   cur,
   onRamp,
+  onBuildOverride,
 }: {
   line: BudgetLine;
   ramp: AdoptionRamp;
   cur: Cur;
   onRamp: (ramp: AdoptionRamp) => void;
+  onBuildOverride: (n: number | null) => void;
 }) {
   const scaleMax = Math.max(
     line.months[line.months.length - 1].cumCost,
@@ -45,11 +47,35 @@ export function BudgetCard({
       <p className="text-[14.5px] leading-relaxed text-ink-muted">{BUDGET.intro}</p>
 
       <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-        <Tile
-          label={BUDGET.buildLabel}
-          value={`${usdK(line.build.low, cur)}–${usdK(line.build.high, cur)}`}
-          sub={`typically about ${usdK(line.build.mid, cur)} — ${BUDGET.buildSub}`}
-        />
+        {/* The build & integration cost is EDITABLE — it's the setup the tool
+            can't size (data, context, systems), so the buyer sets it. */}
+        <div className="rounded-tile border border-accent/40 bg-accent-soft/40 p-3 text-center">
+          <div className="text-[10.5px] uppercase tracking-wide text-ink-faint">{BUDGET.buildLabel}</div>
+          <div className="mt-1 flex items-center justify-center">
+            <NumberField
+              id="build-override"
+              label={BUDGET.buildEditLabel}
+              value={Math.round(line.buildUsed)}
+              min={0}
+              step={5000}
+              compact
+              onChange={(n) => onBuildOverride(n)}
+            />
+          </div>
+          <div className="mt-1 text-[10px] leading-tight text-ink-faint">
+            {line.buildIsOverride ? (
+              <button
+                type="button"
+                onClick={() => onBuildOverride(null)}
+                className="underline underline-offset-2 hover:text-ink"
+              >
+                {BUDGET.buildOwnTag} · {BUDGET.buildResetTypical}
+              </button>
+            ) : (
+              `${BUDGET.buildTypicalPrefix} ${usdK(line.build.low, cur)}–${usdK(line.build.high, cur)}`
+            )}
+          </div>
+        </div>
         <Tile label={BUDGET.runLabel} value={`${usdK(line.monthlyRun, cur)}/mo`} sub={BUDGET.runSub} />
         <Tile
           label={BUDGET.paybackLabel}
@@ -58,9 +84,9 @@ export function BudgetCard({
         />
       </div>
 
-      <p className="mt-3 text-[13px] leading-relaxed text-ink-muted">
-        {buildRangeSentence(line.build, cur)}
-      </p>
+      <p className="mt-2 text-[11.5px] leading-snug text-ink-faint">{BUDGET.buildEditHint}</p>
+
+      <p className="mt-3 text-[13px] leading-relaxed text-ink-muted">{buildRangeSentence(line, cur)}</p>
 
       {/* The adoption ramp — a labelled, editable planning assumption (A6:
           validated numeric fields, no silent clamping). */}
@@ -154,8 +180,8 @@ export function BudgetCard({
       <p className="mt-3 text-[13.5px] leading-relaxed text-ink">{paybackSentence(line)}</p>
       <p className="mt-2 text-[13px] leading-relaxed text-ink-muted">{firstYearSentence(line, cur)}</p>
       <p className="mt-3 border-t border-border pt-2.5 text-[11px] leading-snug text-ink-faint">
-        One-off build figures are illustrative planning bands (as of {asOfLabel(oneOffBuildAsOf)}) — replace
-        with your own quote. The monthly figures use today&rsquo;s prices from the cost box above.
+        The build &amp; integration figure is yours to set (starting band as of {asOfLabel(oneOffBuildAsOf)}) — it
+        drives the payback above. The monthly figures use today&rsquo;s prices from the cost box.
       </p>
     </QCard>
   );

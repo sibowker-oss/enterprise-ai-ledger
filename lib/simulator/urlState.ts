@@ -43,6 +43,10 @@ export interface SimConfig {
   adoption: number;
   realisation: number;
   reliability: number;
+  /** One-off build & integration cost (data pipelines, context, connecting your
+   *  systems) — the setup the tool CAN'T size for you. null = use the editorial
+   *  mid band; a number = the buyer's own figure. Resets on use-case switch. */
+  buildOverride: number | null;
   /** Providers excluded from the "cheapest model you'd consider" floor (A4). */
   excludedProviders: string[];
 }
@@ -75,6 +79,7 @@ export function defaultConfig(archetypeKey: string): SimConfig {
     adoption: ADOPTION_DEFAULT_PCT,
     realisation: REALISATION_DEFAULT_PCT,
     reliability: RELIABILITY_DEFAULT_PCT,
+    buildOverride: null,
     excludedProviders: [],
   };
 }
@@ -112,6 +117,7 @@ export function serializeState(state: SimState): string {
   p.set("ad", num(c.adoption));
   p.set("re", num(c.realisation));
   p.set("rl", num(c.reliability));
+  if (c.buildOverride != null) p.set("bo", num(c.buildOverride));
   if (c.excludedProviders.length > 0) p.set("x", c.excludedProviders.join("."));
   p.set("rs", num(state.ramp.startPct));
   p.set("rf", num(state.ramp.fullMonth));
@@ -150,6 +156,7 @@ export interface RawConfigFields {
   adoption: number | null;
   realisation: number | null;
   reliability: number | null;
+  buildOverride: number | null;
   /** Legacy single "counted %" (pre-3-factor links / saved cases) — mapped onto
    *  realisation so an old share reproduces the same counted value. */
   haircut: number | null;
@@ -210,6 +217,7 @@ export function sanitiseConfig(raw: RawConfigFields): SimConfig | null {
         : raw.haircut != null
           ? 100
           : base.reliability,
+    buildOverride: raw.buildOverride != null ? clamp(Math.round(raw.buildOverride), 0, 1e9) : null,
     excludedProviders: (raw.excludedProviders ?? []).filter((p) => PICKER_PROVIDERS.includes(p)),
   };
 }
@@ -243,6 +251,7 @@ export function parseState(search: string): SimState {
       adoption: toNum(p.get("ad")),
       realisation: toNum(p.get("re")),
       reliability: toNum(p.get("rl")),
+      buildOverride: toNum(p.get("bo")),
       haircut: toNum(p.get("h")), // legacy single-knob links
       excludedProviders: p.get("x") ? p.get("x")!.split(".").filter(Boolean) : null,
     }) ?? fallback.current;

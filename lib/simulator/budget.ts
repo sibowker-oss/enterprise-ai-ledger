@@ -51,6 +51,11 @@ export interface BudgetMonth {
 export interface BudgetLine {
   /** One-off build band (USD, from the reference data). */
   build: OneOffBuildBand;
+  /** The build figure actually used for payback: the buyer's override where set,
+   *  otherwise the editorial mid. */
+  buildUsed: number;
+  /** True when buildUsed is the buyer's own number, not the editorial mid. */
+  buildIsOverride: boolean;
   /** Steady-state monthly run at full adoption (today's cost). */
   monthlyRun: number;
   months: BudgetMonth[];
@@ -74,10 +79,20 @@ export function budgetLine(
   band: CostBand,
   countedValue: ValueRange,
   ramp: AdoptionRamp,
+  /** Buyer's own build & integration figure (in DISPLAY currency); null = the
+   *  editorial mid. */
+  buildOverride: number | null = null,
+  /** Display-currency factor (1 = US$; RBA-dated for A$) — the editorial build
+   *  band is quoted US$, so it converts like the cost band; an override is
+   *  already entered in the display currency and is not re-scaled. */
+  currencyFactor = 1,
 ): BudgetLine {
-  const build = oneOffBuild(archetypeKey);
+  const raw = oneOffBuild(archetypeKey);
+  const build = { low: raw.low * currencyFactor, mid: raw.mid * currencyFactor, high: raw.high * currencyFactor };
+  const buildIsOverride = buildOverride != null;
+  const buildUsed = buildIsOverride ? Math.max(0, buildOverride) : build.mid;
   const months: BudgetMonth[] = [];
-  let cumCost = build.mid;
+  let cumCost = buildUsed;
   let cumValue = 0;
   let paybackMonth: number | null = null;
   for (let m = 1; m <= 12; m++) {
@@ -91,6 +106,8 @@ export function budgetLine(
   }
   return {
     build,
+    buildUsed,
+    buildIsOverride,
     monthlyRun: band.today,
     months,
     paybackMonth,

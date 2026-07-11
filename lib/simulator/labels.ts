@@ -148,8 +148,14 @@ export const BUDGET = {
   title: "The first-year budget line",
   intro:
     "What a budget paper needs: the one-off cost to build it, the monthly bill to run it, and when the value delivered catches up with the money out the door.",
-  buildLabel: "One-off build",
-  buildSub: "before the monthly bill starts",
+  buildLabel: "One-off build & integration",
+  buildSub: "data, context & systems setup — your number",
+  buildEditLabel: "Build & integration cost (one-off)",
+  buildEditHint:
+    "The setup no price list shows: getting your data in, wiring up context, connecting other systems, plus security and change work. The tool can't size this for you — set it to your own estimate or a real quote. It feeds the payback below.",
+  buildTypicalPrefix: "Illustrative band for this use case:",
+  buildResetTypical: "use the typical band",
+  buildOwnTag: "your figure",
   runLabel: "Monthly run",
   runSub: "at today's prices, everyone on board",
   paybackLabel: "Pays back",

@@ -41,6 +41,7 @@ describe("round-trips", () => {
         adoption: 65,
         realisation: 75,
         reliability: 85,
+        buildOverride: 85000,
         excludedProviders: ["deepseek", "zhipu"],
       },
       ramp: { startPct: 30, fullMonth: 6 },

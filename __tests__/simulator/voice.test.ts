@@ -105,7 +105,8 @@ function collectStrings(): string[] {
 
     // The budget line, both payback outcomes.
     const line = budgetLine(a.key, band, counted, DEFAULT_RAMP);
-    out.push(copy.buildRangeSentence(oneOffBuild(a.key)));
+    out.push(copy.buildRangeSentence(line)); // editorial-band branch
+    out.push(copy.buildRangeSentence({ ...line, buildIsOverride: true, buildUsed: 50000 })); // override branch
     out.push(copy.paybackSentence(line), copy.firstYearSentence(line));
     out.push(
       copy.paybackSentence({ ...line, paybackMonth: null }),

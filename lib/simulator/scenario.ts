@@ -120,6 +120,7 @@ export function parseScenario(json: string): ScenarioImport {
     adoption: typeof i.adoption === "number" ? i.adoption : null,
     realisation: typeof i.realisation === "number" ? i.realisation : null,
     reliability: typeof i.reliability === "number" ? i.reliability : null,
+    buildOverride: typeof i.buildOverride === "number" ? i.buildOverride : null,
     // Legacy saved cases carried a single `haircut` — map it onto realisation.
     haircut: typeof (i as { haircut?: number }).haircut === "number" ? (i as { haircut: number }).haircut : null,
     excludedProviders: Array.isArray(i.excludedProviders)
