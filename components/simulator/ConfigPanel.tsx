@@ -1,6 +1,7 @@
 "use client";
 
 import type { Archetype } from "@/lib/simulator/archetypes";
+import { CATEGORY_ORDER } from "@/lib/simulator/archetypes";
 import type { Model } from "@/lib/simulator/types";
 import { intensityBand } from "@/lib/simulator/engine";
 import {
@@ -17,6 +18,14 @@ import { MATURITY_WORDS } from "@/lib/simulator/engine";
 import { BRAND, CONFIG, CONSIDER, CURRENCY, RAILS } from "@/lib/simulator/labels";
 import type { Currency } from "@/lib/simulator/urlState";
 import { NumberField } from "./NumberField";
+
+/** Group the use cases by business area, in CATEGORY_ORDER (empty groups dropped). */
+function groupByCategory(archetypes: Archetype[]): { category: string; items: Archetype[] }[] {
+  return CATEGORY_ORDER.map((category) => ({
+    category,
+    items: archetypes.filter((x) => x.category === category),
+  })).filter((g) => g.items.length > 0);
+}
 
 /** Group the model list by provider, preserving first-seen order, for <optgroup>s. */
 function groupByProvider(models: Model[]): { provider: string; providerKey: string; items: Model[] }[] {
@@ -102,29 +111,47 @@ export function ConfigPanel({
     >
       <h2 className="eyebrow mb-4 text-xs font-semibold text-ink-faint">{CONFIG.heading}</h2>
 
-      {/* Use case — 44px hit targets (A6). */}
+      {/* Use case — grouped by business area, scannable list; the selected
+          case's one-line description shows below (fuller note lives in Q1). */}
       <div className="mb-5">
         <h3 className="mb-2 block text-sm font-semibold text-ink">{CONFIG.useCase}</h3>
-        <div className="flex flex-wrap gap-2" role="group" aria-label={CONFIG.useCase}>
-          {archetypes.map((x) => {
-            const on = x.key === a.key;
-            return (
-              <button
-                key={x.key}
-                type="button"
-                aria-pressed={on}
-                onClick={() => onSelectArchetype(x.key)}
-                className={`min-h-[44px] rounded-chip border px-3 py-2 text-[12.5px] transition-colors ${
-                  on
-                    ? "border-accent bg-accent font-semibold text-white"
-                    : "border-border bg-surface text-ink-muted hover:border-accent hover:text-ink"
-                }`}
-              >
-                {x.label}
-              </button>
-            );
-          })}
+        <div
+          role="group"
+          aria-label={CONFIG.useCase}
+          className="max-h-[300px] space-y-2.5 overflow-y-auto rounded-tile border border-border p-2"
+        >
+          {groupByCategory(archetypes).map((group) => (
+            <div key={group.category}>
+              <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
+                {group.category}
+              </p>
+              <div className="space-y-0.5">
+                {group.items.map((x) => {
+                  const on = x.key === a.key;
+                  return (
+                    <button
+                      key={x.key}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => onSelectArchetype(x.key)}
+                      className={`block w-full rounded-control px-2.5 py-2 text-left text-[12.5px] leading-snug transition-colors ${
+                        on
+                          ? "bg-accent font-semibold text-white"
+                          : "text-ink-muted hover:bg-surface-muted hover:text-ink"
+                      }`}
+                    >
+                      {x.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
+        {/* Selected use case's plain description. */}
+        <p className="mt-2 rounded-tile bg-surface-muted px-2.5 py-2 text-[11.5px] leading-snug text-ink-muted">
+          {a.blurb}
+        </p>
       </div>
 
       {/* Business volume — inline validation, no silent clamping (A6). */}
