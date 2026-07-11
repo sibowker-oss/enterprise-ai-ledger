@@ -195,14 +195,19 @@ describe("A2 verdict wording", () => {
 });
 
 describe("the default-state portfolio story holds", () => {
-  it("run-cost-dominated cases surface as borderline; nothing defaults to a hard no", () => {
+  it("after the value-realism discount, weak cases surface honestly (some don't pay at all)", () => {
     const spread: Record<string, string[]> = { good: [], conditional: [], marginal: [], no: [] };
     for (const a of ARCHETYPES) {
       const s = deriveCase(defaultConfig(a.key));
       spread[s.verdict.klass].push(a.key);
     }
-    expect(spread.marginal).toEqual(["rag_search", "voice_agents"]);
-    expect(spread.no).toEqual([]);
-    expect(spread.good.length + spread.conditional.length).toBe(13);
+    // With the counted value at ~31% (adoption×realisation×reliability), the two
+    // run-cost-heavy, low-value-density cases don't clear their cost at all, the
+    // most expensive-to-run case is too close to call, and the rest still pay —
+    // many at thin margins. The field-realistic distribution (MIT GenAI Divide).
+    expect(spread.no).toEqual(["rag_search", "voice_agents"]);
+    expect(spread.marginal).toEqual(["agentic_coding"]);
+    expect(spread.conditional).toEqual([]);
+    expect(spread.good).toHaveLength(12);
   });
 });

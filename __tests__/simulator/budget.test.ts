@@ -69,10 +69,11 @@ describe("code-assistant default budget line (snapshot)", () => {
     expect(m1.cost).toBeCloseTo((s.band.todayAiUsage + s.band.perUseRun) * 0.5 + s.band.monthlyFixed, 6);
   });
 
-  it("pays back in month 1 on the default numbers (value dwarfs cost at 13× coverage)", () => {
+  it("still pays back in month 1 after the value-realism discount (code assistant ~6.7× coverage)", () => {
     expect(line.paybackMonth).toBe(1);
     expect(Math.round(line.firstYearCost)).toBe(83738);
-    expect(Math.round(line.firstYearValue)).toBe(1544400);
+    // Value counts adoption×realisation×reliability (~31%), not the old flat 60%.
+    expect(Math.round(line.firstYearValue)).toBe(792792);
   });
 });
 

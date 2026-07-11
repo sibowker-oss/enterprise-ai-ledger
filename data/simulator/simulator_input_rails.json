@@ -5,9 +5,13 @@
     "tier": "3C",
     "purpose": "Plausibility rails for the simulator's editable inputs (CTO review 2026-07-10 item 8). Per use case: min/typical/max for the volume input and the value driver(s). SOFT rails — the UI warns on out-of-band entries ('that's well outside the typical range') and never blocks. 'typical' MUST equal the archetype's committed illustrative default (pinned by test).",
     "provenance": "Editorial. These are order-of-magnitude plausibility bounds for the target buyer (a 500–5,000-person organisation), derived from the committed illustrative defaults — not benchmarks. The defaults themselves remain the archetype/config values; nothing here feeds the cost engine.",
-    "haircut_note": "value_realisation_default_pct is the starting position of the Q4 realisation slider: the share of the entered value the verdict counts (not everyone uses it; not all saved time turns into output). Editorial default, user-overridable."
+    "haircut_note": "value_realisation is the starting position of the Q4 realism sliders. The share of entered value the verdict counts is the PRODUCT of three separate leakages, each defensible on its own and each user-overridable: adoption (share of licensed seats/volume that actually use it), realisation (share of the benefit adopters generate that converts to money — saved time is not banked cash unless heads are cut or freed time demonstrably produces output; MIT GenAI Divide 2025: the productivity value people claim mostly never reaches the P&L), reliability (share of output usable without human rework — METR 2025 RCT: experienced developers were 19% slower with AI while believing they were 20% faster, so self-reported time savings are the least reliable input here). Combined default 0.70 x 0.55 x 0.80 = 0.308, i.e. ~31% of entered value counted — deliberately more conservative than a single 60% knob, because it multiplies three real, independent leakages rather than rolling them into one."
   },
-  "value_realisation_default_pct": 60,
+  "value_realisation": {
+    "adoption_default_pct": 70,
+    "realisation_default_pct": 55,
+    "reliability_default_pct": 80
+  },
   "units": {
     "code_assistant": { "min": 10, "typical": 200, "max": 5000 },
     "summarisation": { "min": 20, "typical": 800, "max": 10000 },

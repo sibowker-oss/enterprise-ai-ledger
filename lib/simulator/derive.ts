@@ -13,6 +13,7 @@ import { tokenPrior, USD_TO_AUD } from "./data";
 import {
   applyHaircut,
   breakEvenHuman,
+  combinedRealism,
   costBand,
   coverageRatio,
   txPerUnitMonthFor,
@@ -36,8 +37,10 @@ export interface CaseSummary {
   businessTx: number;
   /** The value range as entered (Q4 shows this). */
   value: ValueRange;
-  /** The counted range after the realisation discount (the verdict runs on this). */
+  /** The counted range after the realism discount (the verdict runs on this). */
   counted: ValueRange;
+  /** Combined counted share (adoption×realisation×reliability), 0–100. */
+  countedPct: number;
   verdict: Verdict;
   /** Margin of safety: counted value ÷ price-rise-case cost. */
   coverage: number;
@@ -89,7 +92,12 @@ export function deriveCase(config: SimConfig, currency: Currency = "usd"): CaseS
   const band = scaleBand(bandUsd, currencyFactor(currency));
   const businessTx = config.units * txPerUnit;
   const value = valueRange(a, config.units, businessTx, config.overrides);
-  const counted = applyHaircut(value, config.haircut);
+  const countedPct = combinedRealism({
+    adoption: config.adoption,
+    realisation: config.realisation,
+    reliability: config.reliability,
+  });
+  const counted = applyHaircut(value, countedPct);
   return {
     config,
     currency,
@@ -99,9 +107,10 @@ export function deriveCase(config: SimConfig, currency: Currency = "usd"): CaseS
     businessTx,
     value,
     counted,
+    countedPct,
     verdict: verdict(counted.base, band, a),
     coverage: coverageRatio(counted.base, band),
     stressCoverage: coverageRatio(counted.low, band),
-    breakEven: breakEvenHuman(a, band, config.units, businessTx, config.overrides, config.haircut),
+    breakEven: breakEvenHuman(a, band, config.units, businessTx, config.overrides, countedPct),
   };
 }

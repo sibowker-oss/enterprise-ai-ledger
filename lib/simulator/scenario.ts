@@ -65,7 +65,7 @@ export function buildScenario(
         low: s.value.low,
         likely: s.value.base,
         high: s.value.high,
-        countedPct: s.config.haircut,
+        countedPct: s.countedPct,
         counted: s.counted.base,
       },
       verdict: { state: s.verdict.klass, label: s.verdict.label },
@@ -117,7 +117,11 @@ export function parseScenario(json: string): ScenarioImport {
     rate: typeof i.overrides?.rate === "number" ? i.overrides.rate : null,
     lowDriver: typeof i.overrides?.lowDriver === "number" ? i.overrides.lowDriver : null,
     highDriver: typeof i.overrides?.highDriver === "number" ? i.overrides.highDriver : null,
-    haircut: typeof i.haircut === "number" ? i.haircut : null,
+    adoption: typeof i.adoption === "number" ? i.adoption : null,
+    realisation: typeof i.realisation === "number" ? i.realisation : null,
+    reliability: typeof i.reliability === "number" ? i.reliability : null,
+    // Legacy saved cases carried a single `haircut` — map it onto realisation.
+    haircut: typeof (i as { haircut?: number }).haircut === "number" ? (i as { haircut: number }).haircut : null,
     excludedProviders: Array.isArray(i.excludedProviders)
       ? i.excludedProviders.filter((x): x is string => typeof x === "string")
       : null,

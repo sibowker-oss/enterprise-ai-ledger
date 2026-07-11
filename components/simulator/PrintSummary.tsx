@@ -123,8 +123,8 @@ export function PrintSummary({ s, line }: { s: CaseSummary; line: BudgetLine }) 
             v={`${usd(s.value.low, cur)} · ${usd(s.value.base, cur)} · ${usd(s.value.high, cur)} per month`}
           />
           <Row
-            k={`Counted for the verdict (${s.config.haircut}%)`}
-            v={`${usd(s.counted.base, cur)}/mo — not everyone uses it; not all saved time turns into output`}
+            k={`Counted for the verdict (${Math.round(s.countedPct)}%)`}
+            v={`${usd(s.counted.base, cur)}/mo — after adoption, what turns into money, and what's usable without rework`}
           />
         </tbody>
       </table>
@@ -138,7 +138,7 @@ export function PrintSummary({ s, line }: { s: CaseSummary; line: BudgetLine }) 
         <p className="mt-1 text-[12.5px] leading-snug text-ink">{s.verdict.headline}</p>
         <p className="mt-1.5 text-[11.5px] leading-snug text-ink-muted">
           Margin of safety {timesLabel(s.coverage)}. {verdictWeighingSentence(s.counted.base, s.band, cur)}{" "}
-          {stressSentence(s.stressCoverage)} {breakEvenSentence(s.breakEven, s.config.haircut, cur)}
+          {stressSentence(s.stressCoverage)} {breakEvenSentence(s.breakEven, Math.round(s.countedPct), cur)}
         </p>
         <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
           What keeps it true: {s.verdict.condition}

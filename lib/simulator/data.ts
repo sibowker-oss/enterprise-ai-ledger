@@ -95,7 +95,11 @@ interface RawRail {
 }
 interface RawRails {
   _schema: { as_of: string };
-  value_realisation_default_pct: number;
+  value_realisation: {
+    adoption_default_pct: number;
+    realisation_default_pct: number;
+    reliability_default_pct: number;
+  };
   units: Record<string, RawRail>;
   value_driver: Record<string, RawRail>;
   value_rate: Record<string, RawRail>;
@@ -398,8 +402,14 @@ export function rateRail(archetypeKey: string): InputRail | null {
 
 export const railsAsOf = rails._schema.as_of;
 
-/** Default share of the entered value the verdict counts (the Q4 realisation slider). */
-export const HAIRCUT_DEFAULT_PCT = rails.value_realisation_default_pct;
+/**
+ * Default positions of the Q4 realism sliders. The share of entered value the
+ * verdict counts is the PRODUCT of these three — not one blunt knob (see the
+ * rails file's haircut_note for the evidence behind each).
+ */
+export const ADOPTION_DEFAULT_PCT = rails.value_realisation.adoption_default_pct;
+export const REALISATION_DEFAULT_PCT = rails.value_realisation.realisation_default_pct;
+export const RELIABILITY_DEFAULT_PCT = rails.value_realisation.reliability_default_pct;
 
 /** Raw rails — exposed for the data-integrity test only. */
 export const rawRails = { units: rails.units, driver: rails.value_driver, rate: rails.value_rate };
@@ -541,11 +551,16 @@ export function assumptionsIndex(): AssumptionRow[] {
   );
   rows.push({
     group: "Value realism",
-    label: "Share of entered value counted",
-    value: `${rails.value_realisation_default_pct}% by default`,
-    source: "editorial",
+    label: "Share of entered value counted (default)",
+    value: `${rails.value_realisation.adoption_default_pct}% adoption × ${rails.value_realisation.realisation_default_pct}% realised × ${rails.value_realisation.reliability_default_pct}% usable ≈ ${Math.round(
+      (rails.value_realisation.adoption_default_pct *
+        rails.value_realisation.realisation_default_pct *
+        rails.value_realisation.reliability_default_pct) /
+        10000,
+    )}%`,
+    source: "editorial (MIT GenAI Divide 2025; METR RCT 2025)",
     date: rails._schema.as_of,
-    status: "editorial — the slider is yours",
+    status: "editorial — all three sliders are yours",
   });
   for (const [key, p] of Object.entries(seatPrices.products)) {
     rows.push({

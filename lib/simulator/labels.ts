@@ -116,9 +116,17 @@ export const Q4 = {
   high: "High",
   rangeGuide:
     "All three points are yours. Low and high start at a sensible spread around likely — set them to your own view.",
-  haircutLabel: "How much of that value should count?",
-  haircutHint:
-    "Not everyone uses it, and not all saved time turns into output. The verdict below only counts this share of the value you entered — a discount we apply against ourselves.",
+  realismHeading: "How much of that value is real?",
+  realismIntro:
+    "The verdict doesn't count the whole figure — three things stand between value on a slide and value in the accounts. Set each to your own view; the verdict counts the three multiplied together. This is a discount we apply against ourselves.",
+  adoptionLabel: "Adoption",
+  adoptionHint: "Share of people (or volume) who actually use it. Licences bought is not licences used — real adoption is often half.",
+  realisationLabel: "Turns into money",
+  realisationHint:
+    "Share of the benefit that reaches the accounts. Saved time only counts if roles come off or the freed time visibly produces output — most of it quietly doesn't (MIT, 2025).",
+  reliabilityLabel: "Usable as-is",
+  reliabilityHint:
+    "Share of output good enough to use without a human reworking it. A controlled trial found experienced developers were 19% slower with AI while feeling 20% faster — so treat self-reported time savings with care (METR, 2025).",
   countedLabel: "Counted for the verdict",
 } as const;
 
@@ -132,6 +140,8 @@ export const Q5 = {
   paybackSub: "first year, on the rollout plan",
   paybackNone: "not in year 1",
   paybackMonthPrefix: "month",
+  subsidyNote:
+    "Worth remembering: the return itself is subsidised. Today you get frontier capability at a below-cost price, so this margin is the best it will be — not the worst. Step 2 shows how far the price could climb.",
 } as const;
 
 export const BUDGET = {
@@ -195,6 +205,14 @@ export const SEAT = {
   asOfPrefix: "Public seat prices as of",
   segLabel: "Vendor seats",
   segSub: "public per-seat prices × your seat count",
+  subsidyWarning:
+    "Read these the way step 2 reads the API price. A seat is priced to win adoption, not to cover cost — the same investor subsidy sits underneath it, and the top models are increasingly API-only, so the cheap seat often runs a smaller one. Cheap today doesn't mean cheap to stay.",
+} as const;
+
+/** Capability caveat — the "cheapest / cheap seat isn't a free lunch" note (Fix 4). */
+export const CAPABILITY = {
+  floorCaveat:
+    "\"Cheapest\" here ranks on price alone — it doesn't check the cheaper model is good enough for this job. Frontier capability is increasingly API-only; a budget model may not clear the bar. Prove it does the work before switching to save.",
 } as const;
 
 export const TOOLBAR = {

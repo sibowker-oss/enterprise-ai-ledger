@@ -350,7 +350,10 @@ export function perUnitTag(a: Archetype, monthly: number, units: number, cur: Cu
  * ------------------------------------------------------------------ */
 
 export function haircutSentence(entered: number, counted: number, pct: number, cur: Cur = "usd"): string {
-  return `You entered ${usd(entered, cur)}/mo. The verdict counts ${usd(counted, cur)}/mo — ${pct}% of it — because not everyone uses it, and not all saved time turns into output.`;
+  return `You entered ${usd(entered, cur)}/mo. After adoption, what turns into money, and what's usable without rework, the verdict counts ${usd(
+    counted,
+    cur,
+  )}/mo — about ${Math.round(pct)}% of it. A discount we apply against ourselves.`;
 }
 
 /** The break-even, restated in units an executive can sanity-check in their head. */

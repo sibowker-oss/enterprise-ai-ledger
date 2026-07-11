@@ -421,13 +421,37 @@ export function valueRange(
 }
 
 /**
- * The realisation discount (Q4): not everyone uses it, and not all saved time
- * turns into output — so only this share of the entered value is counted before
- * the verdict. Applied against ourselves: the verdict runs on the counted
- * range, never the raw one. Default lives in simulator_input_rails.json.
+ * The three value-realism factors (Q4). Each is a separate, evidenced leakage
+ * between "value entered" and "value that reaches the P&L":
+ *  - adoption:    share of licensed seats / volume that actually use it
+ *  - realisation: share of the benefit adopters generate that converts to money
+ *                 (saved time is not banked cash unless heads are cut or freed
+ *                  time demonstrably produces output — MIT GenAI Divide 2025)
+ *  - reliability: share of output usable without human rework (METR 2025 RCT:
+ *                 experienced devs were 19% slower with AI while feeling faster,
+ *                 so self-reported time savings are the least reliable input)
+ * The verdict counts the PRODUCT — three independent leakages multiplied, not
+ * one blunt knob. Defaults in simulator_input_rails.json.
  */
-export function applyHaircut(range: ValueRange, haircutPct: number): ValueRange {
-  const f = Math.max(0, Math.min(100, haircutPct)) / 100;
+export interface RealismFactors {
+  adoption: number;
+  realisation: number;
+  reliability: number;
+}
+
+/** Combine the three factors into the single counted-share percentage (0–100). */
+export function combinedRealism(f: RealismFactors): number {
+  const clamp = (n: number) => Math.max(0, Math.min(100, n)) / 100;
+  return clamp(f.adoption) * clamp(f.realisation) * clamp(f.reliability) * 100;
+}
+
+/**
+ * The realisation discount (Q4): only the counted share of the entered value is
+ * carried into the verdict. Applied against ourselves — the verdict runs on the
+ * counted range, never the raw one. `countedPct` is combinedRealism(...).
+ */
+export function applyHaircut(range: ValueRange, countedPct: number): ValueRange {
+  const f = Math.max(0, Math.min(100, countedPct)) / 100;
   return { low: range.low * f, base: range.base * f, high: range.high * f };
 }
 

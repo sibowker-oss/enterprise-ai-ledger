@@ -7,8 +7,10 @@
 import { describe, expect, it } from "vitest";
 import { ARCHETYPES, ARCHETYPE_BY_KEY, isPerSeat } from "@/lib/simulator/archetypes";
 import {
+  ADOPTION_DEFAULT_PCT,
   driverRail,
-  HAIRCUT_DEFAULT_PCT,
+  REALISATION_DEFAULT_PCT,
+  RELIABILITY_DEFAULT_PCT,
   railsAsOf,
   rateRail,
   rawSeatProducts,
@@ -16,12 +18,22 @@ import {
   seatProductsFor,
   unitsRail,
 } from "@/lib/simulator/data";
+import { combinedRealism } from "@/lib/simulator/engine";
 import { railWarning } from "@/lib/simulator/copy";
 
 describe("input rails", () => {
-  it("are dated and carry the default realisation share", () => {
+  it("are dated and carry the three value-realism defaults", () => {
     expect(railsAsOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(HAIRCUT_DEFAULT_PCT).toBe(60);
+    expect(ADOPTION_DEFAULT_PCT).toBe(70);
+    expect(REALISATION_DEFAULT_PCT).toBe(55);
+    expect(RELIABILITY_DEFAULT_PCT).toBe(80);
+    // The combined counted share is the product — deliberately below the old 60%.
+    const combined = combinedRealism({
+      adoption: ADOPTION_DEFAULT_PCT,
+      realisation: REALISATION_DEFAULT_PCT,
+      reliability: RELIABILITY_DEFAULT_PCT,
+    });
+    expect(Math.round(combined)).toBe(31);
   });
 
   it("every archetype has ordered units + driver rails whose TYPICAL equals the committed default", () => {

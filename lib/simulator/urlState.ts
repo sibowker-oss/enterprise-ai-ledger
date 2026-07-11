@@ -7,7 +7,12 @@
  * must still render a working page.
  */
 import { ARCHETYPE_BY_KEY } from "./archetypes";
-import { hasModel, HAIRCUT_DEFAULT_PCT } from "./data";
+import {
+  hasModel,
+  ADOPTION_DEFAULT_PCT,
+  REALISATION_DEFAULT_PCT,
+  RELIABILITY_DEFAULT_PCT,
+} from "./data";
 import { PICKER_PROVIDERS } from "./models";
 import {
   defaultLevers,
@@ -34,8 +39,10 @@ export interface SimConfig {
   /** Levers as run NOW (defaults to zero — "not doing this yet") and as planned. */
   levers: LeverPlan;
   overrides: ValueOverrides;
-  /** Share of the entered value the verdict counts (Q4 realisation slider). */
-  haircut: number;
+  /** Q4 value-realism factors — the verdict counts adoption×realisation×reliability. */
+  adoption: number;
+  realisation: number;
+  reliability: number;
   /** Providers excluded from the "cheapest model you'd consider" floor (A4). */
   excludedProviders: string[];
 }
@@ -59,7 +66,9 @@ export function defaultConfig(archetypeKey: string): SimConfig {
     // library-informed settings for this workload.
     levers: { now: { ...NO_LEVERS }, planned: defaultLevers(a) },
     overrides: {},
-    haircut: HAIRCUT_DEFAULT_PCT,
+    adoption: ADOPTION_DEFAULT_PCT,
+    realisation: REALISATION_DEFAULT_PCT,
+    reliability: RELIABILITY_DEFAULT_PCT,
     excludedProviders: [],
   };
 }
@@ -94,7 +103,9 @@ export function serializeState(state: SimState): string {
   if (c.overrides.rate != null) p.set("rt", num(c.overrides.rate));
   if (c.overrides.lowDriver != null) p.set("dl", num(c.overrides.lowDriver));
   if (c.overrides.highDriver != null) p.set("dh", num(c.overrides.highDriver));
-  p.set("h", num(c.haircut));
+  p.set("ad", num(c.adoption));
+  p.set("re", num(c.realisation));
+  p.set("rl", num(c.reliability));
   if (c.excludedProviders.length > 0) p.set("x", c.excludedProviders.join("."));
   p.set("rs", num(state.ramp.startPct));
   p.set("rf", num(state.ramp.fullMonth));
@@ -130,6 +141,11 @@ export interface RawConfigFields {
   rate: number | null;
   lowDriver: number | null;
   highDriver: number | null;
+  adoption: number | null;
+  realisation: number | null;
+  reliability: number | null;
+  /** Legacy single "counted %" (pre-3-factor links / saved cases) — mapped onto
+   *  realisation so an old share reproduces the same counted value. */
   haircut: number | null;
   excludedProviders: string[] | null;
 }
@@ -168,7 +184,26 @@ export function sanitiseConfig(raw: RawConfigFields): SimConfig | null {
       ...(raw.lowDriver != null ? { lowDriver: clamp(raw.lowDriver, 0, 1e9) } : {}),
       ...(raw.highDriver != null ? { highDriver: clamp(raw.highDriver, 0, 1e9) } : {}),
     },
-    haircut: raw.haircut != null ? clamp(raw.haircut, 10, 100) : base.haircut,
+    // Back-compat: a legacy single "counted %" maps onto realisation (the other
+    // two at 100%) so an old link/case reproduces the exact same counted value.
+    adoption:
+      raw.adoption != null
+        ? clamp(raw.adoption, 10, 100)
+        : raw.haircut != null
+          ? 100
+          : base.adoption,
+    realisation:
+      raw.realisation != null
+        ? clamp(raw.realisation, 10, 100)
+        : raw.haircut != null
+          ? clamp(raw.haircut, 10, 100)
+          : base.realisation,
+    reliability:
+      raw.reliability != null
+        ? clamp(raw.reliability, 10, 100)
+        : raw.haircut != null
+          ? 100
+          : base.reliability,
     excludedProviders: (raw.excludedProviders ?? []).filter((p) => PICKER_PROVIDERS.includes(p)),
   };
 }
@@ -199,7 +234,10 @@ export function parseState(search: string): SimState {
       rate: toNum(p.get("rt")),
       lowDriver: toNum(p.get("dl")),
       highDriver: toNum(p.get("dh")),
-      haircut: toNum(p.get("h")),
+      adoption: toNum(p.get("ad")),
+      realisation: toNum(p.get("re")),
+      reliability: toNum(p.get("rl")),
+      haircut: toNum(p.get("h")), // legacy single-knob links
       excludedProviders: p.get("x") ? p.get("x")!.split(".").filter(Boolean) : null,
     }) ?? fallback.current;
   const rs = toNum(p.get("rs"));

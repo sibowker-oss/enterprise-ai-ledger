@@ -108,6 +108,11 @@ export function Q5Verdict({
         <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-faint">
           <b className="font-semibold text-ink-muted">What keeps it true:</b> {verdict.condition}
         </p>
+        {/* The subsidy runs both sides of the ledger — today's return is the best
+            it will be, not the worst. Ties the value back to the step-2 thesis. */}
+        <p className="mt-3 border-t border-border pt-3 text-[13px] leading-relaxed text-ink-faint">
+          {Q5.subsidyNote}
+        </p>
       </div>
     </section>
   );

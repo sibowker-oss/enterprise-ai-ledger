@@ -1,7 +1,7 @@
 import type { CostBand } from "@/lib/simulator/types";
 import type { Archetype } from "@/lib/simulator/archetypes";
 import { QCard } from "./QCard";
-import { COST, SEAT } from "@/lib/simulator/labels";
+import { CAPABILITY, COST, SEAT } from "@/lib/simulator/labels";
 import {
   costMixSentence,
   floorModelSentence,
@@ -104,6 +104,11 @@ function SeatComparison({ a, units }: { a: Archetype; units: number }) {
           {usdUnit(Math.max(...published.map((p) => p.perSeatUsd)))} a seat across the published prices.
         </p>
       )}
+      {/* Subsidy warning (Fix 3): a seat price is a loss-leader too — don't read
+          it as a stable cheap option any more than the API price. */}
+      <p className="mt-2 rounded-tile bg-status-amber-soft px-2.5 py-1.5 text-[11px] leading-snug text-status-amber-fg">
+        {SEAT.subsidyWarning}
+      </p>
     </div>
   );
 }
@@ -181,6 +186,13 @@ export function CostBox({
       <p className="mt-2 text-[11.5px] leading-snug text-ink-faint">
         {floorModelSentence(band.floorModelKey)} {COST.floorHint}
       </p>
+      {/* Capability caveat (Fix 4): "cheapest" ranks on price, not on whether the
+          cheaper model can actually do the job — frontier is increasingly API-only. */}
+      {band.floorModelKey && (
+        <p className="mt-1.5 rounded-tile bg-status-amber-soft px-2.5 py-1.5 text-[11px] leading-snug text-status-amber-fg">
+          {CAPABILITY.floorCaveat}
+        </p>
+      )}
 
       <p className="mt-3 text-[13px] leading-relaxed text-ink-muted">
         The <b className="font-semibold text-ink">{COST.bucketFixed}</b> floor is the same in all three (

@@ -19,6 +19,45 @@ function Stat({ label, value, tone }: { label: string; value: string; tone: stri
   );
 }
 
+/** One value-realism factor: a slider + numeric field + its evidence hint. */
+function FactorSlider({
+  id,
+  label,
+  hint,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  hint: string;
+  value: number;
+  onChange: (n: number) => void;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="flex items-baseline justify-between gap-2 text-[12.5px] font-semibold text-ink">
+        <span>{label}</span>
+        <span className="tabular font-semibold text-accent-text">{value}%</span>
+      </label>
+      <div className="mt-1 flex items-center gap-3">
+        <input
+          id={id}
+          type="range"
+          min={10}
+          max={100}
+          step={5}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="w-full accent-accent"
+          aria-valuetext={`${value}%`}
+        />
+        <NumberField id={`${id}-num`} label={label} value={value} min={10} max={100} step={5} compact onChange={onChange} />
+      </div>
+      <p className="mt-0.5 text-[10.5px] leading-snug text-ink-faint">{hint}</p>
+    </div>
+  );
+}
+
 /**
  * Q4 — what is it worth. The buyer supplies all THREE points of the range —
  * low / likely / high are individually editable (A2 replaced the fixed
@@ -32,8 +71,11 @@ export function Q4Value({
   onChange,
   value,
   counted,
-  haircut,
-  onHaircut,
+  countedPct,
+  adoption,
+  realisation,
+  reliability,
+  onFactor,
   units,
   cur,
 }: {
@@ -42,8 +84,11 @@ export function Q4Value({
   onChange: (key: keyof ValueOverrides, value: number) => void;
   value: ValueRange;
   counted: ValueRange;
-  haircut: number;
-  onHaircut: (pct: number) => void;
+  countedPct: number;
+  adoption: number;
+  realisation: number;
+  reliability: number;
+  onFactor: (key: "adoption" | "realisation" | "reliability", pct: number) => void;
   units: number;
   cur: Cur;
 }) {
@@ -122,40 +167,40 @@ export function Q4Value({
         ≈ {usdUnit(value.base / Math.max(units, 1), cur)} / {unitWord(a)} / mo entered
       </p>
 
-      {/* The realisation slider — the discount we apply against ourselves. Paired
-          with a numeric field (A6). */}
+      {/* The three value-realism factors — the discount we apply against ourselves,
+          split into its real, independent parts (A/E). Each is a paired slider +
+          numeric field (A6). The verdict counts the three multiplied. */}
       <div className="mt-4 rounded-tile border border-border bg-surface-muted p-3.5">
-        <label htmlFor="val-haircut" className="block text-[13px] font-semibold text-ink">
-          {Q4.haircutLabel}{" "}
-          <span className="tabular font-semibold text-accent-text">({haircut}%)</span>
-        </label>
-        <div className="mt-1.5 flex items-center gap-3">
-          <input
-            id="val-haircut"
-            type="range"
-            min={10}
-            max={100}
-            step={5}
-            value={haircut}
-            onChange={(e) => onHaircut(Number(e.target.value))}
-            className="w-full accent-accent"
-            aria-valuetext={`${haircut}% of the entered value is counted`}
+        <p className="text-[13px] font-semibold text-ink">{Q4.realismHeading}</p>
+        <p className="mt-1 text-[11.5px] leading-snug text-ink-faint">{Q4.realismIntro}</p>
+        <div className="mt-3 space-y-3">
+          <FactorSlider
+            id="f-adoption"
+            label={Q4.adoptionLabel}
+            hint={Q4.adoptionHint}
+            value={adoption}
+            onChange={(n) => onFactor("adoption", n)}
           />
-          <NumberField
-            id="val-haircut-num"
-            label={Q4.haircutLabel}
-            value={haircut}
-            min={10}
-            max={100}
-            step={5}
-            compact
-            onChange={onHaircut}
+          <FactorSlider
+            id="f-realisation"
+            label={Q4.realisationLabel}
+            hint={Q4.realisationHint}
+            value={realisation}
+            onChange={(n) => onFactor("realisation", n)}
+          />
+          <FactorSlider
+            id="f-reliability"
+            label={Q4.reliabilityLabel}
+            hint={Q4.reliabilityHint}
+            value={reliability}
+            onChange={(n) => onFactor("reliability", n)}
           />
         </div>
-        <p className="mt-1 text-[11.5px] leading-snug text-ink-faint">{Q4.haircutHint}</p>
-        <p className="mt-2 text-[13px] leading-relaxed text-ink">
-          <b className="font-semibold">{Q4.countedLabel}:</b>{" "}
-          {haircutSentence(value.base, counted.base, haircut, cur)}
+        <p className="mt-3 border-t border-border pt-2.5 text-[13px] leading-relaxed text-ink">
+          <b className="font-semibold">
+            {Q4.countedLabel} ({Math.round(countedPct)}%):
+          </b>{" "}
+          {haircutSentence(value.base, counted.base, countedPct, cur)}
         </p>
       </div>
     </QCard>

@@ -239,8 +239,11 @@ export default function InvestmentCaseSimulator() {
                 onChange={editValue}
                 value={derived.s.value}
                 counted={derived.s.counted}
-                haircut={config.haircut}
-                onHaircut={(pct) => patchConfig({ haircut: pct })}
+                countedPct={derived.s.countedPct}
+                adoption={config.adoption}
+                realisation={config.realisation}
+                reliability={config.reliability}
+                onFactor={(key, pct) => patchConfig({ [key]: pct } as Partial<SimConfig>)}
                 units={config.units}
                 cur={state.currency}
               />
@@ -257,7 +260,7 @@ export default function InvestmentCaseSimulator() {
                 band={derived.s.band}
                 valueBase={derived.s.counted.base}
                 breakEven={derived.s.breakEven}
-                haircut={config.haircut}
+                haircut={Math.round(derived.s.countedPct)}
                 paybackMonth={derived.line.paybackMonth}
                 coverage={derived.s.coverage}
                 stressCoverage={derived.s.stressCoverage}
