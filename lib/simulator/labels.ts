@@ -10,7 +10,7 @@ export const BRAND = {
   eyebrow: "Investment-Case Simulator",
   title: "AI Use-Case Cost Calculator",
   subtitle:
-    "A quick way to check whether an AI use case is worth doing — not just what it costs today, but whether it still adds up once prices rise and usage grows. Pick a use case on the left, change the numbers to match your business, and read down the five steps to a verdict.",
+    "A fast and accurate way to assess the real cost of your AI use cases — not just what it costs today, but whether it still adds up once prices rise and usage grows. Pick a use case on the left, change the numbers to match your business, and read down the five steps to a verdict.",
   ribbon:
     "Demo — the figures here are realistic examples, not a quote. The full version runs on your own numbers.",
   illustrativeTag: "illustrative — replace with your usage",
