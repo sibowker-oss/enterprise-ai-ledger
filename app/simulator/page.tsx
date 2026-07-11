@@ -184,7 +184,9 @@ export default function InvestmentCaseSimulator() {
       >
         {A11Y.skipToVerdict}
       </a>
-      <div className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+      {/* 1400px is the Ledger surface's max width (design system, dense/data-first) —
+          the walk gets the room; the config rail widens a step on large screens. */}
+      <div className="mx-auto max-w-[1400px] px-4 pb-20 sm:px-6">
         {/* One-page board summary — print only; the walk below is screen only. */}
         <PrintSummary s={derived.s} line={derived.line} />
 
@@ -195,7 +197,7 @@ export default function InvestmentCaseSimulator() {
             <SimToolbar state={state} summary={derived.s} line={derived.line} onImport={handleImport} />
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:items-start">
+          <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr] lg:items-start xl:grid-cols-[360px_1fr] xl:gap-8">
             <ConfigPanel
               archetypes={ARCHETYPES}
               a={derived.s.a}
