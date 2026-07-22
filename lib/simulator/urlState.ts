@@ -24,6 +24,7 @@ import {
   type ValueOverrides,
 } from "./engine";
 import { clampRamp, DEFAULT_RAMP, type AdoptionRamp } from "./budget";
+import type { ConfidenceLevel } from "./types";
 
 export type Currency = "usd" | "aud";
 
@@ -49,6 +50,15 @@ export interface SimConfig {
   buildOverride: number | null;
   /** Providers excluded from the "cheapest model you'd consider" floor (A4). */
   excludedProviders: string[];
+  /** User confidence self-tags for each numeric input (system/estimate/guess). */
+  confidenceTags: {
+    units: ConfidenceLevel;
+    intensity: ConfidenceLevel;
+    maturity: ConfidenceLevel;
+    adoption: ConfidenceLevel;
+    realisation: ConfidenceLevel;
+    reliability: ConfidenceLevel;
+  };
 }
 
 export interface SimState {
@@ -81,6 +91,14 @@ export function defaultConfig(archetypeKey: string): SimConfig {
     reliability: RELIABILITY_DEFAULT_PCT,
     buildOverride: null,
     excludedProviders: [],
+    confidenceTags: {
+      units: "estimate",
+      intensity: "estimate",
+      maturity: "estimate",
+      adoption: "estimate",
+      realisation: "estimate",
+      reliability: "estimate",
+    },
   };
 }
 
@@ -122,6 +140,12 @@ export function serializeState(state: SimState): string {
   p.set("rs", num(state.ramp.startPct));
   p.set("rf", num(state.ramp.fullMonth));
   if (state.currency !== "usd") p.set("cur", state.currency);
+  if (c.confidenceTags.units !== "estimate") p.set("cu", c.confidenceTags.units);
+  if (c.confidenceTags.intensity !== "estimate") p.set("ci", c.confidenceTags.intensity);
+  if (c.confidenceTags.maturity !== "estimate") p.set("cs", c.confidenceTags.maturity);
+  if (c.confidenceTags.adoption !== "estimate") p.set("cad", c.confidenceTags.adoption);
+  if (c.confidenceTags.realisation !== "estimate") p.set("cre", c.confidenceTags.realisation);
+  if (c.confidenceTags.reliability !== "estimate") p.set("crl", c.confidenceTags.reliability);
   return p.toString();
 }
 
@@ -136,6 +160,13 @@ const toNum = (v: string | null | undefined): number | null => {
 };
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+
+const isValidConfidenceLevel = (v: unknown): v is ConfidenceLevel =>
+  v === "system" || v === "estimate" || v === "guess";
+
+const toConfidence = (v: string | null | undefined, fallback: ConfidenceLevel): ConfidenceLevel => {
+  return v && isValidConfidenceLevel(v) ? v : fallback;
+};
 
 export interface RawConfigFields {
   archetypeKey: string | null;
@@ -161,6 +192,12 @@ export interface RawConfigFields {
    *  realisation so an old share reproduces the same counted value. */
   haircut: number | null;
   excludedProviders: string[] | null;
+  confidenceUnits: ConfidenceLevel | null;
+  confidenceIntensity: ConfidenceLevel | null;
+  confidenceMaturity: ConfidenceLevel | null;
+  confidenceAdoption: ConfidenceLevel | null;
+  confidenceRealisation: ConfidenceLevel | null;
+  confidenceReliability: ConfidenceLevel | null;
 }
 
 /**
@@ -219,6 +256,14 @@ export function sanitiseConfig(raw: RawConfigFields): SimConfig | null {
           : base.reliability,
     buildOverride: raw.buildOverride != null ? clamp(Math.round(raw.buildOverride), 0, 1e9) : null,
     excludedProviders: (raw.excludedProviders ?? []).filter((p) => PICKER_PROVIDERS.includes(p)),
+    confidenceTags: {
+      units: toConfidence(raw.confidenceUnits, base.confidenceTags.units),
+      intensity: toConfidence(raw.confidenceIntensity, base.confidenceTags.intensity),
+      maturity: toConfidence(raw.confidenceMaturity, base.confidenceTags.maturity),
+      adoption: toConfidence(raw.confidenceAdoption, base.confidenceTags.adoption),
+      realisation: toConfidence(raw.confidenceRealisation, base.confidenceTags.realisation),
+      reliability: toConfidence(raw.confidenceReliability, base.confidenceTags.reliability),
+    },
   };
 }
 
@@ -254,6 +299,12 @@ export function parseState(search: string): SimState {
       buildOverride: toNum(p.get("bo")),
       haircut: toNum(p.get("h")), // legacy single-knob links
       excludedProviders: p.get("x") ? p.get("x")!.split(".").filter(Boolean) : null,
+      confidenceUnits: p.get("cu") as ConfidenceLevel | null,
+      confidenceIntensity: p.get("ci") as ConfidenceLevel | null,
+      confidenceMaturity: p.get("cs") as ConfidenceLevel | null,
+      confidenceAdoption: p.get("cad") as ConfidenceLevel | null,
+      confidenceRealisation: p.get("cre") as ConfidenceLevel | null,
+      confidenceReliability: p.get("crl") as ConfidenceLevel | null,
     }) ?? fallback.current;
   const rs = toNum(p.get("rs"));
   const rf = toNum(p.get("rf"));

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BRAND } from "@/lib/simulator/labels";
+import { BRAND, TRIAGE } from "@/lib/simulator/labels";
 
 /**
  * The Hepburn Advisory sparkle mark — the INVERSE rendition (white tile,
@@ -44,9 +44,14 @@ export function SimHeader() {
       <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">
         {BRAND.eyebrow}
       </p>
-      <h1 className="mt-1.5 text-[28px] font-bold leading-tight tracking-tight text-ink sm:text-[32px]">
-        {BRAND.title}
-      </h1>
+      <div className="mt-1.5 flex items-center gap-3">
+        <h1 className="text-[28px] font-bold leading-tight tracking-tight text-ink sm:text-[32px]">
+          {BRAND.title}
+        </h1>
+        <span className="inline-flex rounded-full bg-warning-light px-3 py-1 text-[12px] font-semibold text-warning">
+          {TRIAGE.chip}
+        </span>
+      </div>
       <p className="mt-2 max-w-2xl text-[15.5px] leading-relaxed text-ink-muted">{BRAND.subtitle}</p>
     </header>
   );

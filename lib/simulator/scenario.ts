@@ -14,6 +14,17 @@ import { DATA_VERSION, ENGINE_VERSION } from "./versions";
 export const SCENARIO_SCHEMA = "hepburn.investment-case.use-case-scenario";
 export const SCENARIO_VERSION = "1.0";
 
+function countUnverifiedInputs(config: SimConfig): number {
+  let count = 0;
+  if (config.confidenceTags.units !== "system") count++;
+  if (config.confidenceTags.intensity !== "system") count++;
+  if (config.confidenceTags.maturity !== "system") count++;
+  if (config.confidenceTags.adoption !== "system") count++;
+  if (config.confidenceTags.realisation !== "system") count++;
+  if (config.confidenceTags.reliability !== "system") count++;
+  return count;
+}
+
 export interface UseCaseScenario {
   schema: typeof SCENARIO_SCHEMA;
   version: string;
@@ -24,6 +35,8 @@ export interface UseCaseScenario {
   currency: Currency;
   ramp: AdoptionRamp;
   inputs: SimConfig;
+  readStatus: "triage";
+  unverifiedInputCount: number;
   /** Computed at export time — a record for the reader, re-derived on import. */
   outputs: {
     useCase: string;
@@ -43,6 +56,7 @@ export function buildScenario(
   line: BudgetLine,
   exportedAt: string | null,
 ): UseCaseScenario {
+  const unverifiedCount = countUnverifiedInputs(state.current);
   return {
     schema: SCENARIO_SCHEMA,
     version: SCENARIO_VERSION,
@@ -52,6 +66,8 @@ export function buildScenario(
     currency: state.currency,
     ramp: state.ramp,
     inputs: state.current,
+    readStatus: "triage",
+    unverifiedInputCount: unverifiedCount,
     outputs: {
       useCase: s.a.label,
       costMonthly: {
@@ -126,6 +142,12 @@ export function parseScenario(json: string): ScenarioImport {
     excludedProviders: Array.isArray(i.excludedProviders)
       ? i.excludedProviders.filter((x): x is string => typeof x === "string")
       : null,
+    confidenceUnits: typeof i.confidenceTags?.units === "string" ? i.confidenceTags.units : null,
+    confidenceIntensity: typeof i.confidenceTags?.intensity === "string" ? i.confidenceTags.intensity : null,
+    confidenceMaturity: typeof i.confidenceTags?.maturity === "string" ? i.confidenceTags.maturity : null,
+    confidenceAdoption: typeof i.confidenceTags?.adoption === "string" ? i.confidenceTags.adoption : null,
+    confidenceRealisation: typeof i.confidenceTags?.realisation === "string" ? i.confidenceTags.realisation : null,
+    confidenceReliability: typeof i.confidenceTags?.reliability === "string" ? i.confidenceTags.reliability : null,
   });
   if (!current) {
     return { ok: false, error: "That case names a use case this version doesn't know." };
