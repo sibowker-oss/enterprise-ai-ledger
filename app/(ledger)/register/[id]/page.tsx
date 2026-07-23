@@ -14,7 +14,7 @@ export function generateMetadata({ params }: { params: { id: string } }): Metada
   if (!uc) return { title: "Use case not found — Enterprise AI Ledger" };
   return {
     title: `${uc.name} (${uc.id}) — Enterprise AI Ledger`,
-    description: `${uc.businessUnit} · ${uc.workflow}. Illustrative demo.`,
+    description: `${uc.businessUnit} · ${uc.workflow}.`,
   };
 }
 

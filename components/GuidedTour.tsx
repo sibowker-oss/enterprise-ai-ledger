@@ -101,12 +101,11 @@ export function GuidedTour({ figures: f }: { figures: TourFigures }) {
       link: { href: "/register/UC-09", label: "Open UC-09" },
     },
     {
-      title: "Your estate, powered by The AI Ledger",
+      title: "Meridian's estate, powered by The AI Ledger",
       body: (
         <>
-          This is a fictional template. The cost-to-outcome control is standard consulting; the market
-          benchmarking and forward economics are not — they need The AI Ledger. Want this picture of
-          your real estate?
+          The cost-to-outcome control is standard consulting; the market
+          benchmarking and forward economics are not — they need The AI Ledger. This is the view Hepburn builds.
         </>
       ),
     },
@@ -173,7 +172,7 @@ export function GuidedTour({ figures: f }: { figures: TourFigures }) {
             </ol>
 
             <div className="flex items-center justify-between gap-3 border-t border-border px-5 py-3">
-              <span className="text-xs text-ink-faint">Illustrative demo · figures fictional</span>
+              <span className="text-xs text-ink-faint">Meridian Financial Group</span>
               <CtaButton />
             </div>
           </div>

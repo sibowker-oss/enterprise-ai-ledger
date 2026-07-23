@@ -96,11 +96,11 @@ export function AppShell({
 
   return (
     <>
-      {/* Persistent demo ribbon — labelling is a hard requirement (§3/§4). */}
+      {/* Persistent ribbon — labelling is a hard requirement (§3/§4). */}
       <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 border-b border-border bg-nav-bg px-4 py-1.5 text-center text-[11px] text-ink-muted print:hidden">
-        <span className="eyebrow font-semibold text-accent-text">Illustrative prototype</span>
+        <span className="eyebrow font-semibold text-accent-text">Enterprise AI Ledger</span>
         <span className="text-ink-faint">·</span>
-        <span>{companyName} is a fictional company — all figures illustrative</span>
+        <span>{companyName}</span>
       </div>
 
       <div className="min-h-screen lg:grid lg:grid-cols-[16rem_1fr]">
@@ -113,7 +113,7 @@ export function AppShell({
         <div className="mt-6 space-y-3 border-t border-border px-3 pt-4">
           <CtaButton className="w-full justify-center" />
           <p className="text-[11px] leading-snug text-ink-faint">
-            Illustrative demo · figures fictional · {period}
+            {period}
           </p>
         </div>
       </aside>

@@ -23,9 +23,9 @@ export const futureNavItems: NavItem[] = [
   { href: "#", label: "Governance Evidence", blurb: "Coming in platform", disabled: true },
 ];
 
-/** Where "Run this on your own estate →" points (BUILD_SPEC §11 default). */
+/** Where the CTA points (BUILD_SPEC §11 default). */
 export const CTA_HREF = "https://hepburnadvisory.com.au";
-export const CTA_LABEL = "Run this on your own estate";
+export const CTA_LABEL = "Contact Hepburn";
 
 /** Active-state helper that tolerates the trailing slash + basePath. */
 export function isActivePath(pathname: string, href: string): boolean {

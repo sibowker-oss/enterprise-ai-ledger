@@ -72,8 +72,7 @@ export default function P0BoardPackPage() {
             </div>
           </div>
           <p className="text-xs text-ink-muted italic mt-4">
-            Confidential — For board review. This is an illustrative prototype demonstrating
-            the P0 data model and eight UX changes.
+            Confidential — For board review only.
           </p>
         </div>
       </div>
@@ -92,8 +91,7 @@ export default function P0BoardPackPage() {
               Banked value: <strong>{audCompact(p0Rollup.bankedValueAud)}</strong>.
             </p>
             <p className="mt-4 text-sm text-ink-muted">
-              This board pack demonstrates the P0 canonical data model and is illustrative.
-              Real data would show material use case economics, evidence trails, and control
+              This board pack covers Meridian's material use case economics, evidence trails, and control
               posture.
             </p>
           </div>

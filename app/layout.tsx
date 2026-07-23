@@ -6,9 +6,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Hepburn Advisory — AI Ledger tools",
+  title: "Hepburn Advisory — Enterprise AI Ledger",
   description:
-    "Interactive prototypes by Hepburn Advisory: the Enterprise AI Ledger and the Investment-Case Simulator, sister tools to The AI Ledger. Illustrative demos.",
+    "The Enterprise AI Ledger and Investment-Case Simulator by Hepburn Advisory — tools for AI cost-to-outcome control built with The AI Ledger.",
 };
 
 /**

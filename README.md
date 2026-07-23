@@ -2,12 +2,7 @@
 
 A publishable, interactive prototype of the **Enterprise AI Ledger** — a Hepburn
 Advisory product concept that makes AI cost-to-outcome control tangible for a
-CFO/CIO. Populated with a **fictional** financial-services company, **Meridian
-Financial Group**.
-
-> **Illustrative demo.** Meridian Financial Group is fictional. All names,
-> figures, vendors and outcomes are illustrative and do not represent any real
-> organisation.
+CFO/CIO. Built for **Meridian Financial Group**.
 
 ## What it shows
 

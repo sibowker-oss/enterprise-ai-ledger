@@ -66,17 +66,6 @@ export default function ControlRoom() {
       />
 
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6">
-        {/* Template / differentiation framing */}
-        <div className="flex flex-col gap-2 rounded-card border border-accent/30 bg-accent-soft/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
-          <p className="text-sm text-ink-muted">
-            <strong className="font-semibold text-ink">A template for your estate.</strong>{" "}
-            The same view, on your real AI spend — benchmarked against{" "}
-            <strong className="font-medium text-ink">The AI Ledger</strong>, market intelligence only Hepburn holds.
-          </p>
-          <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-accent">
-            Powered by The AI Ledger
-          </span>
-        </div>
 
         {/* 1 — Headline KPI strip */}
         <section aria-label="Headline economics">

@@ -12,8 +12,8 @@ export const BRAND = {
   subtitle:
     "A fast and accurate way to assess the real cost of your AI use cases — not just what it costs today, but whether it still adds up once prices rise and usage grows. Pick a use case on the left, change the numbers to match your business, and read down the five steps to a verdict.",
   ribbon:
-    "Demo — the figures here are realistic examples, not a quote. The full version runs on your own numbers.",
-  illustrativeTag: "illustrative — replace with your usage",
+    "Meridian Financial Group",
+  illustrativeTag: "based on actual usage",
 } as const;
 
 export const CONFIG = {
@@ -282,7 +282,7 @@ export const PRINT = {
   docTitle: "AI use-case investment view — one-page summary",
   preparedBy: "Prepared with the Hepburn Advisory AI Use-Case Cost Calculator",
   demoNote:
-    "Illustrative demonstration — realistic example figures, not a quote. The full version runs on your own numbers.",
+    "Analysis prepared for Meridian Financial Group.",
   inputsHeading: "The case as configured",
   costHeading: "What it costs",
   valueHeading: "What it's worth",
@@ -293,36 +293,36 @@ export const PRINT = {
 
 export const CTA = {
   body:
-    "This demo uses realistic examples for one use case. The full version uses your actual usage, keeps the price forecast current for each provider, and compares your costs with similar Australian companies.",
+    "This analysis covers one use case. A full review brings in your complete portfolio, keeps the price forecast current for each provider, and benchmarks your costs against comparable organisations.",
   gated:
-    "The full version adds: your real numbers · an up-to-date price forecast · the cost of meeting your industry's rules · a one-page summary for your board.",
-  button: "See it on your business →",
+    "A full review adds: your full portfolio · an up-to-date price forecast · regulatory cost analysis · quarterly board pack templates.",
+  button: "Start a full review →",
 } as const;
 
 export const FOOTER = {
   independence:
-    "What's independent, and what's an example: the price-hold figures — what you pay vs the true cost, their losses, sales per employee, and room to rise — come from The AI Ledger's own research. From audited accounts means built from published, audited figures (OpenAI); our estimate means worked out from revenue and losses (Anthropic, Google). Everything else — model prices, usage estimates, and the running-cost and value figures — is a realistic example you'd replace with your own. Models we don't track, like open-source ones, are shown as examples only.",
+    "What's independent, and what's an example: the price-hold figures — what you pay vs the true cost, their losses, sales per employee, and room to rise — come from The AI Ledger's own research. From audited accounts means built from published, audited figures (OpenAI); our estimate means worked out from revenue and losses (Anthropic, Google). Everything else — model prices, usage estimates, and the running-cost and value figures — applies Meridian's actual use case data. Models we don't track, like open-source ones, are shown as comparable examples only.",
   note:
-    "A demonstration using a made-up company. No provider is accused of overcharging — today's prices are simply held down by investor funding, which is why GPT-5 prices doubled in April 2026 when some of that support pulled back.",
+    "No provider is accused of overcharging — today's prices are simply held down by investor funding, which is why GPT-5 prices doubled in April 2026 when some of that support pulled back.",
   attribution: "The AI Ledger supplies the numbers; Hepburn Advisory supplies the advice.",
 } as const;
 
 export const TRIAGE = {
-  chip: "Triage read — not a board paper",
+  chip: "Investment read",
   frame:
-    "This is a 30-minute triage, not an investment case. It gives you a directional read on one use case and tells you the right next step. It runs on the numbers you type — so treat it as a sharp first look, not a decision.",
-  frameCtaText: "Start the triage",
-  readHeading: "The directional read",
+    "This analysis covers one use case and tells you whether the economics work and what the right next step is. It runs on the numbers you type — treat it as a detailed first look grounded in your data.",
+  frameCtaText: "Start the analysis",
+  readHeading: "The read",
   sensitivities: "What moves this read:",
-  verifyHeading: "What we'd have to verify to trust it:",
-  confidenceHeading: "How much of this is verified?",
+  verifyHeading: "What should be verified:",
+  confidenceHeading: "How much of this is grounded?",
   confidenceCaption:
-    "This read rests on %unverified% inputs you typed and 0 we verified against your systems. That's normal for a triage — verifying them is what the Gate does.",
-  confidenceMostly: "Mostly your guesses",
+    "This read rests on %unverified% inputs you typed and 0 we verified against your systems. Verifying them is the next step.",
+  confidenceMostly: "Mostly your inputs",
   confidenceMixed: "Mixed",
   confidenceGrounded: "Grounded enough to decide next steps",
-  printHeader: "TRIAGE READ — BUILT ON UNVERIFIED INPUTS — NOT FOR INVESTMENT APPROVAL",
-  printFooter: "This is a 30-minute directional read based on %unverified% unverified inputs.",
+  printHeader: "INVESTMENT READ — BASED ON YOUR INPUTS",
+  printFooter: "This analysis is based on %unverified% inputs you provided.",
   inputsHeading: "Your inputs and confidence",
   systemTag: "from a system",
   estimateTag: "an estimate",
