@@ -2,9 +2,41 @@
  * § UX Change #6: Decision & Action Log
  *
  * Renders decisions and actions (open + in-progress + overdue) in a timeline/log format.
+ * Decisions use semantic RAG colors: scale→green, fix→amber, stop→red.
  */
 
 import { Decision, Action } from "@/lib/data-model";
+
+function getDecisionColor(decision: string): {
+  border: string;
+  text: string;
+  label: string;
+} {
+  const lowerDecision = decision.toLowerCase();
+  if (lowerDecision === "scale")
+    return {
+      border: "border-status-green-solid",
+      text: "text-status-green-fg",
+      label: "Scale",
+    };
+  if (lowerDecision === "fix")
+    return {
+      border: "border-status-amber-solid",
+      text: "text-status-amber-fg",
+      label: "Fix",
+    };
+  if (lowerDecision === "stop")
+    return {
+      border: "border-status-red-solid",
+      text: "text-status-red-fg",
+      label: "Stop",
+    };
+  return {
+    border: "border-accent",
+    text: "text-accent-text",
+    label: decision.charAt(0).toUpperCase() + decision.slice(1),
+  };
+}
 
 export function P0DecisionActionLog({
   decisions,
@@ -27,26 +59,28 @@ export function P0DecisionActionLog({
           {recentDecisions.length === 0 ? (
             <p className="text-sm text-ink-muted">No decisions recorded</p>
           ) : (
-            recentDecisions.map((decision) => (
-              <div
-                key={decision.id}
-                className="border-l-4 border-accent pl-4 py-2"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium text-ink text-sm">
-                    {decision.decision.charAt(0).toUpperCase() +
-                      decision.decision.slice(1)}
-                  </p>
-                  <p className="text-xs text-ink-muted">
-                    {new Date(decision.decided_at).toLocaleDateString()}
+            recentDecisions.map((decision) => {
+              const colors = getDecisionColor(decision.decision);
+              return (
+                <div
+                  key={decision.id}
+                  className={`border-l-4 ${colors.border} pl-4 py-2`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <p className={`font-medium text-sm ${colors.text}`}>
+                      {colors.label}
+                    </p>
+                    <p className="text-xs text-ink-muted">
+                      {new Date(decision.decided_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <p className="text-sm text-ink-muted">{decision.rationale}</p>
+                  <p className="text-xs text-ink-muted mt-1">
+                    Decided by {decision.decided_by}
                   </p>
                 </div>
-                <p className="text-sm text-ink-muted">{decision.rationale}</p>
-                <p className="text-xs text-ink-muted mt-1">
-                  Decided by {decision.decided_by}
-                </p>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
