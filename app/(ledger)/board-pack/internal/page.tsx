@@ -1,5 +1,5 @@
 /**
- * Internal Debug Route: /p0-board-pack/internal
+ * Internal Debug Route: /board-pack/internal
  *
  * This route is NOT intended for customer use. It displays internal validation metadata:
  * - Formula Versions (versioned calculation inputs for byte-for-byte re-derivation)
