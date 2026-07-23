@@ -1,4 +1,5 @@
 import type { CaseSummary } from "@/lib/simulator/derive";
+import { unverifiedCount } from "@/lib/simulator/derive";
 import type { BudgetLine } from "@/lib/simulator/budget";
 import { MATURITY_WORDS, intensityBand } from "@/lib/simulator/engine";
 import {
@@ -19,7 +20,7 @@ import {
   priceSheetAsOf,
 } from "@/lib/simulator/data";
 import { asOfLabel, grouped, usd, usdK, type Cur } from "@/lib/simulator/format";
-import { BRAND, FOOTER, PRINT } from "@/lib/simulator/labels";
+import { BRAND, FOOTER, PRINT, TRIAGE } from "@/lib/simulator/labels";
 import { APP_COMMIT, DATA_VERSION, ENGINE_VERSION } from "@/lib/simulator/versions";
 
 function Row({ k, v }: { k: string; v: string }) {
@@ -42,8 +43,19 @@ export function PrintSummary({ s, line }: { s: CaseSummary; line: BudgetLine }) 
   const meta = modelMeta(s.config.modelKey);
   const band = intensityBand(s.a);
   const cur: Cur = s.currency;
+  const unverified = unverifiedCount(s.config);
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-AU", { year: "numeric", month: "2-digit", day: "2-digit" });
+
   return (
     <div className="hidden print:block">
+      {/* Triage warning header */}
+      <div className="border-b-2 border-status-amber-fg bg-status-amber-soft px-2 py-1 mb-3">
+        <p className="text-[9px] font-bold uppercase tracking-wide text-status-amber-fg">
+          {TRIAGE.printHeader} · as of {dateStr}
+        </p>
+      </div>
+
       {/* Header */}
       <div className="border-b border-border pb-3">
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
@@ -159,6 +171,13 @@ export function PrintSummary({ s, line }: { s: CaseSummary; line: BudgetLine }) 
         Data version {DATA_VERSION} · calculations v{ENGINE_VERSION} · app {APP_COMMIT} ·{" "}
         {PRINT.preparedBy} · hepburnadvisory.com.au
       </p>
+
+      {/* Triage warning footer */}
+      <div className="border-t-2 border-status-amber-fg bg-status-amber-soft px-2 py-1 mt-4">
+        <p className="text-[9px] leading-snug text-status-amber-fg">
+          {TRIAGE.printFooter.replace("%unverified%", String(unverified))}
+        </p>
+      </div>
     </div>
   );
 }

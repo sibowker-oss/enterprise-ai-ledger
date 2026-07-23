@@ -224,9 +224,9 @@ export const CAPABILITY = {
 export const TOOLBAR = {
   copyLink: "Copy link to this case",
   copied: "Link copied ✓",
-  linkNote: "This link contains the numbers you typed.",
-  print: "Print board summary",
-  printHint: "One page — the case, the costs, the value and the verdict, ready for a board pack.",
+  linkNote: "This link contains the numbers you typed and shows a triage read, not a board paper.",
+  print: "Print triage summary",
+  printHint: "One page — the case, the costs, the value and the directional read, ready for a discussion.",
   save: "Save this case",
   saveHint:
     "Keeps this case for the rest of your visit and adds it to your combined business case — file downloads live on that page.",
@@ -305,6 +305,28 @@ export const FOOTER = {
   note:
     "A demonstration using a made-up company. No provider is accused of overcharging — today's prices are simply held down by investor funding, which is why GPT-5 prices doubled in April 2026 when some of that support pulled back.",
   attribution: "The AI Ledger supplies the numbers; Hepburn Advisory supplies the advice.",
+} as const;
+
+export const TRIAGE = {
+  chip: "Triage read — not a board paper",
+  frame:
+    "This is a 30-minute triage, not an investment case. It gives you a directional read on one use case and tells you the right next step. It runs on the numbers you type — so treat it as a sharp first look, not a decision.",
+  frameCtaText: "Start the triage",
+  readHeading: "The directional read",
+  sensitivities: "What moves this read:",
+  verifyHeading: "What we'd have to verify to trust it:",
+  confidenceHeading: "How much of this is verified?",
+  confidenceCaption:
+    "This read rests on %unverified% inputs you typed and 0 we verified against your systems. That's normal for a triage — verifying them is what the Gate does.",
+  confidenceMostly: "Mostly your guesses",
+  confidenceMixed: "Mixed",
+  confidenceGrounded: "Grounded enough to decide next steps",
+  printHeader: "TRIAGE READ — BUILT ON UNVERIFIED INPUTS — NOT FOR INVESTMENT APPROVAL",
+  printFooter: "This is a 30-minute directional read based on %unverified% unverified inputs.",
+  inputsHeading: "Your inputs and confidence",
+  systemTag: "from a system",
+  estimateTag: "an estimate",
+  guessTag: "a guess",
 } as const;
 
 /** Where the single CTA points (brief decision 6 default: Hepburn contact). */

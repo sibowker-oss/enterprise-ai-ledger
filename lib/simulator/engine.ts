@@ -545,6 +545,7 @@ export function verdict(valueBase: number, band: CostBand, a: Archetype): Verdic
     const wide = coverageRatio(valueBase, band) >= WIDE_MARGIN;
     return {
       klass: "good",
+      readStatus: "triage" as const,
       label: wide ? "Pays off with room to spare" : "Pays off — but the margin is modest",
       headline: wide
         ? "The value covers the cost several times over, even if prices double — so the AI bill isn't really what decides this."
@@ -555,6 +556,7 @@ export function verdict(valueBase: number, band: CostBand, a: Archetype): Verdic
   if (valueBase >= band.today && todayCoverage >= CLOSE_THRESHOLD) {
     return {
       klass: "conditional",
+      readStatus: "triage" as const,
       label: "Pays off at today's price — watch the margin",
       headline:
         "It pays off at today's prices, but a price rise could close the gap. The risk isn't whether it works — it's letting usage or price creep up without noticing.",
@@ -564,6 +566,7 @@ export function verdict(valueBase: number, band: CostBand, a: Archetype): Verdic
   if (todayCoverage >= NO_THRESHOLD) {
     return {
       klass: "marginal",
+      readStatus: "triage" as const,
       label: "Too close to call",
       headline:
         "On these numbers it's genuinely close — close enough that the value assumption decides it, not the maths.",
@@ -573,6 +576,7 @@ export function verdict(valueBase: number, band: CostBand, a: Archetype): Verdic
   }
   return {
     klass: "no",
+    readStatus: "triage" as const,
     label: "Doesn't pay on these numbers",
     headline:
       "The value entered doesn't come close to covering the cost. On these numbers this isn't worth doing — the case only changes if the value is far bigger than entered, or the cost falls a long way.",

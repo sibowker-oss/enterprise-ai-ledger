@@ -101,8 +101,12 @@ export interface ValueRange {
 
 export type VerdictClass = "good" | "conditional" | "marginal" | "no";
 
+export type ConfidenceLevel = "system" | "estimate" | "guess";
+export type ReadStatus = "triage";
+
 export interface Verdict {
   klass: VerdictClass;
+  readStatus: ReadStatus;
   /** Plain, non-colour label, e.g. "Worth doing — with care". */
   label: string;
   /** One-sentence headline consequence. */

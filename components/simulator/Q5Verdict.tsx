@@ -1,6 +1,9 @@
 import type { CostBand, Verdict } from "@/lib/simulator/types";
-import { Q5 } from "@/lib/simulator/labels";
+import { Q5, TRIAGE } from "@/lib/simulator/labels";
 import type { BreakEvenHuman } from "@/lib/simulator/engine";
+import type { ConfidenceState } from "@/lib/simulator/derive";
+import { unverifiedCount } from "@/lib/simulator/derive";
+import type { SimConfig } from "@/lib/simulator/urlState";
 import {
   breakEvenSentence,
   stressSentence,
@@ -39,6 +42,8 @@ export function Q5Verdict({
   coverage,
   stressCoverage,
   cur,
+  confidenceLevel,
+  config,
 }: {
   verdict: Verdict;
   band: CostBand;
@@ -50,6 +55,8 @@ export function Q5Verdict({
   coverage: number;
   stressCoverage: number;
   cur: Cur;
+  confidenceLevel?: ConfidenceState;
+  config?: SimConfig;
 }) {
   const tone = {
     good: { box: "border-status-green-fg/40 bg-status-green-soft", label: "text-status-green-fg", icon: "✓" },
@@ -61,9 +68,12 @@ export function Q5Verdict({
   const marginTone =
     coverage >= 3 ? "text-status-green-fg" : coverage >= 1 ? "text-status-amber-fg" : "text-status-red-fg";
 
+  const uverifiedInputCount = config ? unverifiedCount(config) : 0;
+  const confidenceCaption = TRIAGE.confidenceCaption.replace("%unverified%", String(uverifiedInputCount));
+
   return (
     <section id="bottom-line" aria-label={Q5.title}>
-      <p className="eyebrow mb-2 mt-2 text-xs font-semibold text-ink-faint">Question 5 — {Q5.title}</p>
+      <p className="eyebrow mb-2 mt-2 text-xs font-semibold text-ink-faint">Question 5 — {TRIAGE.readHeading}</p>
       <div className={`rounded-card border p-5 sm:p-6 ${tone.box}`}>
         <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wide ${tone.label}`}>
           <span
@@ -92,6 +102,59 @@ export function Q5Verdict({
             tone={paybackMonth == null ? "text-status-red-fg" : "text-ink"}
           />
         </div>
+
+        {/* Confidence meter — how much is verified vs assumed. */}
+        {confidenceLevel && (
+          <div className="mt-4 border-t border-border pt-4">
+            <div className="text-[12px] font-semibold uppercase tracking-wide text-ink-faint">
+              {TRIAGE.confidenceHeading}
+            </div>
+            <div className="mt-2 flex gap-1 bg-surface/40 rounded px-2 py-1.5">
+              <div
+                className={`flex-1 h-2.5 rounded ${
+                  confidenceLevel === "mostly-guesses"
+                    ? "bg-status-red-fg"
+                    : "bg-ink-faint/30"
+                }`}
+                aria-hidden="true"
+              />
+              <div
+                className={`flex-1 h-2.5 rounded ${
+                  confidenceLevel === "mixed"
+                    ? "bg-status-amber-fg"
+                    : "bg-ink-faint/30"
+                }`}
+                aria-hidden="true"
+              />
+              <div
+                className={`flex-1 h-2.5 rounded ${
+                  confidenceLevel === "grounded"
+                    ? "bg-status-green-fg"
+                    : "bg-ink-faint/30"
+                }`}
+                aria-hidden="true"
+              />
+            </div>
+            <div className="mt-2 text-[13px] leading-relaxed text-ink">
+              {confidenceLevel === "mostly-guesses" && (
+                <span className="text-status-red-fg font-medium">
+                  {TRIAGE.confidenceMostly} —{" "}
+                </span>
+              )}
+              {confidenceLevel === "mixed" && (
+                <span className="text-status-amber-fg font-medium">
+                  {TRIAGE.confidenceMixed} —{" "}
+                </span>
+              )}
+              {confidenceLevel === "grounded" && (
+                <span className="text-status-green-fg font-medium">
+                  {TRIAGE.confidenceGrounded} —{" "}
+                </span>
+              )}
+              {confidenceCaption}
+            </div>
+          </div>
+        )}
 
         <p className="mt-4 text-[14.5px] leading-relaxed text-ink-muted">
           {verdictWeighingSentence(valueBase, band, cur)} {verdictMarginSentence(valueBase, band, cur)}

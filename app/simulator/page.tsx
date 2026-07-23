@@ -13,8 +13,7 @@ import {
   type Levers,
 } from "@/lib/simulator/engine";
 import { budgetLine, clampRamp, type AdoptionRamp } from "@/lib/simulator/budget";
-import { deriveCase } from "@/lib/simulator/derive";
-import { currencyFactor } from "@/lib/simulator/derive";
+import { deriveCase, confidenceState, currencyFactor } from "@/lib/simulator/derive";
 import {
   defaultConfig,
   defaultState,
@@ -275,6 +274,8 @@ export default function InvestmentCaseSimulator() {
                 coverage={derived.s.coverage}
                 stressCoverage={derived.s.stressCoverage}
                 cur={state.currency}
+                confidenceLevel={confidenceState(config)}
+                config={config}
               />
               <SimCta useCaseKey={config.archetypeKey} verdictKlass={derived.s.verdict.klass} />
             </main>

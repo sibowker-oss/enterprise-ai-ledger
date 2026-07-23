@@ -67,6 +67,32 @@ export function currencyFactor(currency: Currency): number {
   return currency === "aud" ? USD_TO_AUD : 1;
 }
 
+export type ConfidenceState = "mostly-guesses" | "mixed" | "grounded";
+
+/** Calculate confidence level based on input tags. */
+export function confidenceState(config: SimConfig): ConfidenceState {
+  const tags = config.confidenceTags;
+  const systemCount = [tags.units, tags.intensity, tags.maturity, tags.adoption, tags.realisation, tags.reliability].filter(
+    (t) => t === "system",
+  ).length;
+
+  if (systemCount === 0) return "mostly-guesses";
+  if (systemCount === 6) return "grounded";
+  return "mixed";
+}
+
+export function unverifiedCount(config: SimConfig): number {
+  const tags = config.confidenceTags;
+  let count = 0;
+  if (tags.units !== "system") count++;
+  if (tags.intensity !== "system") count++;
+  if (tags.maturity !== "system") count++;
+  if (tags.adoption !== "system") count++;
+  if (tags.realisation !== "system") count++;
+  if (tags.reliability !== "system") count++;
+  return count;
+}
+
 export function deriveCase(config: SimConfig, currency: Currency = "usd"): CaseSummary {
   const a = ARCHETYPE_BY_KEY[config.archetypeKey];
   const priors = tokenPrior(a.priorKey);
