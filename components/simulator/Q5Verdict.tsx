@@ -109,10 +109,31 @@ export function Q5Verdict({
             <div className="text-[12px] font-semibold uppercase tracking-wide text-ink-faint">
               {TRIAGE.confidenceHeading}
             </div>
-            <div className="mt-2 flex gap-1">
-              <div className="flex-1 h-2 rounded bg-status-red-soft" aria-hidden="true" />
-              <div className="flex-1 h-2 rounded bg-status-amber-soft" aria-hidden="true" />
-              <div className="flex-1 h-2 rounded bg-status-green-soft" aria-hidden="true" />
+            <div className="mt-2 flex gap-1 bg-surface/40 rounded px-2 py-1.5">
+              <div
+                className={`flex-1 h-2.5 rounded ${
+                  confidenceLevel === "mostly-guesses"
+                    ? "bg-status-red-fg"
+                    : "bg-ink-faint/30"
+                }`}
+                aria-hidden="true"
+              />
+              <div
+                className={`flex-1 h-2.5 rounded ${
+                  confidenceLevel === "mixed"
+                    ? "bg-status-amber-fg"
+                    : "bg-ink-faint/30"
+                }`}
+                aria-hidden="true"
+              />
+              <div
+                className={`flex-1 h-2.5 rounded ${
+                  confidenceLevel === "grounded"
+                    ? "bg-status-green-fg"
+                    : "bg-ink-faint/30"
+                }`}
+                aria-hidden="true"
+              />
             </div>
             <div className="mt-2 text-[13px] leading-relaxed text-ink">
               {confidenceLevel === "mostly-guesses" && (
