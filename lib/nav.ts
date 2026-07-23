@@ -25,7 +25,7 @@ export const futureNavItems: NavItem[] = [
 
 /** Where the CTA points (BUILD_SPEC §11 default). */
 export const CTA_HREF = "https://hepburnadvisory.com.au";
-export const CTA_LABEL = "Contact Hepburn";
+export const CTA_LABEL = "Contact Hepburn Advisory";
 
 /** Active-state helper that tolerates the trailing slash + basePath. */
 export function isActivePath(pathname: string, href: string): boolean {
