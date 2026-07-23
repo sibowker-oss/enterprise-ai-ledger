@@ -17,6 +17,7 @@ import { providerFacts, unitsRail } from "@/lib/simulator/data";
 import { MATURITY_WORDS } from "@/lib/simulator/engine";
 import { BRAND, CONFIG, CONSIDER, CURRENCY, RAILS } from "@/lib/simulator/labels";
 import type { Currency } from "@/lib/simulator/urlState";
+import type { ConfidenceLevel } from "@/lib/simulator/types";
 import { NumberField } from "./NumberField";
 
 /** Group the use cases by business area, in CATEGORY_ORDER (empty groups dropped). */
@@ -82,6 +83,12 @@ export function ConfigPanel({
   onToggleProvider,
   currency,
   onCurrency,
+  confidenceUnits,
+  onConfidenceUnits,
+  confidenceIntensity,
+  onConfidenceIntensity,
+  confidenceMaturity,
+  onConfidenceMaturity,
 }: {
   archetypes: Archetype[];
   a: Archetype;
@@ -100,6 +107,12 @@ export function ConfigPanel({
   onToggleProvider: (provider: string) => void;
   currency: Currency;
   onCurrency: (c: Currency) => void;
+  confidenceUnits?: ConfidenceLevel;
+  onConfidenceUnits?: (level: ConfidenceLevel) => void;
+  confidenceIntensity?: ConfidenceLevel;
+  onConfidenceIntensity?: (level: ConfidenceLevel) => void;
+  confidenceMaturity?: ConfidenceLevel;
+  onConfidenceMaturity?: (level: ConfidenceLevel) => void;
 }) {
   const rail = unitsRail(a.key);
   const band = intensityBand(a);
@@ -162,6 +175,8 @@ export function ConfigPanel({
           value={units}
           min={1}
           step={1}
+          confidenceLevel={confidenceUnits}
+          onConfidenceChange={onConfidenceUnits}
           onChange={onUnits}
         />
         {rail && <p className="mt-1.5 text-[11.5px] leading-snug text-ink-faint">{typicalHint(rail)}</p>}
@@ -197,6 +212,8 @@ export function ConfigPanel({
               min={band.low}
               max={band.high}
               compact
+              confidenceLevel={confidenceIntensity}
+              onConfidenceChange={onConfidenceIntensity}
               onChange={onIntensity}
             />
           </div>

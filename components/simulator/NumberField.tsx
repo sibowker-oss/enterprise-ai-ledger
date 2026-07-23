@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ConfidenceLevel } from "@/lib/simulator/types";
+import { ConfidenceToggle } from "./ConfidenceToggle";
 
 /**
  * A number input with INLINE validation instead of silent clamping (A6): the
@@ -17,6 +19,8 @@ export function NumberField({
   max,
   hint,
   compact = false,
+  confidenceLevel,
+  onConfidenceChange,
   onChange,
 }: {
   id: string;
@@ -29,6 +33,8 @@ export function NumberField({
   hint?: string;
   /** Small inline variant (paired with sliders / in the ramp row). */
   compact?: boolean;
+  confidenceLevel?: ConfidenceLevel;
+  onConfidenceChange?: (level: ConfidenceLevel) => void;
   onChange: (v: number) => void;
 }) {
   const [text, setText] = useState(String(value));
@@ -95,6 +101,9 @@ export function NumberField({
         <p id={`${id}-error`} role="alert" className="mt-1 text-[11px] font-medium text-status-red-fg">
           {error}
         </p>
+      )}
+      {confidenceLevel && onConfidenceChange && (
+        <ConfidenceToggle value={confidenceLevel} onChange={onConfidenceChange} />
       )}
     </div>
   );

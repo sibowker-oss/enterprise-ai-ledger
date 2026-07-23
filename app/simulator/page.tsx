@@ -41,12 +41,18 @@ import { BudgetCard } from "@/components/simulator/BudgetCard";
 import { AssumptionsDrawer } from "@/components/simulator/AssumptionsDrawer";
 import { PrintSummary } from "@/components/simulator/PrintSummary";
 import { SimCta } from "@/components/simulator/SimCta";
+import { QualifierCard } from "@/components/simulator/QualifierCard";
+import { RoutingCard } from "@/components/simulator/RoutingCard";
+import type { ConfidenceLevel, RoutingQualifier } from "@/lib/simulator/types";
+import { computeRoute } from "@/lib/simulator/routing";
 
 export default function InvestmentCaseSimulator() {
   const [state, setState] = useState<SimState>(defaultState);
   // URL hydration must complete before the sync effect writes or analytics
   // latch a verdict — a shared link's numbers, not the defaults, are the case.
   const [hydrated, setHydrated] = useState(false);
+  // Qualifier state for routing (Stage 3/4)
+  const [qualifier, setQualifier] = useState<RoutingQualifier | undefined>(undefined);
 
   const config = state.current;
 
@@ -75,6 +81,12 @@ export default function InvestmentCaseSimulator() {
    * ------------------------------------------------------------------ */
   const patchConfig = (patch: Partial<SimConfig>) =>
     setState((prev) => ({ ...prev, current: { ...prev.current, ...patch } }));
+
+  function setConfidenceTag(field: keyof typeof config.confidenceTags, level: ConfidenceLevel) {
+    patchConfig({
+      confidenceTags: { ...config.confidenceTags, [field]: level },
+    });
+  }
 
   function selectArchetype(key: string) {
     // Selecting a use case resets the scenario to its illustrative defaults —
@@ -215,6 +227,12 @@ export default function InvestmentCaseSimulator() {
               onToggleProvider={toggleProvider}
               currency={state.currency}
               onCurrency={setCurrency}
+              confidenceUnits={config.confidenceTags.units}
+              onConfidenceUnits={(level) => setConfidenceTag("units", level)}
+              confidenceIntensity={config.confidenceTags.intensity}
+              onConfidenceIntensity={(level) => setConfidenceTag("intensity", level)}
+              confidenceMaturity={config.confidenceTags.maturity}
+              onConfidenceMaturity={(level) => setConfidenceTag("maturity", level)}
             />
 
             <main className="space-y-4">
@@ -277,6 +295,34 @@ export default function InvestmentCaseSimulator() {
                 confidenceLevel={confidenceState(config)}
                 config={config}
               />
+
+              {/* Stage 3 — Triage qualifier */}
+              <QualifierCard
+                qualifier={qualifier}
+                useCase={config.archetypeKey}
+                onQualifierChange={setQualifier}
+              />
+
+              {/* Stage 4 — Routing outcome */}
+              {qualifier && (
+                <RoutingCard
+                  outcome={computeRoute(qualifier, derived.s.verdict.klass).outcome}
+                  reasoning={computeRoute(qualifier, derived.s.verdict.klass).reasoning}
+                  sensitivityNote={`Your read hangs on the inputs marked as 'guess' or 'estimate' — that's ${
+                    config.confidenceTags.units === "system" ? 0 : 1
+                  } + ${config.confidenceTags.intensity === "system" ? 0 : 1} + ${
+                    config.confidenceTags.maturity === "system" ? 0 : 1
+                  } unverified assumptions at the start. The Gate pins those to your actual data.`}
+                  onCTAClick={() => {
+                    track("sim_routing_cta_click", {
+                      use_case: config.archetypeKey,
+                      route: computeRoute(qualifier, derived.s.verdict.klass).outcome,
+                      verdict: derived.s.verdict.klass,
+                    });
+                  }}
+                />
+              )}
+
               <SimCta useCaseKey={config.archetypeKey} verdictKlass={derived.s.verdict.klass} />
             </main>
           </div>

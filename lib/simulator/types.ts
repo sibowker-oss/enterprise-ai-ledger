@@ -114,3 +114,26 @@ export interface Verdict {
   /** The named condition(s) that make it true or false. */
   condition: string;
 }
+
+/** Routing qualifier answers (Stage 3) — no PII, skippable. */
+export interface RoutingQualifier {
+  /** Is there a real decision in the near term? */
+  imminence: "committed" | "this-year" | "exploring" | null;
+  /** How many use cases are we deciding on? */
+  breadth: "just-this-one" | "handful" | "whole-estate" | null;
+  /** Is a board, CFO or regulator asking? */
+  pressure: boolean | null;
+  /** Could you get to your actual logs if needed? */
+  dataReach: "yes" | "hard" | "no" | null;
+  /** What's riding on this decision? */
+  stakes: "small" | "material" | "large" | null;
+}
+
+export type RoutingOutcome = "gate" | "diagnostic" | "not-yet" | "neutral";
+
+export interface RoutingResult {
+  /** The outcome this qualifier maps to. */
+  outcome: RoutingOutcome;
+  /** Why (the signals that selected it) — shown back to the user. */
+  reasoning: string;
+}

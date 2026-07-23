@@ -24,7 +24,7 @@ import {
   type ValueOverrides,
 } from "./engine";
 import { clampRamp, DEFAULT_RAMP, type AdoptionRamp } from "./budget";
-import type { ConfidenceLevel } from "./types";
+import type { ConfidenceLevel, RoutingQualifier, RoutingResult } from "./types";
 
 export type Currency = "usd" | "aud";
 
@@ -65,6 +65,10 @@ export interface SimState {
   current: SimConfig;
   ramp: AdoptionRamp;
   currency: Currency;
+  /** Stage 3 — the triage qualifier (skippable, no PII). */
+  qualifier?: RoutingQualifier;
+  /** Stage 4 — the routing result (computed from qualifier). */
+  routingResult?: RoutingResult;
 }
 
 /** The pristine configuration for a use case (what selecting it resets to). */
@@ -146,6 +150,14 @@ export function serializeState(state: SimState): string {
   if (c.confidenceTags.adoption !== "estimate") p.set("cad", c.confidenceTags.adoption);
   if (c.confidenceTags.realisation !== "estimate") p.set("cre", c.confidenceTags.realisation);
   if (c.confidenceTags.reliability !== "estimate") p.set("crl", c.confidenceTags.reliability);
+  // Routing state (optional; not included by default to keep URLs clean).
+  if (state.qualifier) {
+    if (state.qualifier.imminence) p.set("qi", state.qualifier.imminence);
+    if (state.qualifier.breadth) p.set("qb", state.qualifier.breadth);
+    if (state.qualifier.pressure != null) p.set("qp", state.qualifier.pressure ? "y" : "n");
+    if (state.qualifier.dataReach) p.set("qd", state.qualifier.dataReach);
+    if (state.qualifier.stakes) p.set("qs", state.qualifier.stakes);
+  }
   return p.toString();
 }
 
@@ -167,6 +179,15 @@ const isValidConfidenceLevel = (v: unknown): v is ConfidenceLevel =>
 const toConfidence = (v: string | null | undefined, fallback: ConfidenceLevel): ConfidenceLevel => {
   return v && isValidConfidenceLevel(v) ? v : fallback;
 };
+
+const isValidImminence = (v: unknown): v is RoutingQualifier["imminence"] =>
+  v === "committed" || v === "this-year" || v === "exploring";
+const isValidBreadth = (v: unknown): v is RoutingQualifier["breadth"] =>
+  v === "just-this-one" || v === "handful" || v === "whole-estate";
+const isValidDataReach = (v: unknown): v is RoutingQualifier["dataReach"] =>
+  v === "yes" || v === "hard" || v === "no";
+const isValidStakes = (v: unknown): v is RoutingQualifier["stakes"] =>
+  v === "small" || v === "material" || v === "large";
 
 export interface RawConfigFields {
   archetypeKey: string | null;
@@ -313,5 +334,24 @@ export function parseState(search: string): SimState {
     fullMonth: rf ?? fallback.ramp.fullMonth,
   });
   const currency: Currency = p.get("cur") === "aud" ? "aud" : "usd";
-  return { current, ramp, currency };
+
+  // Parse routing qualifier if present
+  const qi = p.get("qi");
+  const qb = p.get("qb");
+  const qp = p.get("qp");
+  const qd = p.get("qd");
+  const qs = p.get("qs");
+  const hasQualifier = qi || qb || qp || qd || qs;
+
+  const qualifier: RoutingQualifier | undefined = hasQualifier
+    ? {
+        imminence: isValidImminence(qi) ? qi : null,
+        breadth: isValidBreadth(qb) ? qb : null,
+        pressure: qp === "y" ? true : qp === "n" ? false : null,
+        dataReach: isValidDataReach(qd) ? qd : null,
+        stakes: isValidStakes(qs) ? qs : null,
+      }
+    : undefined;
+
+  return { current, ramp, currency, qualifier };
 }

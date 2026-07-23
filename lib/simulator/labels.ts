@@ -329,6 +329,52 @@ export const TRIAGE = {
   guessTag: "a guess",
 } as const;
 
+export const QUALIFIER = {
+  heading: "A few quick questions to find the right next step",
+  intro: "No PII here — just context to route you. You can skip these and see all three options.",
+  q1: "Is there a real decision on this in the near term?",
+  q1_committed: "A build, rollout or vendor commitment in the next ~90 days",
+  q1_this_year: "Sometime this year",
+  q1_exploring: "Just exploring",
+  q2: "How many AI use cases are you trying to decide on?",
+  q2_one: "Just this one",
+  q2_handful: "A handful",
+  q2_estate: "A whole estate of pilots and licences",
+  q3: "Is a board, CFO or regulator asking you to prove the economics?",
+  q3_yes: "Yes",
+  q3_not_yet: "Not yet",
+  q4: "Could you get to your actual usage logs and finance figures if you needed to?",
+  q4_yes: "Yes",
+  q4_hard: "It'd be hard",
+  q4_no: "No",
+  q5: "Roughly what's riding on this one decision?",
+  q5_small: "Small stakes",
+  q5_material: "Material",
+  q5_large: "Large",
+  ctaText: "Find the right next step",
+  skipText: "Skip these",
+} as const;
+
+export const ROUTING = {
+  heading: "The right next step",
+  intro:
+    "Based on your case and your context, here's where you should go. (Each option is self-contained — pick the one that fits.)",
+  notYetTitle: "You may not need us yet",
+  notYetDescription: "Your numbers are robust and the stakes are low-to-moderate. The economics work. Come back if the picture changes.",
+  gateTitle: "Investment-Case & Deployment Gate",
+  gateDescription:
+    "A defensible go/no-go on this specific use case, in ten working days. You get a decision paper you can take straight to your investment forum.",
+  gateWhatYouGet: "go/no-go decision paper · cost and value verified to your actual data · a plan for what you'd prove first · on your desk in 10 business days",
+  diagnosticTitle: "Enterprise Ledger Diagnostic",
+  diagnosticDescription:
+    "An estate baseline and a scale/fix/pause/stop call on every material use case. Four to six weeks. Made for board-pressure decisions on multi-use-case estates.",
+  diagnosticWhatYouGet: "economic baseline on your whole AI estate · a decision for every material use case · reconciled to your own finance and procurement · quarterly board pack templates",
+  costOfSkipping: "Cost of skipping:",
+  ctaText: "Start the conversation",
+  neutralTitle: "All three next steps",
+  neutralDescription: "Explore your options below — each is built to start on its own.",
+} as const;
+
 /** Where the single CTA points (brief decision 6 default: Hepburn contact). */
 export const SIM_CTA_HREF = "https://hepburnadvisory.com.au/contact";
 

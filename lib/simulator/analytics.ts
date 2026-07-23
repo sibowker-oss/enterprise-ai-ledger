@@ -32,7 +32,12 @@ export type SimEvent =
   | "sim_save_case"
   | "sim_import_case"
   | "sim_provider_excluded"
-  | "sim_currency_switch";
+  | "sim_currency_switch"
+  | "sim_qualifier_started"
+  | "sim_qualifier_completed"
+  | "sim_qualifier_skipped"
+  | "sim_route_shown"
+  | "sim_routing_cta_click";
 
 type GtagWindow = {
   dataLayer?: unknown[];
