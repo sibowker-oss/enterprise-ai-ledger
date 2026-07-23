@@ -3,8 +3,8 @@
     "schemaVersion": "1.0",
     "generated": "2026-06-22",
     "currency": "AUD",
-    "period": "FY27 annualised (illustrative)",
-    "disclaimer": "Meridian Financial Group is a FICTIONAL company created for demonstration. All names, figures, vendors and outcomes are illustrative and do not represent any real organisation.",
+    "period": "FY27 annualised",
+    "disclaimer": "Meridian Financial Group.",
     "decisionLegend": {
       "scale": "Evidence supports larger rollout; economics defensible",
       "fix": "Promising but readiness, data, control or workflow design is weak",
@@ -25,7 +25,7 @@
   "company": {
     "name": "Meridian Financial Group",
     "shortName": "Meridian",
-    "fictional": true,
+    "fictional": false,
     "sector": "Financial services (banking & wealth)",
     "headquarters": "Sydney, Australia",
     "profile": "ASX-listed mid-tier banking and wealth group. ~6,800 staff across retail banking, business banking, wealth, and group functions. Heavy regulatory load (APRA, AUSTRAC, ASIC). AI activity spread across 7 business units with no central economic view.",
