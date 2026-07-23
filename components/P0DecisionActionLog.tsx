@@ -61,7 +61,7 @@ export function P0DecisionActionLog({
             openActions.map((action) => (
               <div
                 key={action.id}
-                className="flex items-start justify-between rounded-sm bg-white p-3 border border-amber/10"
+                className="flex items-start justify-between rounded-sm bg-surface p-3 border border-border"
               >
                 <div className="flex-1">
                   <p className="font-medium text-sm text-ink">
@@ -76,10 +76,10 @@ export function P0DecisionActionLog({
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${
                       action.status === "overdue"
-                        ? "bg-red-100 text-red-700"
+                        ? "bg-status-red-soft text-status-red-fg"
                         : action.status === "in-progress"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-amber-100 text-amber-700"
+                          ? "bg-status-amber-soft text-status-amber-fg"
+                          : "bg-status-grey-soft text-status-grey-fg"
                     }`}
                   >
                     {action.status}

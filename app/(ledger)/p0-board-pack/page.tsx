@@ -12,9 +12,10 @@
  * 8. Methodology & evidence appendix
  *
  * Exportable (PDF, print-friendly); includes dated export header block.
+ * Customer-facing: Formula Versions and Reconciliation moved to /internal route.
  */
 
-import { p0, p0Rollup, p0Reconciliation } from "@/lib/seed-p0";
+import { p0, p0Rollup } from "@/lib/seed-p0";
 import { audCompact, pct } from "@/lib/format";
 import { P0CoverageBanner } from "@/components/P0CoverageBanner";
 import { P0FourValueLanes } from "@/components/P0FourValueLanes";
@@ -88,8 +89,7 @@ export default function P0BoardPackPage() {
               {p0.clientInstance.client_name} operates an AI estate across{" "}
               {p0.useCases.length} use cases and {p0.businessUnits.length} business units.
               Total annual spend: <strong>{audCompact(p0Rollup.totalAnnualSpendAud)}</strong>.
-              Banked value: <strong>{audCompact(p0Rollup.bankedValueAud)}</strong>
-              ({Math.round(p0Rollup.cashConversionRate * 100)}% cash-conversion rate).
+              Banked value: <strong>{audCompact(p0Rollup.bankedValueAud)}</strong>.
             </p>
             <p className="mt-4 text-sm text-ink-muted">
               This board pack demonstrates the P0 canonical data model and is illustrative.
@@ -123,6 +123,7 @@ export default function P0BoardPackPage() {
               0
             )}
             banked={p0Rollup.bankedValueAud}
+            annual_cost={p0Rollup.totalAnnualSpendAud}
           />
         </section>
 
@@ -202,8 +203,10 @@ export default function P0BoardPackPage() {
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${
                             action.status === "overdue"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-blue-100 text-blue-700"
+                              ? "bg-status-red-soft text-status-red-fg"
+                              : action.status === "in-progress"
+                                ? "bg-status-amber-soft text-status-amber-fg"
+                                : "bg-status-grey-soft text-status-grey-fg"
                           }`}
                         >
                           {action.status}
@@ -223,25 +226,6 @@ export default function P0BoardPackPage() {
             8. Methodology & Evidence Appendix
           </h2>
           <div className="space-y-4">
-            <div className="rounded-card border border-accent/20 bg-accent-soft/10 p-6">
-              <h3 className="font-semibold text-ink mb-3">Formula Versions</h3>
-              <p className="text-sm text-ink-muted">
-                {snapshot.formula_version_set}
-              </p>
-              <p className="text-xs text-ink-muted mt-2">
-                Immutable snapshot enables byte-for-byte re-derivation of figures.
-              </p>
-            </div>
-
-            <div className="rounded-card border border-accent/20 bg-accent-soft/10 p-6">
-              <h3 className="font-semibold text-ink mb-3">
-                Reconciliation (P0 Migration)
-              </h3>
-              <p className="text-xs text-ink-muted leading-relaxed whitespace-pre-wrap font-mono">
-                {p0Reconciliation.reconciliationStatement}
-              </p>
-            </div>
-
             <div className="rounded-card border border-accent/20 bg-accent-soft/10 p-6">
               <h3 className="font-semibold text-ink mb-3">Evidence Matrix</h3>
               <div className="overflow-x-auto">

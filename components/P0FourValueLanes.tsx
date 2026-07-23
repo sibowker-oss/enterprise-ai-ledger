@@ -7,24 +7,28 @@
  * 3. Capacity Released (separate; never added to banked)
  * 4. Banked Value (validated + finance-signed only)
  *
- * Also shows cash-conversion rate = banked / theoretical.
+ * Also shows ROI = (banked - annual_cost) / annual_cost.
  * And revenue-up lane (revenue-realised only, separate from other capacity).
  */
 
-import { audCompact, pct } from "@/lib/format";
+import { audCompact } from "@/lib/format";
+
+export interface P0FourValueLanesProps {
+  theoretical: number;
+  observed: number;
+  capacity: number;
+  banked: number;
+  annual_cost?: number;
+}
 
 export function P0FourValueLanes({
   theoretical,
   observed,
   capacity,
   banked,
-}: {
-  theoretical: number;
-  observed: number;
-  capacity: number;
-  banked: number;
-}) {
-  const cashConversion = theoretical > 0 ? banked / theoretical : 0;
+  annual_cost = 0,
+}: P0FourValueLanesProps) {
+  const roi = annual_cost > 0 ? ((banked - annual_cost) / annual_cost) * 100 : 0;
 
   return (
     <div>
@@ -38,8 +42,8 @@ export function P0FourValueLanes({
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Lane 1: Theoretical (Full Promise) */}
-        <div className="rounded-card border border-slate-200 bg-slate-50 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        <div className="rounded-card border border-border bg-surface-muted p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-status-grey-fg">
             Theoretical Value
           </p>
           <p className="mt-2 text-2xl font-bold text-ink">
@@ -48,12 +52,12 @@ export function P0FourValueLanes({
           <p className="mt-2 text-xs text-ink-muted">
             Full promise (all benefit claims, every status)
           </p>
-          <div className="mt-3 h-1 w-full bg-slate-300" />
+          <div className="mt-3 h-1 w-full bg-status-grey-solid" />
         </div>
 
         {/* Lane 2: Observed Operational */}
-        <div className="rounded-card border border-blue-200 bg-blue-50 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        <div className="rounded-card border border-border bg-surface-muted p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent-text">
             Observed Operational
           </p>
           <p className="mt-2 text-2xl font-bold text-ink">
@@ -62,12 +66,12 @@ export function P0FourValueLanes({
           <p className="mt-2 text-xs text-ink-muted">
             Measured process improvement
           </p>
-          <div className="mt-3 h-1 w-full bg-blue-300" />
+          <div className="mt-3 h-1 w-full bg-accent" />
         </div>
 
         {/* Lane 3: Capacity Released */}
-        <div className="rounded-card border border-amber-200 bg-amber-50 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        <div className="rounded-card border border-border bg-surface-muted p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-status-amber-fg">
             Capacity Released
           </p>
           <p className="mt-2 text-2xl font-bold text-ink">
@@ -76,46 +80,50 @@ export function P0FourValueLanes({
           <p className="mt-2 text-xs text-ink-muted">
             Freed time/throughput (NOT added to banked)
           </p>
-          <div className="mt-3 h-1 w-full bg-amber-300" />
+          <div className="mt-3 h-1 w-full bg-status-amber-solid" />
         </div>
 
         {/* Lane 4: Banked Value */}
-        <div className="rounded-card border border-emerald-200 bg-emerald-50 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        <div className="rounded-card border border-border bg-surface-muted p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-status-green-fg">
             Banked Value
           </p>
-          <p className="mt-2 text-2xl font-bold text-emerald-700">
+          <p className="mt-2 text-2xl font-bold text-ink">
             {audCompact(banked)}
           </p>
           <p className="mt-2 text-xs text-ink-muted">
             Validated + finance-signed only
           </p>
-          <div className="mt-3 h-1 w-full bg-emerald-400" />
+          <div className="mt-3 h-1 w-full bg-status-green-solid" />
         </div>
       </div>
 
-      {/* Cash Conversion Rate */}
-      <div className="mt-6 rounded-card border border-accent/30 bg-accent-soft/20 p-5">
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-              Cash Conversion Rate
-            </p>
-            <p className="mt-2 text-3xl font-bold text-ink">
-              {Math.round(cashConversion * 100)}%
-            </p>
-            <p className="mt-2 text-sm text-ink-muted">
-              Banked ÷ Theoretical = how much of the promise is real
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-ink-muted">Formula: {audCompact(banked)} ÷ {audCompact(theoretical)}</p>
-            <p className="mt-2 text-xs font-medium text-ink">
-              When <strong>100%</strong>: the use case banked its entire promise.
-            </p>
+      {/* ROI */}
+      {annual_cost > 0 && (
+        <div className="mt-6 rounded-card border border-border bg-surface-muted p-5">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-status-green-fg">
+                Return on Investment
+              </p>
+              <p className="mt-2 text-3xl font-bold text-ink">
+                {roi > 0 ? "+" : ""}{Math.round(roi)}%
+              </p>
+              <p className="mt-2 text-sm text-ink-muted">
+                (Banked Value − Annual Cost) ÷ Annual Cost
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-ink-muted">
+                {audCompact(banked)} − {audCompact(annual_cost)} ÷ {audCompact(annual_cost)}
+              </p>
+              <p className="mt-2 text-xs font-medium text-ink">
+                Measures the financial return on the AI investment.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
